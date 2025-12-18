@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HEDU – Thiết lập hệ thống</title>
+
+  <link rel="stylesheet" href="../../assets/styles.css"/>
+  <script src="../../assets/config.js"></script>
+
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#fff; --text:#0f172a; --muted:#64748b;
+      --primary:#2563eb; --border:#e5e7eb; --shadow:0 10px 30px rgba(2,6,23,.06);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text);background:var(--bg)}
+    a{color:inherit;text-decoration:none}
+    .topbar{background:#fff;border-bottom:1px solid var(--border)}
+    .topbar .inner{max-width:1120px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:38px;height:38px;border-radius:12px;background:rgba(37,99,235,.12);display:grid;place-items:center;font-weight:800;color:var(--primary)}
+    .brand .t1{font-weight:800}
+    .brand .t2{font-size:12px;color:var(--muted);margin-top:2px}
+    .wrap{max-width:1120px;margin:0 auto;padding:22px}
+    h1{margin:0;font-size:26px}
+    .sub{margin:8px 0 0;color:var(--muted);font-size:13px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:#fff;
+      font-weight:800;cursor:pointer
+    }
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .headerRow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:16px;box-shadow:var(--shadow)
+    }
+    .banner{
+      margin-top:14px;border:1px dashed rgba(37,99,235,.35);background:rgba(37,99,235,.06);
+      border-radius:14px;padding:12px 14px;color:#1e3a8a;font-size:13px;line-height:1.45
+    }
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .secTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .secTitle h2{margin:0;font-size:16px}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      background:#fff;border:1px solid var(--border);color:var(--muted);font-weight:800;font-size:12px
+    }
+    label{display:block;font-size:12px;color:var(--muted);font-weight:800;margin:10px 0 6px}
+    input,select,textarea{
+      width:100%;padding:12px 12px;border:1px solid var(--border);border-radius:14px;
+      background:#fff;font-size:14px;outline:none
+    }
+    textarea{min-height:170px;resize:vertical}
+    .row{display:flex;gap:10px;align-items:center}
+    .row > *{flex:1}
+    .row .btn{flex:0 0 auto;white-space:nowrap}
+    .list{
+      margin-top:10px;border-top:1px solid var(--border);padding-top:10px;color:var(--muted);font-size:13px
+    }
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;
+      border:1px solid var(--border);background:#fff;margin:6px 6px 0 0;font-weight:800;color:#0f172a
+    }
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background:#0b1220;color:#fff;padding:10px 14px;border-radius:999px;
+      opacity:0;pointer-events:none;transition:.2s
+    }
+    .toast.show{opacity:1}
+    @media (max-width:980px){ .grid2{grid-template-columns:1fr} }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div>
+          <div class="t1">Thiết lập hệ thống nhà trường</div>
+          <div class="t2">Khai báo năm học, lớp học và danh sách học sinh trước khi vận hành</div>
+        </div>
+      </div>
+      <a class="btn" href="./dashboard.html">⬅️ Dashboard</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="headerRow">
+      <div>
+        <h1>Thiết lập hệ thống nhà trường</h1>
+        <div class="sub">
+          Trang thiết lập dùng để khai báo năm học, lớp học và danh sách học sinh trước khi vận hành chính thức.
+        </div>
+      </div>
+      <div class="badge" id="badgeActive">Active: —</div>
+    </div>
+
+    <div class="banner">
+      ✅ <b>Quy trình thiết lập đề xuất:</b><br>
+      <b>(1)</b> Tạo/Chọn <b>năm học</b> → <b>Đặt active</b><br>
+      <b>(2)</b> Tạo <b>lớp học</b> trong năm học active<br>
+      <b>(3)</b> <b>Import danh sách học sinh</b> theo mẫu (mỗi dòng 1 học sinh)
+    </div>
+
+    <div class="grid2">
+      <!-- 1) Years -->
+      <div class="card">
+        <div class="secTitle">
+          <h2>1) Năm học</h2>
+          <div class="badge" id="activeYearChip">Active: —</div>
+        </div>
+
+        <label>Danh sách năm</label>
+        <div class="row">
+          <select id="selYears"></select>
+          <button class="btn primary" id="btnSetActive">Đặt active</button>
+        </div>
+
+        <label>Tạo năm mới</label>
+        <div class="row">
+          <input id="txtNewYear" placeholder="VD: 2025-2026" />
+          <button class="btn" id="btnAddYear">Tạo & đặt Active</button>
+        </div>
+      </div>
+
+      <!-- 2) Classes -->
+      <div class="card">
+        <div class="secTitle">
+          <h2>2) Lớp học</h2>
+          <div class="badge" id="yearForClasses">Năm: —</div>
+        </div>
+
+        <div class="sub" style="margin:0 0 10px">
+          Tạo lớp học thuộc năm học Active. Sau khi tạo, lớp sẽ xuất hiện trong danh sách bên dưới.
+        </div>
+
+        <label>Khối</label>
+        <select id="selGrade">
+          <option value="1">Khối 1</option>
+          <option value="2">Khối 2</option>
+          <option value="3">Khối 3</option>
+          <option value="4">Khối 4</option>
+          <option value="5" selected>Khối 5</option>
+        </select>
+
+        <label>Mã lớp</label>
+        <div class="row">
+          <input id="txtClassId" value="5A1" />
+          <button class="btn primary" id="btnCreateClass">Tạo lớp</button>
+        </div>
+
+        <div class="list">
+          <b>Danh sách lớp (năm: <span id="lblYear">—</span>)</b>
+          <div id="classList" style="margin-top:6px;color:#0f172a"></div>
+        </div>
+      </div>
+
+      <!-- 3) Import -->
+      <div class="card" style="grid-column:1/-1">
+        <div class="secTitle">
+          <h2>3) Import học sinh</h2>
+          <div class="badge">Mẫu: classId,studentId,fullName</div>
+        </div>
+
+        <div class="sub" style="margin:0 0 10px">
+          Dán danh sách học sinh theo định dạng mỗi dòng: <b>classId,studentId,fullName</b>.
+          Ví dụ: <b>5A1,HS001,Nguyễn Văn A</b>
+        </div>
+
+        <label>Import vào năm</label>
+        <select id="selYearImport"></select>
+
+        <label>Dữ liệu</label>
+        <textarea id="txtStudents" placeholder="5A1,HS001,Nguyễn Văn A&#10;5A1,HS002,Trần Thị B"></textarea>
+
+        <div class="row" style="margin-top:10px">
+          <div></div>
+          <button class="btn primary" id="btnImport">Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">—</div>
+
+  <script>
+    function toast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg || "—";
+      t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t = setTimeout(()=>t.classList.remove("show"), 2400);
+    }
+
+    function getSession(){
+      const keys = ["hedu_session","rw_session","session","HEDU_SESSION"];
+      for(const k of keys){
+        const raw = localStorage.getItem(k);
+        if(raw){
+          try { return JSON.parse(raw); } catch(e){}
+        }
+      }
+      return null;
+    }
+
+    async function apiPost(action, payload={}){
+      const url = (window.SCRIPT_URL || window.APP_SCRIPT_URL || "").trim();
+      if(!url) throw new Error("Chưa cấu hình SCRIPT_URL / APP_SCRIPT_URL");
+      const res = await fetch(url, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ action, ...payload })
+      });
+      return res.json();
+    }
+
+    const el = (id)=>document.getElementById(id);
+
+    function parseStudents(text){
+      const lines = String(text||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+      const out = [];
+      for(const ln of lines){
+        const parts = ln.split(",").map(s=>s.trim());
+        if(parts.length < 2) continue;
+        const classId = parts[0] || "";
+        const studentId = parts[1] || "";
+        const fullName = (parts.slice(2).join(",") || studentId).trim();
+        if(classId && studentId) out.push({ classId, studentId, fullName });
+      }
+      return out;
+    }
+
+    async function loadAll(){
+      const sess = getSession();
+      if(!sess || !sess.sessionId){
+        toast("Chưa có phiên ADMIN. Vui lòng đăng nhập lại.");
+        setTimeout(()=>location.href="../../login.html", 800);
+        return;
+      }
+
+      // Years + active
+      const y = await apiPost("adminListYears", { token: sess.sessionId });
+      if(!y.ok) throw new Error(y.error || "Lỗi tải năm học");
+      const years = y.years || [];
+      const active = y.activeYear || years[0] || "";
+
+      el("badgeActive").textContent = "Active: " + (active || "—");
+      el("activeYearChip").textContent = "Active: " + (active || "—");
+      el("yearForClasses").textContent = "Năm: " + (active || "—");
+      el("lblYear").textContent = (active || "—");
+
+      // fill dropdowns
+      const opt = years.map(v=>`<option value="${v}">${v}</option>`).join("");
+      el("selYears").innerHTML = opt || `<option value="">—</option>`;
+      el("selYearImport").innerHTML = opt || `<option value="">—</option>`;
+      if(active){
+        el("selYears").value = active;
+        el("selYearImport").value = active;
+      }
+
+      // classes of active year
+      await loadClasses(active, sess.sessionId);
+    }
+
+    async function loadClasses(year, token){
+      const r = await apiPost("adminListClasses", { token, year });
+      if(!r.ok) throw new Error(r.error || "Lỗi tải lớp");
+      const y = r.year || year || "";
+      el("yearForClasses").textContent = "Năm: " + (y || "—");
+      el("lblYear").textContent = (y || "—");
+
+      const list = r.classes || [];
+      if(!list.length){
+        el("classList").innerHTML = `<div style="color:#64748b">Chưa có lớp trong năm học này.</div>`;
+        return;
+      }
+      el("classList").innerHTML = list.map(c=>{
+        const count = (c.studentCount ?? 0);
+        return `<span class="pill">🏫 <b>${c.classId}</b> · Khối ${c.grade || "—"} · ${count} HS</span>`;
+      }).join("");
+    }
+
+    // actions
+    el("btnSetActive").addEventListener("click", async ()=>{
+      try{
+        const sess = getSession();
+        const year = el("selYears").value;
+        const r = await apiPost("adminSetActiveYear", { token: sess.sessionId, year });
+        if(!r.ok) throw new Error(r.error || "Không đặt được active");
+        toast("Đã đặt năm học active: " + r.activeYear);
+        await loadAll();
+      }catch(err){ toast(String(err.message||err)); }
+    });
+
+    el("btnAddYear").addEventListener("click", async ()=>{
+      try{
+        const sess = getSession();
+        const year = el("txtNewYear").value.trim();
+        if(!year) return toast("Vui lòng nhập năm học (VD: 2025-2026)");
+        const r = await apiPost("adminSetActiveYear", { token: sess.sessionId, year });
+        if(!r.ok) throw new Error(r.error || "Không tạo/đặt được active");
+        toast("Đã tạo & đặt active: " + r.activeYear);
+        el("txtNewYear").value = "";
+        await loadAll();
+      }catch(err){ toast(String(err.message||err)); }
+    });
+
+    el("btnCreateClass").addEventListener("click", async ()=>{
+      try{
+        const sess = getSession();
+        const year = el("selYears").value;
+        const grade = el("selGrade").value;
+        const classId = el("txtClassId").value.trim();
+        if(!year) return toast("Chưa có năm học active.");
+        if(!classId) return toast("Vui lòng nhập mã lớp.");
+        const r = await apiPost("adminCreateClass", { token: sess.sessionId, year, grade, classId });
+        if(!r.ok) throw new Error(r.error || "Không tạo được lớp");
+        toast("Đã tạo/cập nhật lớp: " + r.classId);
+        await loadClasses(year, sess.sessionId);
+      }catch(err){ toast(String(err.message||err)); }
+    });
+
+    el("btnImport").addEventListener("click", async ()=>{
+      try{
+        const sess = getSession();
+        const year = el("selYearImport").value;
+        if(!year) return toast("Vui lòng chọn năm học để import.");
+        const students = parseStudents(el("txtStudents").value);
+        if(!students.length) return toast("Dữ liệu import chưa đúng định dạng.");
+        const r = await apiPost("adminImportStudents", { token: sess.sessionId, year, students });
+        if(!r.ok) throw new Error(r.error || "Import thất bại");
+        toast(`Import xong: thêm ${r.added||0}, cập nhật ${r.updated||0}`);
+        await loadClasses(year, sess.sessionId);
+      }catch(err){ toast(String(err.message||err)); }
+    });
+
+    // init
+    (async function(){
+      try{ await loadAll(); }
+      catch(err){ toast(String(err.message||err)); }
+    })();
+  </script>
+
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+</body>
+</html>

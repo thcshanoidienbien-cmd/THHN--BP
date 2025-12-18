@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Học sinh • Dashboard</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <script src="../../assets/config.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div>
+          <div class="name" id="brandName"></div>
+          <div class="sub" id="brandSub"></div>
+        </div>
+      </div>
+      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="shellTop">
+      <div>
+        <div style="font-weight:900;font-size:18px">Cổng Học sinh</div>
+        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+      </div>
+      <div class="pills">
+        <a class="pill active" href="dashboard.html">Dashboard</a><a class="pill " href="do-task.html">Làm bài</a><a class="pill " href="progress.html">Tiến bộ</a>
+      </div>
+    </div>
+
+    
+<div class="kpis">
+  <div class="kpi"><div class="t">Bài được giao</div><div class="v" id="k_tasks">—</div></div>
+  <div class="kpi"><div class="t">Đã nộp</div><div class="v" id="k_submitted">—</div></div>
+  <div class="kpi"><div class="t">Nhận xét mới</div><div class="v" id="k_feedback">—</div></div>
+</div>
+
+<div style="height:12px"></div>
+
+<div class="card" style="padding:14px">
+  <div style="font-weight:900">Bài cần làm</div>
+  <div style="color:var(--muted);font-size:12px;margin-top:4px">Chọn một bài để làm và nộp.</div>
+
+  <div style="height:10px"></div>
+  <table class="table">
+    <thead>
+      <tr><th>Mã bài</th><th>Tiêu đề</th><th>Loại</th><th></th></tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </div>
+
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script>
+    const cfg = getConfig();
+    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
+    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
+    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
+    
+const s = requireRole(["STUDENT"]);
+document.getElementById("who").textContent = `${s.studentId||"Học sinh"} • ${s.classId||""} • ${s.schoolYear||""}`;
+
+(async ()=>{
+  try{
+    const r = await api("studentDashboard", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
+    const d = r.dashboard || {};
+    document.getElementById("k_tasks").textContent = (d.totalTasks ?? 0);
+    document.getElementById("k_submitted").textContent = (d.submitted ?? 0);
+    document.getElementById("k_feedback").textContent = (d.newFeedback ?? 0);
+
+    const rows = d.tasks || [];
+    const tb = document.getElementById("rows");
+    if(!rows.length){
+      tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>`;
+      return;
+    }
+    tb.innerHTML = rows.map(x=>`
+      <tr>
+        <td>${x.taskId||"—"}</td>
+        <td>${x.title||"—"}</td>
+        <td>${x.typeLabel||x.type||"—"}</td>
+        <td><a class="smallLink" href="do-task.html?taskId=${encodeURIComponent(x.taskId)}">Làm bài</a></td>
+      </tr>
+    `).join("");
+  }catch(e){ toast(e.message); }
+})();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Học sinh • Tiến bộ</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <script src="../../assets/config.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div>
+          <div class="name" id="brandName"></div>
+          <div class="sub" id="brandSub"></div>
+        </div>
+      </div>
+      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="shellTop">
+      <div>
+        <div style="font-weight:900;font-size:18px">Cổng Học sinh</div>
+        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+      </div>
+      <div class="pills">
+        <a class="pill active" href="dashboard.html">Dashboard</a><a class="pill " href="do-task.html">Làm bài</a><a class="pill " href="progress.html">Tiến bộ</a>
+      </div>
+    </div>
+
+    
+<div class="card" style="padding:14px">
+  <div style="font-weight:900;font-size:16px">Tiến bộ</div>
+  <div style="color:var(--muted);font-size:12px;margin-top:4px">Tổng hợp theo tuần/tháng.</div>
+
+  <div class="divider"></div>
+
+  <table class="table">
+    <thead>
+      <tr><th>Tuần</th><th>Đã nộp</th><th>Nhận xét</th><th>Ghi chú</th></tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </div>
+
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script>
+    const cfg = getConfig();
+    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
+    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
+    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
+    
+const s = requireRole(["STUDENT"]);
+document.getElementById("who").textContent = `${s.studentId||"Học sinh"} • ${s.classId||""} • ${s.schoolYear||""}`;
+
+(async ()=>{
+  try{
+    const r = await api("studentProgress", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
+    const rows = r.rows || [];
+    const tb = document.getElementById("rows");
+    if(!rows.length){
+      tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
+      return;
+    }
+    tb.innerHTML = rows.map(x=>`
+      <tr>
+        <td>${x.weekLabel||"—"}</td>
+        <td>${x.submitted ?? "—"}</td>
+        <td>${x.feedbackCount ?? "—"}</td>
+        <td>${x.note||""}</td>
+      </tr>
+    `).join("");
+  }catch(e){ toast(e.message); }
+})();
+
+  </script>
+</body>
+</html>

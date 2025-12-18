@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Teacher Portal</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <meta name="theme-color" content="#1a73e8"/>
+  <style>
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .dash{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    @media(max-width:980px){.dash{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.dash{grid-template-columns:1fr}}
+  </style>
+</head>
+<body data-active="dashboard">
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:16px">
+      <div class="row">
+        <div>
+          <h1 style="margin:0">Teacher Portal 👩‍🏫</h1>
+          <div class="muted" style="margin-top:4px">Dashboard + Quản lý lớp + điều hướng nhanh</div>
+        </div>
+        <div class="pill" id="me">—</div>
+      </div>
+
+      <div class="grid2 mt">
+        <div class="dcard">
+          <h3 style="margin:0 0 6px">📌 Lớp đang quản lý</h3>
+          <div class="muted">Chọn lớp → các trang khác tự nhận lớp ✅</div>
+
+          <div class="mt">
+            <label>Lớp</label>
+            <select id="classId"></select>
+          </div>
+
+          <div class="mt muted" id="sub">—</div>
+
+          <div class="actions mt">
+            <button class="btn ghost" id="btnGoTasks" type="button">📚 Giao bài & Thư viện</button>
+            <button class="btn ghost" id="btnGoSubs" type="button">📨 Bài nộp</button>
+            <button class="btn" id="btnGoInsights" type="button">📈 Insights</button>
+          </div>
+        </div>
+
+        <div class="dcard">
+          <h3 style="margin:0 0 6px">⚡ KPI nhanh</h3>
+          <div class="muted">Tổng quan lớp</div>
+          <div class="dash mt" id="dash"></div>
+
+          <div class="actions mt">
+            <button class="btn" id="btnRefresh" type="button">Tải dữ liệu</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <script src="../../assets/config.js"></script>
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script src="../../assets/teacher-snippet.js"></script>
+  <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show");t.hidden=true;},2400);
+    }
+    function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
+
+    const session = requireRole("TEACHER");
+    const token = session?.token || "";
+    const me = `${session.displayName||"Giáo viên"} • ${session.classId||""}`;
+    document.getElementById("me").textContent = me;
+
+    function getSelectedClass_(){
+      return localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
+    }
+    function setSelectedClass_(cid){
+      localStorage.setItem("hedu_teacher_classId", cid);
+    }
+
+    async function loadClasses(){
+      const sel=document.getElementById("classId");
+      try{
+        const r=await api("listClassesForTeacher",{token});
+        const items=r.classes||[];
+        sel.innerHTML = items.map(c=>`<option value="${esc(c.classId)}">${esc(c.classId)}${c.className?` • ${esc(c.className)}`:""}</option>`).join("")
+          || `<option value="5A1">5A1</option>`;
+      }catch(e){
+        sel.innerHTML = `<option value="${esc(getSelectedClass_())}">${esc(getSelectedClass_())}</option>`;
+      }
+      sel.value = getSelectedClass_();
+      sel.addEventListener("change", async ()=>{
+        setSelectedClass_(sel.value || "5A1");
+        toast("Đã chọn lớp ✅");
+        await refresh();
+      });
+    }
+
+    function renderKpi_(k){
+      const box=document.getElementById("dash");
+      box.innerHTML="";
+      const cards=[
+        {k:"Học sinh", v:k.students||0},
+        {k:"Tasks (đã giao)", v:k.tasks||0},
+        {k:"Bài nộp", v:k.submissions||0},
+        {k:"Đã nhận xét", v:k.feedbacks||0},
+      ];
+      cards.forEach(c=>{
+        const d=document.createElement("div");
+        d.className="dcard";
+        d.innerHTML=`<div class="muted" style="font-weight:900">${esc(c.k)}</div>
+                     <div style="font-size:28px;font-weight:900;margin-top:6px">${esc(c.v)}</div>`;
+        box.appendChild(d);
+      });
+    }
+
+    async function refresh(){
+      try{
+        const classId=getSelectedClass_();
+        const students = await api("listStudents",{token,classId});
+        const tasks = await api("listTasks",{token,classId,status:"PUBLISHED"});
+        const subs = await api("listSubmissions",{token,classId});
+        // feedback count từ gradebook (đã có graded)
+        const gb = await api("getGradebook",{token,classId});
+
+        document.getElementById("sub").textContent =
+          `Pilot ${students.system.classId} • Khối ${students.system.grade} • ${students.system.subject} • ${students.system.textbook} • LockScope: ${students.system.lockScope}`;
+
+        const totalGraded = (gb.rows||[]).reduce((a,x)=>a+(Number(x.graded)||0),0);
+
+        renderKpi_({
+          students:(students.students||[]).length,
+          tasks:(tasks.tasks||[]).length,
+          submissions:(subs.submissions||[]).length,
+          feedbacks: totalGraded
+        });
+
+        toast("Đã tải dữ liệu ✅");
+      }catch(e){
+        toast(e.message||"Không tải được dữ liệu.");
+      }
+    }
+
+    document.getElementById("btnRefresh").addEventListener("click", refresh);
+    document.getElementById("btnGoTasks").addEventListener("click", ()=>location.href="./teacher-tasks.html");
+    document.getElementById("btnGoSubs").addEventListener("click", ()=>location.href="./teacher-submissions.html");
+    document.getElementById("btnGoInsights").addEventListener("click", ()=>location.href="./teacher-insights.html");
+
+    (async ()=>{
+      renderTeacherTopbar("dashboard");
+      await loadClasses();
+      await refresh();
+    })();
+  </script>
+</body>
+</html>

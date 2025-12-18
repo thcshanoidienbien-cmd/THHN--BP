@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Cổng thông tin nhà trường</title>
+  <meta name="theme-color" content="#2563eb"/>
+
+  <!-- (Optional) nếu anh có config.js -->
+  <script src="assets/config.js"></script>
+
+  <style>
+    :root{
+      --bg:#f6f9ff;
+      --ink:#0f172a;
+      --muted:#475569;
+      --blue:#2563eb;
+      --blue2:#1d4ed8;
+      --shadow: 0 18px 55px rgba(15,23,42,.12);
+      --shadow2: 0 10px 28px rgba(15,23,42,.10);
+      --radius: 24px;
+      --max: 1140px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      position:relative;
+      overflow-x:hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background:
+        radial-gradient(1100px 500px at 10% 20%, rgba(37,99,235,.14), transparent 60%),
+        radial-gradient(900px 500px at 90% 30%, rgba(59,130,246,.12), transparent 55%),
+        linear-gradient(180deg, #f8fbff, var(--bg));
+    }
+
+    /* ✅ Background ảnh nền mờ toàn trang */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      background:url("assets/img/school-bg.jpg") center/cover no-repeat;
+      filter:blur(14px);
+      transform:scale(1.08);
+      opacity:.22;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:linear-gradient(180deg, rgba(246,249,255,.92), rgba(246,249,255,.96));
+    }
+
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max); margin:0 auto; padding:18px 18px 40px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      background:rgba(246,249,255,.78);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .topbar .wrap{padding:14px 18px}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:14px}
+    .brand{display:flex; align-items:center; gap:12px; min-width:260px}
+
+    /* ✅ Logo trường đúng vị trí chữ H */
+    .logo{
+      width:42px; height:42px; border-radius:14px;
+      background:#fff;
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow: 0 10px 22px rgba(15,23,42,.10);
+      overflow:hidden;
+      display:grid; place-items:center;
+      flex:0 0 auto;
+    }
+    .logo img{width:100%; height:100%; object-fit:cover; display:block}
+
+    .btitle{line-height:1.05}
+    .btitle .name{font-weight:900; font-size:16px}
+    .btitle .sub{font-size:12px; color:var(--muted); margin-top:2px}
+
+    .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .btn{
+      height:42px; padding:0 14px; border-radius:14px;
+      border:1px solid rgba(15,23,42,.10);
+      background:#fff;
+      display:inline-flex; align-items:center; gap:10px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+      box-shadow: 0 8px 22px rgba(15,23,42,.06);
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn.ghost{ background: rgba(255,255,255,.70); }
+
+    /* ===== Dropdown menu for roles ===== */
+    .dd{ position:relative; display:inline-flex; }
+    .ddBtn{ user-select:none; }
+    .ddMenu{
+      position:absolute;
+      top:calc(100% + 10px);
+      right:0;
+      min-width:260px;
+      padding:8px;
+      border-radius:16px;
+      background: rgba(255,255,255,.92);
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow: 0 18px 45px rgba(15,23,42,.14);
+      backdrop-filter: blur(10px);
+      display:none;
+      z-index:50;
+    }
+    .dd.open .ddMenu{ display:block; }
+    .ddItem{
+      width:100%;
+      border:none;
+      background: transparent;
+      text-align:left;
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+      color: var(--ink);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .ddItem:hover{ background: rgba(37,99,235,.08); }
+
+    /* Layout */
+    .hero{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    .panel{
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* HERO LEFT */
+    .heroLeftCard{ background: rgba(255,255,255,.82); }
+
+    .schoolMedia{
+      position:relative;
+      height:300px;
+      background:#eef2ff;
+      overflow:hidden;
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .schoolImg{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      transform:scale(1.02);
+      filter:saturate(1.05) contrast(1.02);
+    }
+    .schoolOverlay{
+      position:absolute; inset:0;
+      background:
+        radial-gradient(800px 320px at 20% 30%, rgba(37,99,235,.18), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.70) 70%, rgba(255,255,255,.92) 100%);
+    }
+
+    .heroCopy{ padding:18px 18px 20px; }
+
+    .heroTitle{
+      margin:0;
+      font-size:42px;
+      line-height:1.06;
+      letter-spacing:-.03em;
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #2563eb 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .heroQuote{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background: rgba(37,99,235,.06);
+      border:1px solid rgba(37,99,235,.14);
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.35;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .heroQuote .qIco{
+      width:34px; height:34px; border-radius:12px;
+      display:grid; place-items:center;
+      background: rgba(37,99,235,.10);
+      border:1px solid rgba(37,99,235,.16);
+      flex:0 0 auto;
+    }
+    .heroQuote .qText{
+      font-size:14px;
+      letter-spacing:-.01em;
+    }
+
+    /* HERO RIGHT: ảnh + nền mờ */
+    .illusPhoto{
+      min-height: 420px;
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      background:#f1f6ff;
+    }
+    .illusPhoto::before{
+      content:"";
+      position:absolute; inset:0;
+      background:url("assets/img/school-hero-right.jpg") center/cover no-repeat;
+      filter: blur(18px) saturate(1.1);
+      transform: scale(1.08);
+      opacity:.45;
+    }
+    .illusPhoto::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(700px 320px at 30% 25%, rgba(37,99,235,.20), transparent 65%),
+        linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.30));
+      pointer-events:none;
+    }
+    .illusFrame{
+      position:relative;
+      width:min(520px, 92%);
+      border-radius: 26px;
+      overflow:hidden;
+      border:1px solid rgba(37,99,235,.18);
+      box-shadow: 0 18px 45px rgba(15,23,42,.14);
+      background: rgba(255,255,255,.65);
+    }
+    .illusFrame img{
+      width:100%;
+      height:auto;
+      display:block;
+      object-fit:cover;
+    }
+
+    /* Role cards */
+    .grid4{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    .card{
+      background: rgba(255,255,255,.85);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius: 22px;
+      box-shadow: var(--shadow2);
+      padding:16px 16px 14px;
+      display:flex; flex-direction:column; gap:10px;
+      position:relative;
+    }
+    .card .rTop{display:flex; align-items:flex-start; gap:10px}
+    .ico{
+      width:38px; height:38px; border-radius:14px;
+      display:grid; place-items:center;
+      background: rgba(37,99,235,.10);
+      border:1px solid rgba(37,99,235,.15);
+      font-size:18px;
+      flex:0 0 auto;
+    }
+    .card .title{font-weight:900}
+    .card .desc{
+      margin-top:6px;
+      color: rgba(71,85,105,.95);
+      font-weight:700;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .card .desc p{ margin:0; }
+    .card .desc p + p{ margin-top:8px; }
+
+    .card .go{
+      margin-top:auto;
+      width:100%;
+      height:40px;
+      border-radius: 14px;
+      border:1px solid rgba(15,23,42,.10);
+      background: #fff;
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .card .go:hover{transform: translateY(-1px)}
+    .card.primary{
+      border-color: rgba(37,99,235,.20);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.80));
+    }
+    .card.primary .go{
+      border:none;
+      background: linear-gradient(135deg, var(--blue), #60a5fa);
+      color:#fff;
+      box-shadow: 0 14px 30px rgba(37,99,235,.25);
+    }
+
+    /* Clamp description to keep cards balanced */
+    @media (min-width: 981px){
+      .card .desc{
+        display:-webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 6;
+        overflow:hidden;
+      }
+    }
+    @media (max-width: 980px){
+      .card .desc{
+        display:-webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 5;
+        overflow:hidden;
+      }
+    }
+
+    .footer{
+      margin-top:18px;
+      padding:18px 0 0;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      color:rgba(71,85,105,.95);
+      font-size:13px;
+    }
+
+    @media (max-width: 980px){
+      .hero{grid-template-columns:1fr; }
+      .grid4{grid-template-columns: repeat(2, 1fr)}
+      .nav{gap:8px}
+      .schoolMedia{height:240px}
+      .heroTitle{font-size:34px}
+      .illusPhoto{min-height:320px}
+      .ddMenu{ right:auto; left:0; }
+    }
+    @media (max-width: 520px){
+      .wrap{padding:14px 14px 28px}
+      .topbar .wrap{padding:12px 14px}
+      .heroTitle{font-size:30px}
+      .grid4{grid-template-columns:1fr}
+      .ddMenu{ min-width: 220px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="wrap">
+      <div class="row">
+        <div class="brand">
+          <div class="logo" title="Logo nhà trường">
+            <img src="assets/img/logo-school.jpg" alt="Logo nhà trường">
+          </div>
+          <div class="btitle">
+            <div class="name" id="schoolName">Trường Tiểu học Hà Nội – Điện Biên Phủ</div>
+          </div>
+        </div>
+
+        <!-- ✅ MENU: 4 vai trò (dropdown) — thao tác được luôn, bỏ nút Đăng nhập -->
+        <div class="nav" aria-label="Điều hướng theo vai trò">
+          <div class="dd" data-role="TEACHER">
+            <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">👩‍🏫 Giáo viên ▾</button>
+            <div class="ddMenu" role="menu" aria-label="Menu Giáo viên">
+              <button class="ddItem" type="button" data-entry="pages/teacher/dashboard.html">📊 Tổng quan giảng dạy</button>
+              <button class="ddItem" type="button" data-entry="pages/teacher/assign-reading.html">📚 Giao bài đọc</button>
+              <button class="ddItem" type="button" data-entry="pages/teacher/assign-writing.html">✍️ Giao bài viết</button>
+              <button class="ddItem" type="button" data-entry="pages/teacher/submissions.html">📥 Bài học sinh nộp</button>
+              <button class="ddItem" type="button" data-entry="pages/teacher/gradebook.html">🧾 Sổ điểm</button>
+            </div>
+          </div>
+
+          <div class="dd" data-role="STUDENT">
+            <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">🧒 Học sinh ▾</button>
+            <div class="ddMenu" role="menu" aria-label="Menu Học sinh">
+              <button class="ddItem" type="button" data-entry="pages/student/dashboard.html">🏠 Trang học tập cá nhân</button>
+              <button class="ddItem" type="button" data-entry="pages/student/do-task.html">📝 Làm bài</button>
+              <button class="ddItem" type="button" data-entry="pages/student/progress.html">📈 Tiến bộ học tập</button>
+            </div>
+          </div>
+
+          <div class="dd" data-role="PARENT">
+            <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">👨‍👩‍👧 Phụ huynh ▾</button>
+            <div class="ddMenu" role="menu" aria-label="Menu Phụ huynh">
+              <button class="ddItem" type="button" data-entry="pages/parent/week.html">📅 Theo dõi theo tuần</button>
+              <button class="ddItem" type="button" data-entry="pages/parent/notes.html">💬 Nhận xét giáo viên</button>
+              <button class="ddItem" type="button" data-entry="pages/parent/progress.html">📊 Tiến bộ của con</button>
+            </div>
+          </div>
+
+          <div class="dd" data-role="ADMIN">
+            <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">🏫 Nhà trường ▾</button>
+            <div class="ddMenu" role="menu" aria-label="Menu Nhà trường">
+              <button class="ddItem" type="button" data-entry="pages/admin/dashboard.html">📊 Điều hành tổng thể</button>
+              <button class="ddItem" type="button" data-entry="pages/admin/setup.html">🧩 Thiết lập năm học</button>
+            </div>
+          </div>
+        </div>
+        <!-- /MENU -->
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <!-- LEFT -->
+      <div class="panel heroLeftCard">
+        <div class="schoolMedia">
+          <img class="schoolImg" src="assets/img/school-hero-left.jpg" alt="Ảnh nhà trường"/>
+          <div class="schoolOverlay"></div>
+        </div>
+
+        <div class="heroCopy">
+          <h1 class="heroTitle">NỀN TẢNG HỌC TẬP SỐ</h1>
+
+          <div class="heroQuote">
+            <div class="qIco">🏫</div>
+            <div class="qText">
+              “Mỗi thầy cô làm chủ công nghệ, mỗi học sinh tự tin học tập – chuyển đổi số bắt đầu từ thực tiễn lớp học.”
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="panel illusPhoto" aria-label="Minh hoạ nhà trường">
+        <div class="illusFrame">
+          <img src="assets/img/school-hero-right.jpg" alt="Hình ảnh hoạt động nhà trường">
+        </div>
+      </div>
+    </section>
+
+    <!-- ROLES: giữ nguyên (giờ là mô tả lợi ích, không phải định hướng) -->
+    <section class="grid4" id="ecosystem" aria-label="Lợi ích theo vai trò">
+
+      <div class="card primary">
+        <div class="rTop">
+          <div class="ico">👩‍🏫</div>
+          <div>
+            <div class="title">Giáo viên</div>
+            <div class="desc">
+              <p>Giao bài, thu bài, chấm và nhận xét trực tuyến ngay trên hệ thống.</p>
+              <p>Dữ liệu học tập được lưu theo lớp và năm học, giúp theo dõi tiến bộ từng em rõ ràng, giảm áp lực sổ sách và nâng hiệu quả dạy học.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="rTop">
+          <div class="ico">🧒</div>
+          <div>
+            <div class="title">Học sinh</div>
+            <div class="desc">
+              <p>Làm bài, xem nhận xét và kết quả học tập của bản thân.</p>
+              <p>Mỗi em có hồ sơ học tập cá nhân thể hiện tiến bộ theo từng tuần, hình thành thói quen tự học và chủ động phấn đấu.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="rTop">
+          <div class="ico">👨‍👩‍👧</div>
+          <div>
+            <div class="title">Phụ huynh</div>
+            <div class="desc">
+              <p>Theo dõi kết quả học tập, nhận xét giáo viên và thông báo theo từng tuần.</p>
+              <p>Thông tin rõ ràng, nhất quán theo năm học giúp phụ huynh đồng hành kịp thời và phối hợp hiệu quả cùng nhà trường.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="rTop">
+          <div class="ico">🏫</div>
+          <div>
+            <div class="title">Nhà trường</div>
+            <div class="desc">
+              <p>Quản lý tập trung dữ liệu lớp, học sinh và năm học một cách khoa học.</p>
+              <p>Hỗ trợ tổng hợp báo cáo nhanh, theo dõi chất lượng giáo dục và điều hành toàn trường dựa trên dữ liệu thực, phục vụ quản lý lâu dài.</p>
+            </div>
+          </div>
+        </div>
+       </div>
+
+    </section>
+
+    <div class="footer">
+      <div>© <span id="y"></span> • <span id="schoolName2">Trường Tiểu học Hà Nội – Điện Biên Phủ</span> • HEDU</div>
+      <div>📞 Hỗ trợ: Văn phòng nhà trường</div>
+    </div>
+  </main>
+
+  <script>
+    // ===== Role -> Login (fallback buttons in cards) =====
+    function goLogin(role){
+      localStorage.setItem("hedu_role", role);
+      // nếu bấm nút dưới card thì vào mặc định
+      localStorage.removeItem("hedu_entry");
+      location.href = "login.html";
+    }
+    function goAdmin(){
+      localStorage.setItem("hedu_role", "ADMIN");
+      localStorage.removeItem("hedu_entry");
+      location.href = "login.html#admin";
+    }
+
+    // ===== Role entry routing (Index menu -> Login) =====
+    function openLoginWith(role, entry){
+      localStorage.setItem("hedu_role", role);
+      localStorage.setItem("hedu_entry", entry || "");
+      location.href = "login.html";
+    }
+
+    // Dropdown open/close
+    (function initRoleDropdown(){
+      const dds = document.querySelectorAll(".dd");
+      const closeAll = ()=> dds.forEach(d=> {
+        d.classList.remove("open");
+        const btn = d.querySelector(".ddBtn");
+        if(btn) btn.setAttribute("aria-expanded", "false");
+      });
+
+      dds.forEach(dd=>{
+        const role = dd.getAttribute("data-role");
+        const btn = dd.querySelector(".ddBtn");
+        const menu = dd.querySelector(".ddMenu");
+        if(!btn || !menu) return;
+
+        btn.addEventListener("click", (e)=>{
+          e.stopPropagation();
+          const isOpen = dd.classList.contains("open");
+          closeAll();
+          if(!isOpen){
+            dd.classList.add("open");
+            btn.setAttribute("aria-expanded", "true");
+          }
+        });
+
+        menu.querySelectorAll(".ddItem").forEach(item=>{
+          item.addEventListener("click", (e)=>{
+            e.stopPropagation();
+            const entry = item.getAttribute("data-entry") || "";
+            closeAll();
+            openLoginWith(role, entry);
+          });
+        });
+      });
+
+      document.addEventListener("click", closeAll);
+      document.addEventListener("keydown", (e)=>{
+        if(e.key === "Escape") closeAll();
+      });
+    })();
+
+    // Year
+    document.getElementById("y").textContent = new Date().getFullYear();
+
+    // Optional config support
+    function safeSetText(id, value){
+      const el = document.getElementById(id);
+      if(el && value) el.textContent = value;
+    }
+    try{
+      if(typeof getConfig === "function"){
+        const cfg = getConfig();
+        const school = cfg.SCHOOL_NAME || "Trường Tiểu học Hà Nội – Điện Biên Phủ";
+        safeSetText("schoolName", school);
+        safeSetText("schoolName2", school);
+        document.title = (cfg.APP_NAME ? cfg.APP_NAME + " • " : "") + "Cổng thông tin nhà trường";
+      }
+    }catch(e){}
+  </script>
+</body>
+</html>

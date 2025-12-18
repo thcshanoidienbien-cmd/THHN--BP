@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Phụ huynh • Tuần này</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <script src="../../assets/config.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div>
+          <div class="name" id="brandName"></div>
+          <div class="sub" id="brandSub"></div>
+        </div>
+      </div>
+      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="shellTop">
+      <div>
+        <div style="font-weight:900;font-size:18px">Sổ liên lạc điện tử</div>
+        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+      </div>
+      <div class="pills">
+        <a class="pill active" href="week.html">Tuần này</a><a class="pill " href="progress.html">Tiến bộ</a><a class="pill " href="notes.html">Nhận xét</a>
+      </div>
+    </div>
+
+    
+<div class="kpis">
+  <div class="kpi"><div class="t">Tuần này</div><div class="v" id="k_week">—</div></div>
+  <div class="kpi"><div class="t">Bài đã nộp</div><div class="v" id="k_sub">—</div></div>
+  <div class="kpi"><div class="t">Nhận xét GV</div><div class="v" id="k_notes">—</div></div>
+</div>
+
+<div style="height:12px"></div>
+
+<div class="card" style="padding:14px">
+  <div style="font-weight:900;font-size:16px">Sổ liên lạc – Tuần này</div>
+  <div style="color:var(--muted);font-size:12px;margin-top:4px">Tóm tắt ngắn gọn, dễ hiểu cho phụ huynh.</div>
+
+  <div class="divider"></div>
+
+  <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
+    <div style="font-weight:900">Nhận xét của giáo viên</div>
+    <div style="white-space:pre-wrap;line-height:1.6;margin-top:8px" id="teacherNote">—</div>
+  </div>
+
+  <div style="height:10px"></div>
+
+  <table class="table">
+    <thead>
+      <tr><th>Bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+    </tbody>
+  </table>
+
+  <div style="height:12px"></div>
+
+  <div class="actions">
+    <button class="btn secondary" id="btnConfirm" type="button">Tôi đã đọc</button>
+  </div>
+  <div class="footerNote">Nút “Tôi đã đọc” giúp giáo viên biết phụ huynh đã xem thông tin tuần.</div>
+</div>
+
+  </div>
+
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script>
+    const cfg = getConfig();
+    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
+    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
+    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
+    
+const s = requireRole(["PARENT"]);
+document.getElementById("who").textContent = `PH của ${s.studentId||"—"} • ${s.classId||""} • ${s.schoolYear||""}`;
+
+(async ()=>{
+  try{
+    const r = await api("parentWeekReport", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
+    const d = r.report || {};
+    document.getElementById("k_week").textContent = d.weekLabel || "—";
+    document.getElementById("k_sub").textContent = d.submitted ?? "—";
+    document.getElementById("k_notes").textContent = d.noteCount ?? "—";
+    document.getElementById("teacherNote").textContent = stripMd(d.teacherNote || "Chưa có nhận xét.");
+    const rows = d.items || [];
+    const tb = document.getElementById("rows");
+    if(!rows.length){
+      tb.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
+    }else{
+      tb.innerHTML = rows.map(x=>{
+        const badge = x.status==="OK" ? "ok" : x.status==="WARN" ? "warn" : "bad";
+        return `<tr>
+          <td>${x.title||x.taskId||"—"}</td>
+          <td><span class="badge ${badge}">${x.statusLabel||x.status||"—"}</span></td>
+          <td>${x.note||""}</td>
+        </tr>`;
+      }).join("");
+    }
+  }catch(e){ toast(e.message); }
+})();
+
+document.getElementById("btnConfirm").onclick = async ()=>{
+  try{
+    await api("parentConfirmRead", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
+    toast("Đã ghi nhận ✅");
+  }catch(e){ toast(e.message); }
+};
+
+  </script>
+</body>
+</html>

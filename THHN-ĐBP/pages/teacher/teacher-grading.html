@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Grading</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <meta name="theme-color" content="#1a73e8"/>
+  <style>
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+    @media(max-width:980px){.split{grid-template-columns:1fr}}
+    textarea{min-height:160px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  </style>
+</head>
+<body data-active="grading">
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:16px">
+      <div class="row">
+        <div>
+          <h1 style="margin:0">Chấm bài & Nhận xét 📝</h1>
+          <div class="muted" id="sub">—</div>
+        </div>
+        <div class="pill" id="me">—</div>
+      </div>
+
+      <div class="actions mt">
+        <button class="btn ghost" id="btnBack" type="button">← Quay lại bài nộp</button>
+        <button class="btn ghost" id="btnInsights" type="button">📈 Insights</button>
+      </div>
+
+      <div class="split mt">
+        <!-- LEFT: submission -->
+        <div class="dcard">
+          <div style="font-weight:900">📨 Bài nộp</div>
+          <div class="muted mt" id="meta">—</div>
+
+          <label class="mt">Đề / Task (tóm tắt)</label>
+          <textarea id="taskBody" readonly></textarea>
+
+          <label class="mt">Bài làm học sinh</label>
+          <textarea id="answer" readonly></textarea>
+        </div>
+
+        <!-- RIGHT: grading -->
+        <div class="dcard">
+          <div class="row">
+            <div style="font-weight:900">✅ Chấm & lưu nhận xét</div>
+            <span class="badge ok">● Ready</span>
+          </div>
+
+          <div class="grid2 mt">
+            <div>
+              <label>Điểm</label>
+              <input id="score" placeholder="VD: 8">
+            </div>
+            <div>
+              <label>Thang điểm</label>
+              <input id="scoreMax" value="10">
+            </div>
+          </div>
+
+          <label class="mt">Rubric snapshot</label>
+          <textarea id="rubric" class="mono" readonly></textarea>
+
+          <div class="actions mt">
+            <button class="btn" id="btnAI" type="button">🤖 AI gợi ý nhận xét</button>
+            <button class="btn ghost" id="btnSaveQuickHS" type="button">💬 Lưu nhanh (HS)</button>
+            <button class="btn ghost" id="btnSaveQuickPH" type="button">💬 Lưu nhanh (PH)</button>
+          </div>
+
+          <label class="mt">Nhận xét cho HỌC SINH</label>
+          <textarea id="fbHS" placeholder="👍 2 ý tốt..."></textarea>
+
+          <label class="mt">Nhận xét cho PHỤ HUYNH</label>
+          <textarea id="fbPH" placeholder="Hướng dẫn đồng hành 10 phút/ngày..."></textarea>
+
+          <label class="mt">Nhận xét lưu HỒ SƠ</label>
+          <textarea id="fbProfile" placeholder="Khách quan, tập trung kỹ năng..."></textarea>
+
+          <div class="actions mt">
+            <button class="btn" id="btnSave" type="button">💾 Lưu chấm bài</button>
+          </div>
+
+          <div class="muted mt" id="hint">—</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <script src="../../assets/config.js"></script>
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script src="../../assets/teacher-snippet.js"></script>
+
+  <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show");t.hidden=true;},2400);
+    }
+    function qp(name){
+      const u=new URL(location.href);
+      return u.searchParams.get(name)||"";
+    }
+
+    const session=requireRole("TEACHER");
+    const token=session.token;
+    const classId=localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
+    me.textContent = `${session.displayName||"Giáo viên"} • ${classId}`;
+    const submissionId = qp("submissionId");
+
+    btnBack.onclick=()=>location.href="./teacher-submissions.html";
+    btnInsights.onclick=()=>location.href="./teacher-insights.html";
+
+    let _ctx = { taskId:"", studentId:"", grade:"", subject:"", textbook:"" };
+
+    async function load(){
+      try{
+        if(!submissionId) throw new Error("Thiếu submissionId");
+        const r = await api("getSubmissionDetail", { token, classId, submissionId });
+
+        sub.textContent = `Pilot ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+
+        const s = r.submission || {};
+        const t = r.task || {};
+        const fb = r.feedback || null;
+
+        _ctx.taskId = s.taskId || t.taskId || "";
+        _ctx.studentId = s.studentId || "";
+        _ctx.grade = t.grade || r.system.grade;
+        _ctx.subject = t.subject || r.system.subject;
+        _ctx.textbook = t.textbook || r.system.textbook;
+
+        meta.textContent = `HS: ${_ctx.studentId} • Task: ${_ctx.taskId} • Nộp lúc: ${s.createdAt||""}`;
+        taskBody.value = (t.body || "").trim();
+        answer.value = (s.answer || "").trim();
+        rubric.value = (t.rubric || "").trim();
+
+        if(fb){
+          score.value = fb.score || "";
+          scoreMax.value = fb.scoreMax || "10";
+          fbHS.value = fb.feedbackHS || "";
+          fbPH.value = fb.feedbackPH || "";
+          fbProfile.value = fb.feedbackProfile || "";
+          hint.textContent = "Đã có nhận xét trước đó (nếu muốn, lưu thêm bản mới).";
+        }else{
+          hint.textContent = "Chưa có nhận xét. Có thể dùng AI để gợi ý 🧠";
+        }
+
+        toast("Đã tải ✅");
+      }catch(e){
+        toast(e.message||"Không tải được bài.");
+      }
+    }
+
+    btnAI.onclick = async ()=>{
+      try{
+        if(!rubric.value.trim()) return toast("Task chưa có rubric.");
+        if(!answer.value.trim()) return toast("Bài làm trống.");
+
+        const r = await api("aiSuggestFeedback",{
+          token,
+          grade:_ctx.grade,
+          subject:_ctx.subject,
+          textbook:_ctx.textbook,
+          rubric: rubric.value,
+          answer: answer.value
+        });
+
+        const txt = String(r.feedbackText||"").trim();
+        if(!txt) return toast("AI không trả nội dung.");
+
+        // Heuristic split 3 phần
+        // (Nếu AI trả đúng định dạng, vẫn ok; nếu không thì để toàn bộ vào HS)
+        fbHS.value = txt;
+        toast("AI đã gợi ý nhận xét ✅ (GV chỉnh lại cho chuẩn)");
+      }catch(e){ toast(e.message||"Gọi AI lỗi"); }
+    };
+
+    btnSaveQuickHS.onclick = async ()=>{
+      try{
+        if(!fbHS.value.trim()) return toast("Nhận xét HS đang trống.");
+        await api("saveFeedbackTyped",{
+          token, classId,
+          studentId:_ctx.studentId,
+          taskId:_ctx.taskId,
+          feedbackText: fbHS.value.trim(),
+          feedbackType:"HS"
+        });
+        toast("Đã lưu nhanh (HS) ✅");
+      }catch(e){ toast(e.message||"Lưu lỗi"); }
+    };
+
+    btnSaveQuickPH.onclick = async ()=>{
+      try{
+        if(!fbPH.value.trim()) return toast("Nhận xét PH đang trống.");
+        await api("saveFeedbackTyped",{
+          token, classId,
+          studentId:_ctx.studentId,
+          taskId:_ctx.taskId,
+          feedbackText: fbPH.value.trim(),
+          feedbackType:"PH"
+        });
+        toast("Đã lưu nhanh (PH) ✅");
+      }catch(e){ toast(e.message||"Lưu lỗi"); }
+    };
+
+    btnSave.onclick = async ()=>{
+      try{
+        const sc = score.value.trim();
+        const sm = scoreMax.value.trim() || "10";
+
+        if(!fbHS.value.trim() && !fbPH.value.trim() && !fbProfile.value.trim()){
+          return toast("Cần có ít nhất 1 nhận xét.");
+        }
+
+        await api("saveGrade",{
+          token, classId,
+          taskId:_ctx.taskId,
+          studentId:_ctx.studentId,
+          score: sc,
+          scoreMax: sm,
+          feedbackHS: fbHS.value.trim(),
+          feedbackPH: fbPH.value.trim(),
+          feedbackProfile: fbProfile.value.trim(),
+          rubricSnapshot: rubric.value.trim(),
+          aiUsed: true
+        });
+
+        toast("Đã lưu chấm bài ✅");
+      }catch(e){ toast(e.message||"Lưu chấm bài lỗi"); }
+    };
+
+    (async ()=>{
+      renderTeacherTopbar("subs");
+      await load();
+    })();
+  </script>
+</body>
+</html>

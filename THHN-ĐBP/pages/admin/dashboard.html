@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HEDU – Nhà trường / Quản trị</title>
+
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <script src="../../assets/config.js"></script>
+
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e6edf7;
+      --brand:#2563eb;
+      --brand2:#1d4ed8;
+      --shadow: 0 10px 30px rgba(2, 6, 23, .08);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width:240px;
+    }
+    .brand img{
+      width:34px; height:34px; border-radius:9px;
+      object-fit:cover;
+      background:#fff;
+      border:1px solid var(--line);
+    }
+    .brand .t1{font-weight:800; line-height:1.1}
+    .brand .t2{font-size:12px; color:var(--muted); margin-top:2px}
+    .actions{
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn.primary{
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      border-color: transparent;
+      color:#fff;
+    }
+    .btn.link{
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .btn:active{transform:translateY(1px)}
+
+    .wrap{max-width:1100px; margin:0 auto; padding:26px 16px 60px}
+    .h1{font-size:32px; font-weight:900; margin:12px 0 4px}
+    .sub{color:var(--muted); margin:0 0 18px}
+
+    .tabs{
+      display:flex; gap:8px; justify-content:flex-end; margin:-56px 0 16px;
+    }
+    .tab{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:800;
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      color:var(--brand2);
+      border-color:#bcd0ff;
+      background:#eff6ff;
+    }
+
+    .chips{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 18px}
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      color:#0f172a;
+      font-weight:800;
+      box-shadow: 0 6px 16px rgba(2,6,23,.05);
+    }
+    .chip small{color:var(--muted); font-weight:800}
+
+    .grid4{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:14px;
+      margin:12px 0 16px;
+    }
+    .metric{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+      min-height:86px;
+    }
+    .metric .k{color:var(--muted); font-weight:800; font-size:12px}
+    .metric .v{font-size:28px; font-weight:900; margin-top:6px}
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      margin-top:10px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .card h3{margin:0 0 4px; font-size:18px; font-weight:900}
+    .card p{margin:0 0 14px; color:var(--muted); font-weight:600}
+
+    .rowbtns{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px}
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:12px 14px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .pill.primary{
+      background:linear-gradient(90deg, var(--brand), var(--brand2));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .stats3{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+    }
+    .mini{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+    }
+    .mini .k{color:var(--muted); font-weight:800; font-size:12px}
+    .mini .v{font-weight:900; font-size:22px; margin-top:6px}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+    }
+    th,td{
+      text-align:left;
+      padding:12px 10px;
+      border-bottom:1px solid var(--line);
+      font-weight:700;
+    }
+    th{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:900;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+    .badge.ok{border-color:#b7f7d0; background:#ecfdf5; color:#065f46}
+    .badge.warn{border-color:#fde68a; background:#fffbeb; color:#92400e}
+
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:20px;
+      background:rgba(15, 23, 42, .92);
+      color:#fff;
+      padding:12px 14px;
+      border-radius:999px;
+      font-weight:800;
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s ease;
+      max-width:92vw;
+      z-index: 100;
+    }
+    .toast.show{opacity:1}
+
+    .modal{
+      position:fixed; inset:0;
+      display:none;
+      background:rgba(2, 6, 23, .55);
+      z-index:50;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .modal.show{display:flex}
+    .modal-card{
+      width:min(520px, 98vw);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:0 20px 60px rgba(2,6,23,.25);
+      padding:18px;
+    }
+    .modal-card h2{margin:0 0 6px; font-weight:1000}
+    .modal-card p{margin:0 0 14px; color:var(--muted); font-weight:700}
+    .field{margin:10px 0;}
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:900;
+      margin:0 0 6px;
+    }
+    .field input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      outline:none;
+      font-size:15px;
+      font-weight:800;
+    }
+    .field input:focus{border-color:#bcd0ff; box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      margin-top:12px;
+    }
+
+    @media (max-width: 980px){
+      .grid4{grid-template-columns: repeat(2, minmax(0,1fr))}
+      .grid2{grid-template-columns: 1fr}
+      .tabs{margin:10px 0 8px; justify-content:flex-start}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <!-- ✅ LOGO: anh đặt file tại assets/img/logo-school.png -->
+        <img id="schoolLogo" src="../../assets/img/logo-school.png" alt="Logo trường">
+        <div>
+          <div class="t1" id="schoolName">Trường Tiểu học Hà Nội – Điện Biên Phủ</div>
+          <div class="t2">HEDU – Sổ liên lạc & Học tập</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn link" id="btnRelogin" type="button">Đăng nhập Admin</button>
+        <button class="btn" id="btnLogout" type="button">Đăng xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="h1">Nhà trường / Quản trị</div>
+    <div class="sub" id="subline">Tài khoản: Ban giám hiệu / Quản trị hệ thống</div>
+
+    <div class="tabs">
+      <div class="tab active" id="tabDash">Dashboard</div>
+      <div class="tab" id="tabSetup">Thiết lập</div>
+    </div>
+
+    <div class="chips">
+      <div class="chip">📘 <small>Môn:</small> <span id="chipSubject">—</span></div>
+      <div class="chip">📚 <small>Bộ sách:</small> <span id="chipTextbook">—</span></div>
+      <div class="chip">🏫 <small>Lớp mục tiêu:</small> <span id="chipClass">—</span></div>
+    </div>
+
+    <div class="grid4">
+      <div class="metric">
+        <div class="k">Năm học active</div>
+        <div class="v" id="mYear">—</div>
+      </div>
+      <div class="metric">
+        <div class="k">Lớp đang quản lý</div>
+        <div class="v" id="mClasses">—</div>
+      </div>
+      <div class="metric">
+        <div class="k">Học sinh</div>
+        <div class="v" id="mStudents">—</div>
+      </div>
+      <div class="metric">
+        <div class="k">Giáo viên</div>
+        <div class="v" id="mTeachers">—</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Tổng quan hoạt động</h3>
+        <p>Theo dõi nhanh giao bài – nộp bài – nhận xét để điều hành kịp thời.</p>
+
+        <div class="rowbtns">
+          <button class="pill primary" id="goSetup">⚙️ Thiết lập năm – lớp – học sinh</button>
+          <button class="pill" id="goHome">🏠 Trang chủ</button>
+        </div>
+
+        <div class="stats3">
+          <div class="mini">
+            <div class="k">Bài giao</div>
+            <div class="v" id="mTasks">0</div>
+          </div>
+          <div class="mini">
+            <div class="k">Bài nộp</div>
+            <div class="v" id="mSubs">0</div>
+          </div>
+          <div class="mini">
+            <div class="k">Nhận xét</div>
+            <div class="v" id="mFbs">0</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:16px">Lớp gần đây</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Lớp</th>
+              <th>Khối</th>
+              <th>Học sinh</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="classesBody">
+            <tr>
+              <td colspan="4" style="color:#64748b; font-weight:800">Chưa có dữ liệu.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Kiểm tra hệ thống</h3>
+        <p>Đảm bảo cấu hình đầy đủ để vận hành ổn định.</p>
+
+        <div style="display:grid; gap:10px; margin-top:10px">
+          <div>• Cấu trúc Sheets: <b id="hSheets">—</b></div>
+          <div>• Tiêu đề cột dữ liệu: <b id="hHeaders">—</b></div>
+          <div>• Khoá AI (nếu sử dụng): <b id="hOpenai">—</b></div>
+          <div>• Lớp mục tiêu: <b id="hPilot">—</b></div>
+        </div>
+
+        <div style="margin-top:14px">
+          <button class="pill" id="btnToSetup">➡️ Đi tới Thiết lập</button>
+        </div>
+
+        <div style="margin-top:14px; color:#0f172a; font-weight:800">
+          💡 <span style="color:#64748b; font-weight:800">
+            Gợi ý: Với giai đoạn chạy thử, chỉ cần quản lý 01 lớp mục tiêu. Khi mở rộng, nhà trường thực hiện thêm năm học – lớp học – danh sách học sinh tại mục <b>Thiết lập</b>.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">—</div>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <h2>🔐 Đăng nhập BGH / Quản trị</h2>
+      <p>Nhập mã quản trị do nhà trường cung cấp để vào trang quản trị.</p>
+
+      <div class="field">
+        <label for="adminCode">Mã BGH / Quản trị</label>
+        <input id="adminCode" type="password" placeholder="VD: BGH2026@" autocomplete="current-password" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="btnCancel" type="button">Để sau</button>
+        <button class="btn primary" id="btnLogin" type="button">Đăng nhập</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***************
+     * ✅ CONFIG: ưu tiên lấy từ config.js
+     ***************/
+    const SCRIPT_URL = (window.SCRIPT_URL || "").trim();
+    const SESSION_KEY = "hedu_session"; // giữ nguyên như anh đang dùng
+
+    /***************
+     * Helpers
+     ***************/
+    const $ = (id)=>document.getElementById(id);
+    function toast(msg){
+      const t = $("toast");
+      t.textContent = msg || "—";
+      t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t = setTimeout(()=>t.classList.remove("show"), 2400);
+    }
+
+    function getSession(){
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY)||"null"); }
+      catch(e){ return null; }
+    }
+    function setSession(s){
+      localStorage.setItem(SESSION_KEY, JSON.stringify(s||null));
+    }
+    function clearSession(){
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    // ✅ FIX #1: bỏ Content-Type: application/json để tránh preflight OPTIONS (giảm lỗi “Failed to fetch”)
+    async function apiPost(action, payload={}){
+      if(!SCRIPT_URL){
+        throw new Error("Chưa cấu hình SCRIPT_URL trong assets/config.js");
+      }
+      const res = await fetch(SCRIPT_URL, {
+        method:"POST",
+        // Không set headers => request kiểu “simple” (tránh preflight)
+        body: JSON.stringify({ action, ...payload })
+      });
+      return res.json();
+    }
+
+    /***************
+     * Modal
+     ***************/
+    function openModal(){
+      $("modal").classList.add("show");
+      setTimeout(()=> $("adminCode").focus(), 60);
+    }
+    function closeModal(){
+      $("modal").classList.remove("show");
+    }
+
+    async function ensureAdminSession(){
+      const s = getSession();
+      if(s && s.sessionId && String(s.role||"").toUpperCase()==="ADMIN"){
+        return s;
+      }
+      openModal();
+      toast("Vui lòng đăng nhập Admin để tiếp tục.");
+      return null;
+    }
+
+    async function doAdminLogin(){
+      const code = String($("adminCode").value||"").trim();
+      if(!code){ toast("Chưa nhập mã quản trị."); return; }
+
+      $("btnLogin").disabled = true;
+      $("btnLogin").textContent = "Đang đăng nhập…";
+
+      try{
+        const r = await apiPost("authAdminLogin", { adminCode: code });
+        if(!r.ok) throw new Error(r.error || "Đăng nhập thất bại");
+
+        // lưu session
+        setSession(r.session);
+        closeModal();
+        toast("Đăng nhập Admin thành công ✅");
+        await loadOverview();
+      }catch(err){
+        toast(String(err.message || err));
+      }finally{
+        $("btnLogin").disabled = false;
+        $("btnLogin").textContent = "Đăng nhập";
+      }
+    }
+
+    /***************
+     * Render
+     ***************/
+    function setText(id, v){ $(id).textContent = (v===0 ? "0" : (v || "—")); }
+
+    function renderOverview(ov, system){
+      setText("chipSubject", system?.subject || "—");
+      setText("chipTextbook", system?.textbook || "—");
+      setText("chipClass", system?.classId || "—");
+
+      setText("mYear", ov.activeYear || "—");
+      setText("mClasses", ov.totalClasses ?? "—");
+      setText("mStudents", ov.totalStudents ?? "—");
+      setText("mTeachers", ov.totalTeachers ?? "—");
+
+      setText("mTasks", ov.totalTasks ?? 0);
+      setText("mSubs", ov.totalSubmissions ?? 0);
+      setText("mFbs", ov.totalFeedbacks ?? 0);
+
+      $("hSheets").textContent   = ov.health?.sheetsOk ? "OK" : "Lỗi";
+      $("hHeaders").textContent  = ov.health?.headersOk ? "OK" : "Lỗi";
+      $("hOpenai").textContent   = ov.health?.openaiOk ? "OK" : "Chưa cấu hình";
+      $("hPilot").textContent    = ov.health?.has5A1 ? "OK" : "Chưa tạo";
+
+      const tb = $("classesBody");
+      const rows = Array.isArray(ov.classes) ? ov.classes : [];
+      if(!rows.length){
+        tb.innerHTML = `<tr><td colspan="4" style="color:#64748b; font-weight:800">Chưa có dữ liệu lớp.</td></tr>`;
+        return;
+      }
+      tb.innerHTML = rows.slice(0,6).map(c=>{
+        const badge = c.health === "OK"
+          ? `<span class="badge ok">✅ OK</span>`
+          : `<span class="badge warn">⚠️ Cần kiểm tra</span>`;
+        return `
+          <tr>
+            <td>${c.classId || "-"}</td>
+            <td>${c.grade || "-"}</td>
+            <td>${c.studentCount ?? 0}</td>
+            <td>${badge}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadOverview(){
+      const s = getSession();
+      if(!s || !s.sessionId || String(s.role||"").toUpperCase()!=="ADMIN"){
+        await ensureAdminSession();
+        return;
+      }
+
+      try{
+        toast("Đang tải dữ liệu quản trị…");
+        const r = await apiPost("adminOverview", { token: s.sessionId });
+        if(!r.ok){
+          clearSession();
+          openModal();
+          toast(r.error || "Phiên Admin không hợp lệ. Vui lòng đăng nhập lại.");
+          return;
+        }
+        renderOverview(r.overview || {}, r.system || {});
+        toast("Đã cập nhật Dashboard ✅");
+      }catch(err){
+        // nếu vẫn Failed to fetch => gần như chắc anh đang chạy từ localhost bị CORS
+        toast("Không kết nối được backend. Nếu anh đang mở từ 127.0.0.1 thì bị CORS.");
+        console.error(err);
+      }
+    }
+
+    /***************
+     * Navigation
+     ***************/
+    function goSetup(){
+      window.location.href = "./setup.html";
+    }
+
+    /***************
+     * Events
+     ***************/
+    $("btnLogin").addEventListener("click", doAdminLogin);
+    $("btnCancel").addEventListener("click", ()=>{ closeModal(); toast("Bạn có thể đăng nhập sau."); });
+    $("adminCode").addEventListener("keydown", (e)=>{ if(e.key==="Enter") doAdminLogin(); });
+
+    $("btnRelogin").addEventListener("click", ()=>{ openModal(); });
+    $("btnLogout").addEventListener("click", ()=>{
+      clearSession();
+      toast("Đã đăng xuất.");
+      openModal();
+    });
+
+    $("goSetup").addEventListener("click", goSetup);
+    $("btnToSetup").addEventListener("click", goSetup);
+
+    $("goHome").addEventListener("click", ()=>{
+      window.location.href = "../../index.html";
+    });
+
+    $("tabDash").addEventListener("click", ()=>{});
+    $("tabSetup").addEventListener("click", goSetup);
+
+    // ✅ FIX #3: logo fallback + hướng dẫn đúng đường dẫn
+    $("schoolLogo").addEventListener("error", ()=>{
+      // fallback: chữ H (không cần file)
+      $("schoolLogo").src =
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'>
+          <rect width='64' height='64' rx='14' fill='#2563eb'/>
+          <text x='50%' y='56%' text-anchor='middle' font-size='34' font-family='Arial' fill='white' font-weight='700'>H</text>
+        </svg>`);
+      toast("Logo chưa đúng đường dẫn. Đặt file tại: assets/img/logo-school.png");
+    });
+
+    // Boot
+    (async function boot(){
+      if(!SCRIPT_URL){
+        toast("Thiếu SCRIPT_URL trong assets/config.js");
+        openModal();
+        return;
+      }
+      const s = await ensureAdminSession();
+      if(s) await loadOverview();
+    })();
+  </script>
+
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+</body>
+</html>

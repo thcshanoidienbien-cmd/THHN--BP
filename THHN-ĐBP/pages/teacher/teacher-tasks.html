@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Tasks & Assign</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <meta name="theme-color" content="#1a73e8"/>
+  <style>
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .split{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;align-items:start}
+    @media(max-width:980px){.split{grid-template-columns:1fr}}
+    .list{display:grid;gap:10px}
+    .tiny{font-size:12px;color:var(--muted)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    textarea{min-height:140px}
+  </style>
+</head>
+<body data-active="tasks">
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:16px">
+      <div class="row">
+        <div>
+          <h1 style="margin:0">Thư viện bài & Giao bài 📚</h1>
+          <div class="muted" style="margin-top:4px">Đủ tính năng: Task Library + Assign + AI + đa môn/đa khối</div>
+        </div>
+        <div class="pill" id="me">—</div>
+      </div>
+
+      <div class="split mt">
+        <!-- LEFT: editor -->
+        <div class="dcard">
+          <div class="row" style="margin-bottom:8px">
+            <div style="font-weight:900">🧩 Soạn bài / Chỉnh sửa</div>
+            <div class="tiny" id="ctx">—</div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Lớp</label>
+              <input id="classId" readonly>
+            </div>
+            <div>
+              <label>Task ID</label>
+              <input id="taskId" class="mono" placeholder="T.... (tự tạo)" readonly>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Khối</label>
+              <select id="grade">
+                <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option>
+              </select>
+            </div>
+            <div>
+              <label>Môn</label>
+              <input id="subject" placeholder="VD: Tiếng Việt / Toán / TNXH...">
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Domain</label>
+              <select id="domain">
+                <option value="READING">READING</option>
+                <option value="WRITING">WRITING</option>
+                <option value="MATH">MATH</option>
+                <option value="SCIENCE">SCIENCE</option>
+                <option value="GENERAL">GENERAL</option>
+              </select>
+            </div>
+            <div>
+              <label>Kỹ năng</label>
+              <input id="skill" placeholder="VD: đọc hiểu, chính tả, giải toán có lời văn...">
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Chủ đề (topic)</label>
+              <input id="topic" placeholder="VD: Xác định ý chính">
+            </div>
+            <div>
+              <label>Mức độ</label>
+              <select id="level">
+                <option value="nhan_biet">Nhận biết</option>
+                <option value="thong_hieu">Thông hiểu</option>
+                <option value="van_dung">Vận dụng</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Bài/Tuần (unit)</label>
+              <input id="unit" placeholder="VD: Tuần 7 – Bài 2">
+            </div>
+            <div>
+              <label>Hạn nộp (tuỳ chọn)</label>
+              <input id="dueAt" type="datetime-local">
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Trạng thái</label>
+              <select id="status">
+                <option value="DRAFT">DRAFT</option>
+                <option value="PUBLISHED">PUBLISHED</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+            <div>
+              <label>Tags</label>
+              <input id="tags" placeholder="VD: ôn tập, giữa kỳ, luyện viết...">
+            </div>
+          </div>
+
+          <label>Nội dung bài</label>
+          <textarea id="body" placeholder="Nội dung bài..."></textarea>
+
+          <label>Rubric (chấm / nhận xét)</label>
+          <textarea id="rubric" placeholder="Rubric..."></textarea>
+
+          <div class="grid2">
+            <div>
+              <label>Gợi ý AI</label>
+              <input id="constraints" placeholder="VD: ngắn gọn, phù hợp lớp 4...">
+            </div>
+            <div>
+              <label>Sách (textbook)</label>
+              <input id="textbook" placeholder="VD: Kết nối tri thức">
+            </div>
+          </div>
+
+          <div class="actions mt">
+            <button class="btn ghost" id="btnNew" type="button">➕ Tạo bài mới</button>
+            <button class="btn" id="btnSave" type="button">💾 Lưu DRAFT</button>
+            <button class="btn ghost" id="btnPublish" type="button">🚀 Publish</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="actions">
+            <button class="btn" id="btnAI" type="button">🤖 AI tạo nội dung</button>
+            <button class="btn ghost" id="btnRubricAI" type="button">🧠 AI tạo rubric</button>
+          </div>
+
+          <div class="muted mt" id="hint">—</div>
+        </div>
+
+        <!-- RIGHT: library -->
+        <div class="dcard">
+          <div style="font-weight:900">📦 Thư viện bài</div>
+          <div class="tiny mt">Lọc / chọn bài để sửa / duplicate / archive</div>
+
+          <div class="grid2 mt">
+            <div>
+              <label>Lọc status</label>
+              <select id="fStatus">
+                <option value="">(Tất cả)</option>
+                <option value="DRAFT">DRAFT</option>
+                <option value="PUBLISHED">PUBLISHED</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+            <div>
+              <label>Tìm nhanh</label>
+              <input id="q" placeholder="taskId / topic / tag...">
+            </div>
+          </div>
+
+          <div class="actions mt">
+            <button class="btn" id="btnReload" type="button">Tải danh sách</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="list" id="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <script src="../../assets/config.js"></script>
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script src="../../assets/teacher-snippet.js"></script>
+  
+  <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show");t.hidden=true;},2400);
+    }
+    function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
+    function isoFromLocal_(v){ return v ? new Date(v).toISOString() : ""; }
+    function localFromIso_(iso){
+      if(!iso) return "";
+      const d=new Date(iso);
+      if(isNaN(d)) return "";
+      const pad=n=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    const session=requireRole("TEACHER");
+    const token=session?.token||"";
+    const classId=localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
+    document.getElementById("classId").value=classId;
+    document.getElementById("me").textContent=`${session.displayName||"Giáo viên"} • ${classId}`;
+
+    function newTaskId_(){ return "T"+Date.now().toString().slice(-10); }
+
+    function setForm_(t){
+      taskId.value = t.taskId || newTaskId_();
+      grade.value = String(t.grade || getConfig().DEFAULT_GRADE || "5");
+      subject.value = t.subject || getConfig().DEFAULT_SUBJECT || "Tiếng Việt";
+      textbook.value = t.textbook || getConfig().DEFAULT_BOOK || "Kết nối tri thức";
+      domain.value = t.domain || "GENERAL";
+      skill.value = t.skill || "";
+      topic.value = t.topic || "";
+      level.value = t.level || "nhan_biet";
+      unit.value = t.unit || "";
+      dueAt.value = localFromIso_(t.dueAt || "");
+      status.value = (t.status || "DRAFT").toUpperCase();
+      tags.value = t.tags || "";
+      body.value = t.body || "";
+      rubric.value = t.rubric || "";
+    }
+
+    function getForm_(){
+      return {
+        taskId: taskId.value || newTaskId_(),
+        grade: grade.value,
+        subject: subject.value.trim(),
+        textbook: textbook.value.trim(),
+        domain: domain.value,
+        skill: skill.value.trim(),
+        topic: topic.value.trim(),
+        level: level.value,
+        unit: unit.value.trim(),
+        dueAt: isoFromLocal_(dueAt.value),
+        status: status.value,
+        tags: tags.value.trim(),
+        body: body.value.trim(),
+        rubric: rubric.value.trim(),
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    async function reloadList(){
+      try{
+        const st = fStatus.value || "";
+        const qv = q.value || "";
+        const r = await api("listTasks", { token, classId, status: st, q: qv });
+        ctx.textContent = `Pilot ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+        const items = r.tasks || [];
+        const box = document.getElementById("list");
+        box.innerHTML = items.length ? "" : `<div class="muted">Chưa có task.</div>`;
+
+        items.forEach(t=>{
+          const div=document.createElement("div");
+          div.className="dcard";
+          div.innerHTML=`
+            <div class="row">
+              <div>
+                <div style="font-weight:900">${esc(t.taskId)} • ${esc(t.topic||"(chưa có topic)")}</div>
+                <div class="tiny">${esc(t.domain||"")} • Khối ${esc(t.grade||"")} • ${esc(t.subject||"")} • ${esc((t.status||"").toUpperCase())}</div>
+              </div>
+            </div>
+            <div class="actions mt">
+              <button class="btn ghost" data-act="open">Mở</button>
+              <button class="btn ghost" data-act="dup">Duplicate</button>
+              <button class="btn ghost" data-act="arch">Archive</button>
+            </div>
+          `;
+          div.querySelector('[data-act="open"]').onclick=()=>{ setForm_(t); toast("Đã mở task ✅"); };
+          div.querySelector('[data-act="dup"]').onclick=async ()=>{
+            try{ await api("duplicateTask",{token,classId,taskId:t.taskId}); toast("Đã duplicate ✅"); await reloadList(); }
+            catch(e){ toast(e.message||"Duplicate lỗi"); }
+          };
+          div.querySelector('[data-act="arch"]').onclick=async ()=>{
+            try{ await api("archiveTask",{token,classId,taskId:t.taskId}); toast("Đã archive ✅"); await reloadList(); }
+            catch(e){ toast(e.message||"Archive lỗi"); }
+          };
+          box.appendChild(div);
+        });
+
+        hint.textContent = `Tổng: ${items.length} task.`;
+      }catch(e){
+        toast(e.message||"Không tải được danh sách task.");
+      }
+    }
+
+    btnNew.onclick=()=>{
+      setForm_({ taskId:newTaskId_(), status:"DRAFT" });
+      toast("Tạo task mới ✅");
+    };
+
+    btnSave.onclick=async ()=>{
+      try{
+        const t=getForm_();
+        if(!t.topic) return toast("Thiếu topic.");
+        if(!t.body) return toast("Thiếu body.");
+        t.status="DRAFT";
+        await api("upsertTask",{token,classId,task:t});
+        toast("Đã lưu DRAFT ✅");
+        await reloadList();
+      }catch(e){ toast(e.message||"Lưu lỗi"); }
+    };
+
+    btnPublish.onclick=async ()=>{
+      try{
+        const t=getForm_();
+        if(!t.topic) return toast("Thiếu topic.");
+        if(!t.body) return toast("Thiếu body.");
+        t.status="PUBLISHED";
+        await api("upsertTask",{token,classId,task:t});
+        await api("publishTask",{token,classId,taskId:t.taskId,dueAt:t.dueAt});
+        toast("Đã Publish ✅");
+        await reloadList();
+      }catch(e){ toast(e.message||"Publish lỗi"); }
+    };
+
+    btnAI.onclick=async ()=>{
+      try{
+        if(!topic.value.trim()) return toast("Nhập topic trước 😄");
+        const r = await api("aiGenerateTask",{
+          token,
+          grade: grade.value,
+          subject: subject.value.trim() || getConfig().DEFAULT_SUBJECT,
+          textbook: textbook.value.trim() || getConfig().DEFAULT_BOOK,
+          topic: topic.value.trim(),
+          level: level.value,
+          domain: domain.value,
+          skill: skill.value.trim(),
+          constraints: constraints.value.trim()
+        });
+        body.value = (r.taskText || "").trim();
+        toast("AI đã tạo nội dung ✅ (GV xem & chỉnh)");
+      }catch(e){ toast(e.message||"Gọi AI lỗi"); }
+    };
+
+    btnRubricAI.onclick=async ()=>{
+      try{
+        if(!topic.value.trim()) return toast("Nhập topic trước 😄");
+        const r = await api("aiGenerateRubric",{
+          token,
+          grade: grade.value,
+          subject: subject.value.trim() || getConfig().DEFAULT_SUBJECT,
+          textbook: textbook.value.trim() || getConfig().DEFAULT_BOOK,
+          topic: topic.value.trim(),
+          level: level.value,
+          domain: domain.value
+        });
+        rubric.value = (r.rubricText || "").trim();
+        toast("AI đã tạo rubric ✅");
+      }catch(e){ toast(e.message||"AI rubric lỗi"); }
+    };
+
+    btnReload.onclick=reloadList;
+
+    (async ()=>{
+      renderTeacherTopbar("assignRead"); // dùng chip "Giao bài" sẵn có trong core.js
+      // init defaults
+      setForm_({
+        taskId:newTaskId_(),
+        grade:getConfig().DEFAULT_GRADE||"5",
+        subject:getConfig().DEFAULT_SUBJECT||"Tiếng Việt",
+        textbook:getConfig().DEFAULT_BOOK||"Kết nối tri thức",
+        status:"DRAFT",
+        domain:"READING"
+      });
+      await reloadList();
+    })();
+  </script>
+</body>
+</html>

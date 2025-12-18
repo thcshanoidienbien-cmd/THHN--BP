@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Phụ huynh • Nhận xét</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <script src="../../assets/config.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div>
+          <div class="name" id="brandName"></div>
+          <div class="sub" id="brandSub"></div>
+        </div>
+      </div>
+      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="shellTop">
+      <div>
+        <div style="font-weight:900;font-size:18px">Sổ liên lạc điện tử</div>
+        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+      </div>
+      <div class="pills">
+        <a class="pill active" href="week.html">Tuần này</a><a class="pill " href="progress.html">Tiến bộ</a><a class="pill " href="notes.html">Nhận xét</a>
+      </div>
+    </div>
+
+    
+<div class="card" style="padding:14px">
+  <div style="font-weight:900;font-size:16px">Nhận xét của giáo viên</div>
+  <div style="color:var(--muted);font-size:12px;margin-top:4px">Tổng hợp nhận xét theo tuần/bài.</div>
+
+  <div class="divider"></div>
+
+  <table class="table">
+    <thead><tr><th>Thời gian</th><th>Nội dung</th></tr></thead>
+    <tbody id="rows">
+      <tr><td colspan="2" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </div>
+
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script>
+    const cfg = getConfig();
+    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
+    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
+    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
+    
+const s = requireRole(["PARENT"]);
+document.getElementById("who").textContent = `PH của ${s.studentId||"—"} • ${s.classId||""} • ${s.schoolYear||""}`;
+
+function fmt(dt){ try{return new Date(dt).toLocaleString('vi-VN');}catch(e){return dt||"—";} }
+
+(async ()=>{
+  try{
+    const r = await api("parentNotes", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
+    const rows = r.rows || [];
+    const tb = document.getElementById("rows");
+    if(!rows.length){
+      tb.innerHTML = `<tr><td colspan="2" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
+      return;
+    }
+    tb.innerHTML = rows.map(x=>`
+      <tr>
+        <td>${fmt(x.createdAt)}</td>
+        <td style="white-space:pre-wrap;line-height:1.6">${stripMd(x.text||"")}</td>
+      </tr>
+    `).join("");
+  }catch(e){ toast(e.message); }
+})();
+
+  </script>
+</body>
+</html>

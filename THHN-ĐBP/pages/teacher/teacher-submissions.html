@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Submissions</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <meta name="theme-color" content="#1a73e8"/>
+  <style>
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .list{display:grid;gap:10px}
+  </style>
+</head>
+<body data-active="subs">
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:16px">
+      <div class="row">
+        <div>
+          <h1 style="margin:0">Bài nộp 📨</h1>
+          <div class="muted" id="sub">—</div>
+        </div>
+        <div class="pill" id="me">—</div>
+      </div>
+
+      <div class="grid2 mt">
+        <div>
+          <label>Lọc theo Task</label>
+          <select id="taskId"><option value="">— Tất cả —</option></select>
+        </div>
+        <div class="actions" style="align-items:flex-end;justify-content:flex-end">
+          <button class="btn ghost" id="btnGoTasks" type="button">📚 Tasks</button>
+          <button class="btn" id="btnReload" type="button">Tải lại</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="list" id="list"></div>
+      <div class="muted mt" id="hint"></div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <script src="../../assets/config.js"></script>
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script src="../../assets/teacher-snippet.js"></script>
+
+  <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show");t.hidden=true;},2400);
+    }
+    function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
+
+    const session=requireRole("TEACHER");
+    const token=session.token;
+    const classId=localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
+    me.textContent = `${session.displayName||"Giáo viên"} • ${classId}`;
+
+    btnGoTasks.onclick = ()=> location.href="./teacher-tasks.html";
+
+    async function loadFilters(){
+      // dùng listTasks (PUBLISHED) để đổ filter
+      const r = await api("listTasks", { token, classId, status:"PUBLISHED" });
+      sub.textContent = `Pilot ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+      const items = r.tasks || [];
+      taskId.innerHTML =
+        `<option value="">— Tất cả —</option>` +
+        items.map(t=>`<option value="${esc(t.taskId)}">${esc(t.taskId)} • ${esc(t.topic||"")}</option>`).join("");
+    }
+
+    function badge_(x){
+      const st=String(x.status||"").toUpperCase();
+      if(st.includes("GRADED")) return `<span class="badge ok">✓ ${esc(x.statusLabel||"Đã nhận xét")}</span>`;
+      if(x.isLate) return `<span class="badge warn">⏰ ${esc(x.statusLabel||"Nộp muộn")}</span>`;
+      return `<span class="badge">• ${esc(x.statusLabel||"Chờ chấm")}</span>`;
+    }
+
+    function renderList(items){
+      list.innerHTML="";
+      if(!items.length){
+        list.innerHTML = `<div class="muted">Chưa có bài nộp.</div>`;
+        hint.textContent = "";
+        return;
+      }
+      items.forEach(x=>{
+        const div=document.createElement("div");
+        div.className="dcard";
+        div.innerHTML=`
+          <div class="row">
+            <div>
+              <div style="font-weight:900">${esc(x.studentId)} • ${esc(x.taskId)}</div>
+              <div class="muted" style="font-size:12px">${esc(x.createdAt||"")}</div>
+            </div>
+            ${badge_(x)}
+          </div>
+          <div class="actions mt">
+            <button class="btn" data-act="grade" type="button">📝 Chấm / Nhận xét</button>
+          </div>
+        `;
+        div.querySelector('[data-act="grade"]').onclick=()=>{
+          location.href = `./teacher-grading.html?submissionId=${encodeURIComponent(x.submissionId)}`;
+        };
+        list.appendChild(div);
+      });
+      hint.textContent = `Tổng: ${items.length} bài nộp.`;
+    }
+
+    async function loadList(){
+      try{
+        const tid = taskId.value || "";
+        const r = await api("listSubmissions", { token, classId, taskId: tid });
+        renderList(r.submissions || []);
+        toast("Đã tải ✅");
+      }catch(e){
+        toast(e.message||"Không tải được bài nộp.");
+      }
+    }
+
+    btnReload.onclick = loadList;
+    taskId.onchange = loadList;
+
+    (async ()=>{
+      renderTeacherTopbar("subs");
+      await loadFilters();
+      await loadList();
+    })();
+  </script>
+</body>
+</html>

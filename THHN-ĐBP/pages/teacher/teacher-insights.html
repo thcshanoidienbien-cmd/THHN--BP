@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • Insights</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <meta name="theme-color" content="#1a73e8"/>
+  <style>
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .split{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:start}
+    @media(max-width:980px){.split{grid-template-columns:1fr}}
+    .quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    @media(max-width:980px){.quick{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.quick{grid-template-columns:1fr}}
+    .qcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .big{font-size:26px;font-weight:900;margin-top:6px}
+    textarea{min-height:140px}
+    .list{display:grid;gap:10px}
+  </style>
+</head>
+<body data-active="insights">
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:16px">
+      <div class="row">
+        <div>
+          <h1 style="margin:0">Insights 📈</h1>
+          <div class="muted" id="sub">—</div>
+        </div>
+        <div class="pill" id="me">—</div>
+      </div>
+
+      <div class="actions mt">
+        <button class="btn ghost" id="btnPortal" type="button">🏠 Portal</button>
+        <button class="btn ghost" id="btnTasks" type="button">📚 Tasks</button>
+        <button class="btn ghost" id="btnSubs" type="button">📨 Bài nộp</button>
+        <button class="btn" id="btnReload" type="button">Tải lại</button>
+      </div>
+
+      <div class="split mt">
+        <!-- LEFT: gradebook + reports -->
+        <div class="dcard">
+          <div style="font-weight:900">📒 Gradebook + Reports</div>
+          <div class="muted mt">Tổng hợp tiến độ, báo cáo nhanh, báo cáo tuần (AI)</div>
+
+          <div class="quick mt" id="kpi"></div>
+
+          <div class="divider"></div>
+
+          <div class="grid2">
+            <div>
+              <label>Báo cáo khoảng (ngày)</label>
+              <select id="rangeDays">
+                <option value="7">7</option>
+                <option value="14">14</option>
+                <option value="30">30</option>
+              </select>
+            </div>
+            <div class="actions" style="align-items:flex-end;justify-content:flex-end">
+              <button class="btn ghost" id="btnReport" type="button">📄 Report nhanh</button>
+              <button class="btn" id="btnWeeklyAI" type="button">🤖 Báo cáo tuần (AI)</button>
+            </div>
+          </div>
+
+          <textarea id="reportBox" class="mt" placeholder="Báo cáo sẽ hiện ở đây..." readonly></textarea>
+
+          <div class="divider"></div>
+
+          <div style="font-weight:900">👨‍🎓 Danh sách tiến độ</div>
+          <div class="muted mt">Bấm 1 học sinh để xem Learning Path + nhắn tin</div>
+          <div class="mt" id="tableBox"></div>
+        </div>
+
+        <!-- RIGHT: learning path + messages -->
+        <div class="dcard">
+          <div style="font-weight:900">🧭 Learning Path + Messages</div>
+          <div class="muted mt">Gợi ý lộ trình 2 tuần (AI) + nhắn tin HS/PH</div>
+
+          <div class="grid2 mt">
+            <div>
+              <label>Chọn học sinh</label>
+              <select id="studentId"></select>
+            </div>
+            <div class="actions" style="align-items:flex-end;justify-content:flex-end">
+              <button class="btn" id="btnPath" type="button">🧠 Lấy Learning Path</button>
+            </div>
+          </div>
+
+          <textarea id="pathBox" class="mt" placeholder="Learning path..." readonly></textarea>
+
+          <div class="divider"></div>
+
+          <div class="grid2">
+            <div>
+              <label>Gửi tới</label>
+              <select id="toRole">
+                <option value="PARENT">PHỤ HUYNH</option>
+                <option value="STUDENT">HỌC SINH</option>
+              </select>
+            </div>
+            <div>
+              <label>Tiêu đề</label>
+              <input id="msgSubject" placeholder="VD: Nhắc nộp bài / Khen ngợi tuần này...">
+            </div>
+          </div>
+
+          <label class="mt">Nội dung</label>
+          <textarea id="msgContent" placeholder="Nhập nội dung tin nhắn..."></textarea>
+
+          <div class="actions mt">
+            <button class="btn" id="btnSend" type="button">📨 Gửi tin</button>
+            <button class="btn ghost" id="btnLoadMsgs" type="button">📥 Tải tin</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="list" id="msgList"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <script src="../../assets/config.js"></script>
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
+  <script src="../../assets/teacher-snippet.js"></script>
+
+  <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show");t.hidden=true;},2400);
+    }
+    function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
+
+    const session=requireRole("TEACHER");
+    const token=session.token;
+    const classId=localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
+    me.textContent = `${session.displayName||"Giáo viên"} • ${classId}`;
+
+    btnPortal.onclick=()=>location.href="./teacher-dashboard.html";
+    btnTasks.onclick=()=>location.href="./teacher-tasks.html";
+    btnSubs.onclick=()=>location.href="./teacher-submissions.html";
+
+    let _students=[];
+
+    function renderKpi_(gb){
+      const rows = gb.rows||[];
+      const taskCount = Number(gb.taskCount||0);
+      const totalSubmitted = rows.reduce((a,x)=>a+(Number(x.submitted)||0),0);
+      const totalGraded = rows.reduce((a,x)=>a+(Number(x.graded)||0),0);
+
+      kpi.innerHTML=`
+        <div class="qcard"><div class="muted" style="font-weight:900">Tổng Tasks</div><div class="big">${esc(taskCount)}</div></div>
+        <div class="qcard"><div class="muted" style="font-weight:900">Số HS</div><div class="big">${esc(rows.length)}</div></div>
+        <div class="qcard"><div class="muted" style="font-weight:900">Tổng nộp</div><div class="big">${esc(totalSubmitted)}</div></div>
+        <div class="qcard"><div class="muted" style="font-weight:900">Đã nhận xét</div><div class="big">${esc(totalGraded)}</div></div>
+      `;
+    }
+
+    function renderTable_(gb){
+      const rows = gb.rows||[];
+      if(!rows.length){
+        tableBox.innerHTML = `<div class="muted">Chưa có danh sách học sinh.</div>`;
+        return;
+      }
+
+      tableBox.innerHTML = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Học sinh</th>
+              <th>Nộp</th>
+              <th>Đã nhận xét</th>
+              <th>Tiến độ</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>{
+              const p = Number(String(r.progress||"0%").replace("%",""))||0;
+              const pct = Math.max(0,Math.min(100,p));
+              return `
+                <tr>
+                  <td>
+                    <div style="font-weight:900">${esc(r.studentId)}</div>
+                    <div class="muted">${esc(r.name||"")}</div>
+                  </td>
+                  <td>${esc(r.submitted||0)}</td>
+                  <td>${esc(r.graded||0)}</td>
+                  <td>
+                    <div class="pbar"><span style="width:${pct}%"></span></div>
+                    <div class="muted" style="font-size:12px;margin-top:6px">${pct}%</div>
+                  </td>
+                  <td><button class="btn ghost" data-st="${esc(r.studentId)}" type="button">Chọn</button></td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+
+      tableBox.querySelectorAll("button[data-st]").forEach(b=>{
+        b.onclick=()=>{
+          studentId.value = b.getAttribute("data-st");
+          toast("Đã chọn học sinh ✅");
+        };
+      });
+    }
+
+    async function loadStudentsSelect_(){
+      const r = await api("listStudents",{token,classId});
+      _students = r.students || [];
+      studentId.innerHTML = _students.map(s=>`<option value="${esc(s.studentId)}">${esc(s.studentId)} • ${esc(s.name||"")}</option>`).join("")
+        || `<option value="">(chưa có HS)</option>`;
+      sub.textContent = `Pilot ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+    }
+
+    async function loadGradebook_(){
+      const gb = await api("getGradebook",{token,classId});
+      renderKpi_(gb);
+      renderTable_(gb);
+    }
+
+    btnReport.onclick = async ()=>{
+      try{
+        const r = await api("getClassReport",{token,classId,rangeDays:Number(rangeDays.value||7)});
+        const rep = r.report||{};
+        reportBox.value = [
+          `BÁO CÁO NHANH (${rep.rangeDays||7} ngày)`,
+          `- Bài nộp: ${rep.submissions||0}`,
+          `- Nộp muộn: ${rep.lateSubmissions||0}`,
+          `- Nhận xét: ${rep.feedbacks||0}`,
+          ``,
+          `Từ: ${rep.since||""}`,
+          `Đến: ${rep.now||""}`
+        ].join("\n");
+        toast("Đã tạo report ✅");
+      }catch(e){ toast(e.message||"Report lỗi"); }
+    };
+
+    btnWeeklyAI.onclick = async ()=>{
+      try{
+        reportBox.value = "⏳ Đang tạo báo cáo tuần bằng AI...";
+        const r = await api("aiClassWeeklyReport",{token,classId,rangeDays:Number(rangeDays.value||7)});
+        reportBox.value = (r.reportText||"").trim() || "AI không trả nội dung.";
+        toast("AI đã tạo báo cáo ✅");
+      }catch(e){ toast(e.message||"AI report lỗi"); }
+    };
+
+    btnPath.onclick = async ()=>{
+      try{
+        const sid = studentId.value || "";
+        if(!sid) return toast("Chưa có học sinh.");
+        pathBox.value = "⏳ Đang lấy learning path...";
+        const r = await api("getLearningPath",{token,classId,studentId:sid});
+        pathBox.value = (r.planText||"").trim();
+        toast("Đã tải learning path ✅");
+      }catch(e){ toast(e.message||"Learning path lỗi"); }
+    };
+
+    btnSend.onclick = async ()=>{
+      try{
+        const sid = studentId.value || "";
+        if(!sid) return toast("Chọn học sinh trước.");
+        if(!msgContent.value.trim()) return toast("Nội dung tin nhắn đang trống.");
+
+        await api("sendMessage",{
+          token, classId,
+          toRole: toRole.value,
+          toStudentId: sid,
+          subject: msgSubject.value.trim(),
+          content: msgContent.value.trim()
+        });
+
+        msgContent.value = "";
+        toast("Đã gửi tin ✅");
+      }catch(e){ toast(e.message||"Gửi tin lỗi"); }
+    };
+
+    async function loadMsgs(){
+      try{
+        const sid = studentId.value || "";
+        if(!sid) return toast("Chọn học sinh trước.");
+        const r = await api("listMessages",{
+          token, classId,
+          toStudentId: sid,
+          limit: 30
+        });
+
+        const items = r.messages || [];
+        msgList.innerHTML = items.length ? "" : `<div class="muted">Chưa có tin nhắn.</div>`;
+        items.forEach(m=>{
+          const div=document.createElement("div");
+          div.className="dcard";
+          div.innerHTML = `
+            <div style="font-weight:900">${esc(m.subject||"(Không tiêu đề)")}</div>
+            <div class="muted" style="font-size:12px;margin-top:4px">${esc(m.createdAt||"")} • From: ${esc(m.fromRole||"")} (${esc(m.fromName||"")})</div>
+            <div style="margin-top:8px;white-space:pre-wrap">${esc(m.content||"")}</div>
+          `;
+          msgList.appendChild(div);
+        });
+        toast("Đã tải tin ✅");
+      }catch(e){ toast(e.message||"Tải tin lỗi"); }
+    }
+    btnLoadMsgs.onclick = loadMsgs;
+
+    btnReload.onclick = async ()=>{
+      try{
+        await loadStudentsSelect_();
+        await loadGradebook_();
+        await loadMsgs();
+        toast("Đã tải tất cả ✅");
+      }catch(e){ toast(e.message||"Reload lỗi"); }
+    };
+
+    (async ()=>{
+      renderTeacherTopbar("gradebook"); // chip sẵn có
+      await loadStudentsSelect_();
+      await loadGradebook_();
+      await loadMsgs();
+    })();
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU – Đăng nhập</title>
+
+  <!-- Optional: nếu anh đã có styles.css thì bỏ phần <style> này, giữ nguyên HTML+JS -->
+  <style>
+    :root{
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e6eefc;
+      --pri:#2f6fed;
+      --pri2:#1f56c8;
+      --shadow: 0 22px 60px rgba(15,23,42,.12);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 500px at 25% 40%, rgba(47,111,237,.14), transparent 70%),
+        radial-gradient(900px 450px at 70% 55%, rgba(31,86,200,.10), transparent 70%),
+        var(--bg);
+      min-height:100vh;
+    }
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:5;
+      background: rgba(245,248,255,.86);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(230,238,252,.9);
+    }
+    .topbar .inner{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+    }
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      background: linear-gradient(135deg, var(--pri), #6aa6ff);
+      color:#fff; font-weight:900;
+      display:grid; place-items:center;
+      box-shadow: 0 12px 26px rgba(47,111,237,.25);
+      flex:0 0 auto;
+    }
+    .brand .name{font-weight:900; letter-spacing:.2px}
+    .brand .sub{font-size:13px; color:var(--muted); margin-top:2px}
+    .adminLink{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 14px;
+      border-radius:14px;
+      font-weight:800;
+      color:var(--pri);
+      text-decoration:none;
+      box-shadow: 0 10px 24px rgba(15,23,42,.06);
+      white-space:nowrap;
+    }
+    .adminLink:hover{border-color:#cfe1ff}
+
+    /* Layout */
+    .wrap{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 26px 18px 40px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    /* Left illustration panel */
+    .hero{
+      background: rgba(255,255,255,.55);
+      border:1px solid rgba(230,238,252,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height: 520px;
+      position:relative;
+    }
+    .hero .bgGrad{
+      position:absolute; inset:0;
+      background:
+        radial-gradient(500px 500px at 60% 60%, rgba(47,111,237,.18), transparent 60%),
+        radial-gradient(600px 500px at 30% 30%, rgba(106,166,255,.20), transparent 60%);
+      opacity:.9;
+    }
+    .hero .dots{
+      position:absolute; inset:0;
+      background-image: radial-gradient(rgba(15,23,42,.06) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity:.22;
+      mix-blend-mode:multiply;
+    }
+    .hero .ill{
+      position:absolute;
+      left: 50%;
+      top: 52%;
+      transform: translate(-50%,-50%);
+      width: 92%;
+      max-width: 620px;
+      opacity: 1;
+      filter: drop-shadow(0 24px 70px rgba(47,111,237,.20));
+    }
+
+    /* Card */
+    .card{
+      background: var(--card);
+      border:1px solid rgba(230,238,252,.95);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      min-height: 520px;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+    }
+
+    /* Header inside card */
+    .cardHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom:1px solid rgba(230,238,252,.9);
+    }
+    .cardTitle{
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      margin:0;
+    }
+    .cardHint{
+      font-size: 13px;
+      color: var(--muted);
+      margin-top:4px;
+    }
+
+    /* Role segmented control */
+    .seg{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      background: #f6f9ff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 10px;
+    }
+    .segBtn{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 12px 10px;
+      cursor:pointer;
+      background: transparent;
+      font-weight: 900;
+      color: #0f172a;
+      transition:.15s;
+    }
+    .segBtn .ico{
+      width:34px; height:34px;
+      border-radius: 12px;
+      display:grid; place-items:center;
+      background: rgba(47,111,237,.10);
+    }
+    .segBtn.active{
+      background:#fff;
+      border-color: rgba(47,111,237,.24);
+      box-shadow: 0 10px 22px rgba(47,111,237,.12);
+      color: var(--pri2);
+    }
+
+    /* Fields */
+    .field{display:flex; flex-direction:column; gap:8px;}
+    label{font-weight:900; font-size:13px;}
+    input, select{
+      width:100%;
+      border:1px solid rgba(230,238,252,.95);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline:none;
+      background:#fff;
+      transition:.12s;
+    }
+    input:focus, select:focus{
+      border-color: rgba(47,111,237,.45);
+      box-shadow: 0 0 0 4px rgba(47,111,237,.12);
+    }
+    .helperRow{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      margin-top:6px;
+    }
+    .helperLinks{display:flex; gap:12px; align-items:center; white-space:nowrap;}
+    .link{color:var(--pri2); text-decoration:none; font-weight:800}
+    .link:hover{text-decoration:underline}
+    .chk{display:flex; align-items:center; gap:8px; user-select:none; color:#0f172a; font-weight:700}
+    .chk input{width:16px; height:16px}
+
+    /* Password eye */
+    .pwWrap{position:relative}
+    .pwWrap input{padding-right:46px}
+    .pwEye{
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      width:36px; height:36px;
+      border-radius: 12px;
+      border: 1px solid rgba(230,238,252,.95);
+      background:#fff;
+      cursor:pointer;
+      font-size:16px;
+    }
+    .pwEye:hover{background:#f7faff}
+
+    /* Actions */
+    .actions{display:flex; gap:10px; align-items:center; margin-top:4px; flex-wrap:wrap;}
+    .btn{
+      border:none;
+      background: linear-gradient(135deg, var(--pri), #5aa2ff);
+      color:#fff;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 900;
+      cursor:pointer;
+      box-shadow: 0 14px 26px rgba(47,111,237,.22);
+    }
+    .btn:hover{filter:brightness(.98)}
+    .btn.secondary{
+      background:#fff;
+      color: var(--pri2);
+      border:1px solid rgba(47,111,237,.20);
+      box-shadow: 0 10px 20px rgba(15,23,42,.06);
+    }
+    .btn.secondary:hover{border-color: rgba(47,111,237,.35)}
+    .btn.full{width:100%}
+
+    /* Pane */
+    .pane{display:block}
+    .pane[hidden]{display:none!important}
+
+    /* Register overlay inside card */
+    .registerOnly .cardHeader,
+    .registerOnly .seg,
+    .registerOnly .paneLogin{display:none!important}
+    .registerOnly .paneRegister{display:block!important}
+
+    .miniHeader{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding-bottom: 6px;
+      border-bottom:1px solid rgba(230,238,252,.9);
+      margin-bottom: 10px;
+    }
+    .miniTitle{font-weight:900; font-size:18px}
+    .chip{
+      border:1px solid rgba(230,238,252,.95);
+      background:#fff;
+      padding:9px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:900;
+      color: var(--pri2);
+      box-shadow: 0 10px 18px rgba(15,23,42,.05);
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(15,23,42,.92);
+      color:#fff;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      box-shadow: 0 16px 36px rgba(0,0,0,.28);
+      z-index: 50;
+      display:none;
+      max-width: calc(100vw - 24px);
+    }
+    .toast.show{display:block}
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr; }
+      .hero{min-height: 280px;}
+      .card{min-height: unset;}
+      .seg{grid-template-columns:1fr;}
+      .segBtn{justify-content:flex-start; padding-left:12px}
+    }
+  </style>
+
+  <script src="assets/config.js"></script>
+</head>
+
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div>
+          <div class="name" id="brandName">HEDU – Đăng nhập</div>
+          <div class="sub" id="brandSub">—</div>
+        </div>
+      </div>
+      <a class="adminLink" href="#" id="btnAdminLink">BGH / Quản trị</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- Left: illustration only -->
+      <div class="hero" aria-hidden="true">
+        <div class="bgGrad"></div>
+        <div class="dots"></div>
+
+        <!-- Lightweight inline SVG (no text) -->
+        <svg class="ill" viewBox="0 0 900 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="120" y1="60" x2="760" y2="460" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#2F6FED" stop-opacity="0.95"/>
+              <stop offset="1" stop-color="#6AA6FF" stop-opacity="0.85"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+              <stop stop-color="#ffffff" stop-opacity="0.95"/>
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0.60"/>
+            </linearGradient>
+          </defs>
+
+          <path d="M160 420C80 350 110 220 220 170C290 70 430 30 540 80C690 40 820 130 820 260C820 400 700 470 560 470H240C210 470 180 455 160 420Z" fill="url(#g2)" opacity="0.85"/>
+          <circle cx="610" cy="300" r="180" fill="url(#g1)" opacity="0.18"/>
+          <circle cx="340" cy="240" r="120" fill="#2F6FED" opacity="0.10"/>
+          <rect x="260" y="170" width="380" height="250" rx="26" fill="#ffffff" opacity="0.70"/>
+          <rect x="300" y="210" width="300" height="20" rx="10" fill="#2F6FED" opacity="0.14"/>
+          <rect x="300" y="250" width="260" height="18" rx="9" fill="#2F6FED" opacity="0.10"/>
+          <rect x="300" y="290" width="280" height="18" rx="9" fill="#2F6FED" opacity="0.10"/>
+          <rect x="300" y="330" width="220" height="18" rx="9" fill="#2F6FED" opacity="0.10"/>
+          <circle cx="300" cy="390" r="22" fill="#2F6FED" opacity="0.14"/>
+          <circle cx="370" cy="390" r="22" fill="#2F6FED" opacity="0.14"/>
+          <circle cx="440" cy="390" r="22" fill="#2F6FED" opacity="0.14"/>
+        </svg>
+      </div>
+
+      <!-- Right: login card -->
+      <div class="card" id="card">
+
+        <div class="cardHeader">
+          <div>
+            <h1 class="cardTitle">Đăng nhập</h1>
+            <div class="cardHint">Chọn vai trò để vào đúng khu vực.</div>
+          </div>
+        </div>
+
+        <!-- Segmented roles -->
+        <div class="seg" role="tablist" aria-label="Vai trò đăng nhập">
+          <button class="segBtn active" data-role="TEACHER" type="button">
+            <span class="ico">👩‍🏫</span><span>Giáo viên</span>
+          </button>
+          <button class="segBtn" data-role="STUDENT" type="button">
+            <span class="ico">🧒</span><span>Học sinh</span>
+          </button>
+          <button class="segBtn" data-role="PARENT" type="button">
+            <span class="ico">👨‍👩‍👧</span><span>Phụ huynh</span>
+          </button>
+        </div>
+
+        <!-- ========= LOGIN PANES ========= -->
+        <div class="pane paneLogin" id="paneTeacher">
+          <div class="field">
+            <label>Tài khoản</label>
+            <input id="t_account" placeholder="SĐT hoặc Email"/>
+          </div>
+
+          <div class="field">
+            <label>Mật khẩu</label>
+            <div class="pwWrap">
+              <input id="t_password" type="password" placeholder=""/>
+              <button class="pwEye" type="button" data-eye="t_password" aria-label="Hiện/ẩn mật khẩu">👁</button>
+            </div>
+
+            <div class="helperRow">
+              <label class="chk">
+                <input type="checkbox" id="t_remember" checked>
+                <span>Ghi nhớ đăng nhập</span>
+              </label>
+              <div class="helperLinks">
+                <a class="link" href="#" onclick="toast('Bản thi: có thể bổ sung sau.');return false;">Quên mật khẩu?</a>
+                <a class="link" href="#" id="btnOpenTeacherRegister">Tạo tài khoản</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn full" id="btnTeacherLogin" type="button">Đăng nhập</button>
+          </div>
+        </div>
+
+        <div class="pane paneLogin" id="paneStudent" hidden>
+          <div class="field">
+            <label>Lớp</label>
+            <select id="s_classId">
+              <option value="">— Chọn lớp —</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Mã học sinh</label>
+            <input id="s_studentId" placeholder="VD: HS001"/>
+          </div>
+
+          <div class="actions">
+            <button class="btn full" id="btnStudentLogin" type="button">Vào trang học sinh</button>
+          </div>
+        </div>
+
+        <div class="pane paneLogin" id="paneParent" hidden>
+          <div class="field">
+            <label>Lớp của con</label>
+            <select id="p_classId">
+              <option value="">— Chọn lớp —</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Mã học sinh</label>
+            <input id="p_studentId" placeholder="VD: HS001"/>
+          </div>
+
+          <div class="actions">
+            <button class="btn full" id="btnParentLogin" type="button">Vào sổ liên lạc</button>
+          </div>
+        </div>
+
+        <!-- ========= REGISTER (teacher only) ========= -->
+        <div class="pane paneRegister" id="teacherRegisterView" style="display:none">
+          <div class="miniHeader">
+            <div class="miniTitle">Tạo tài khoản giáo viên</div>
+            <button class="chip" id="btnBackTeacherLogin" type="button">Quay lại đăng nhập</button>
+          </div>
+
+          <div class="field">
+            <label>Họ và tên</label>
+            <input id="t_fullName" placeholder="VD: Nguyễn Văn A"/>
+          </div>
+
+          <div class="field">
+            <label>Số điện thoại</label>
+            <input id="t_phone" placeholder="VD: 098xxxxxxx"/>
+          </div>
+
+          <div class="field">
+            <label>Email (nếu có)</label>
+            <input id="t_email" placeholder="VD: abc@gmail.com"/>
+          </div>
+
+          <div class="field">
+            <label>Mật khẩu</label>
+            <div class="pwWrap">
+              <input id="t_regPass" type="password" placeholder=""/>
+              <button class="pwEye" type="button" data-eye="t_regPass" aria-label="Hiện/ẩn mật khẩu">👁</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Nhập lại mật khẩu</label>
+            <div class="pwWrap">
+              <input id="t_regPass2" type="password" placeholder=""/>
+              <button class="pwEye" type="button" data-eye="t_regPass2" aria-label="Hiện/ẩn mật khẩu">👁</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn full" id="btnTeacherRegister" type="button">Tạo tài khoản</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Required shared scripts -->
+  <script src="assets/core.js"></script>
+  <script src="assets/api.js"></script>
+
+  <script>
+    // ===== toast fallback (if core.js not loaded) =====
+    function toast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg || "—";
+      t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t = setTimeout(()=> t.classList.remove("show"), 2400);
+    }
+
+    // ===== intent router from index.html =====
+    function getIntent(){
+      const role = localStorage.getItem("hedu_role") || "";   // TEACHER/STUDENT/PARENT/ADMIN
+      const entry = localStorage.getItem("hedu_entry") || ""; // target page after login
+      return { role, entry };
+    }
+    function clearIntentEntry(){ localStorage.removeItem("hedu_entry"); }
+    function clearIntentRole(){ localStorage.removeItem("hedu_role"); }
+
+    // consume intent (one-time) to avoid "kẹt luồng"
+    function resolveAfterLogin(defaultUrl){
+      const { entry } = getIntent();
+      if(entry && typeof entry === "string" && entry.trim()){
+        clearIntentEntry();
+        clearIntentRole();
+        return entry.trim();
+      }
+      // không có entry -> chỉ xoá role intent để không tự bật admin prompt
+      clearIntentRole();
+      return defaultUrl;
+    }
+
+    // ===== Brand =====
+    try{
+      const cfg = (typeof getConfig === "function") ? getConfig() : {};
+      document.getElementById("brandName").textContent = (cfg.APP_NAME ? cfg.APP_NAME + " – Đăng nhập" : "HEDU – Đăng nhập");
+      document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
+    }catch(e){}
+
+    // ===== role switch =====
+    const card = document.getElementById("card");
+    const btns = document.querySelectorAll(".segBtn");
+    const panes = {
+      TEACHER: document.getElementById("paneTeacher"),
+      STUDENT: document.getElementById("paneStudent"),
+      PARENT:  document.getElementById("paneParent")
+    };
+
+    function setRole(role){
+      btns.forEach(b=>b.classList.toggle("active", b.dataset.role===role));
+      Object.keys(panes).forEach(k=> panes[k].hidden = (k!==role));
+      localStorage.setItem("hedu_login_role", role);
+    }
+    btns.forEach(b=> b.addEventListener("click", ()=> setRole(b.dataset.role)));
+
+    // init role priority:
+    // 1) index intent (hedu_role)
+    // 2) remembered role (hedu_login_role)
+    // 3) default TEACHER
+    (function initRole(){
+      const intentRole = (localStorage.getItem("hedu_role") || "").toUpperCase();
+      const savedRole  = (localStorage.getItem("hedu_login_role") || "").toUpperCase();
+      const start = (intentRole && panes[intentRole]) ? intentRole : ((savedRole && panes[savedRole]) ? savedRole : "TEACHER");
+      setRole(start);
+    })();
+
+    // ===== password eye =====
+    document.addEventListener("click", (e)=>{
+      const eye = e.target.closest(".pwEye");
+      if(!eye) return;
+      const id = eye.getAttribute("data-eye");
+      const input = document.getElementById(id);
+      if(!input) return;
+      input.type = (input.type === "password") ? "text" : "password";
+    });
+
+    // ===== register toggle (teacher) =====
+    const regView = document.getElementById("teacherRegisterView");
+    const openReg = document.getElementById("btnOpenTeacherRegister");
+    const back1 = document.getElementById("btnBackTeacherLogin");
+
+    function showRegister(){
+      regView.style.display = "";
+      card.classList.add("registerOnly");
+    }
+    function showLogin(){
+      regView.style.display = "none";
+      card.classList.remove("registerOnly");
+    }
+    openReg.addEventListener("click", (e)=>{ e.preventDefault(); clearIntentRole(); showRegister(); });
+    back1.addEventListener("click", showLogin);
+
+    // ===== load classes (public) =====
+    async function loadClassesPublic(){
+      try{
+        const r = await api("listClassesPublic", {});
+        const items = r.classes || [];
+        const html = '<option value="">— Chọn lớp —</option>' +
+          items.map(c=>`<option value="${c.classId}">${c.classId}</option>`).join("");
+        document.getElementById("s_classId").innerHTML = html;
+        document.getElementById("p_classId").innerHTML = html;
+      }catch(e){
+        // keep default option
+      }
+    }
+    loadClassesPublic();
+
+    // ===== ADMIN flow (only when intentionally requested) =====
+    async function adminLoginFlow(){
+      try{
+        const cfg = (typeof getConfig === "function") ? getConfig() : {};
+        const code = prompt("Nhập mã BGH / Quản trị:");
+        if(!code) return;
+
+        if(cfg.ADMIN_SETUP_CODE && code.trim() !== String(cfg.ADMIN_SETUP_CODE)){
+          return toast("Sai mã BGH.");
+        }
+
+        const r = await api("authAdminLogin", { adminCode: code.trim() });
+        if(typeof saveSession === "function") saveSession(r.session);
+
+        const url = resolveAfterLogin("pages/admin/dashboard.html");
+        location.href = url;
+      }catch(err){
+        toast(err.message || "Không đăng nhập được.");
+      }
+    }
+
+    document.getElementById("btnAdminLink").addEventListener("click", async (e)=>{
+      e.preventDefault();
+      localStorage.setItem("hedu_role", "ADMIN");
+      // chủ đích vào admin => set entry mặc định admin (để auto prompt hợp lệ)
+      if(!localStorage.getItem("hedu_entry")){
+        localStorage.setItem("hedu_entry", "pages/admin/dashboard.html");
+      }
+      await adminLoginFlow();
+    });
+
+    // Auto admin ONLY if:
+    // - login.html#admin
+    // - OR intent ADMIN + entry points to /pages/admin/
+    (function autoAdmin(){
+      const { role, entry } = getIntent();
+      const isAdminIntent = String(role).toUpperCase() === "ADMIN";
+      const isAdminHash = location.hash === "#admin";
+      const isAdminEntry = entry && String(entry).includes("/pages/admin/");
+
+      if(isAdminHash || (isAdminIntent && isAdminEntry)){
+        setTimeout(()=> adminLoginFlow(), 120);
+        return;
+      }
+
+      // nếu bị sót role=ADMIN mà không có entry admin => xoá để không bị bật prompt
+      if(isAdminIntent && !isAdminEntry && !isAdminHash){
+        clearIntentRole();
+      }
+    })();
+
+    // ===== TEACHER login =====
+    document.getElementById("btnTeacherLogin").addEventListener("click", async ()=>{
+      try{
+        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        const account = document.getElementById("t_account").value.trim();
+        const password = document.getElementById("t_password").value.trim();
+        const remember = document.getElementById("t_remember").checked;
+        if(!account || !password) return toast("Vui lòng nhập tài khoản và mật khẩu.");
+
+        const r = await api("authTeacherLogin", { account, password });
+
+        if(typeof saveSession === "function"){
+          try{ saveSession(r.session, { remember }); }catch(_){ saveSession(r.session); }
+        }
+
+        const url = resolveAfterLogin("pages/teacher/dashboard.html");
+        location.href = url;
+      }catch(err){
+        toast(err.message || "Đăng nhập thất bại.");
+      }
+    });
+
+    // ===== TEACHER register =====
+    document.getElementById("btnTeacherRegister").addEventListener("click", async ()=>{
+      try{
+        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        const fullName = document.getElementById("t_fullName").value.trim();
+        const phone = document.getElementById("t_phone").value.trim();
+        const email = document.getElementById("t_email").value.trim();
+        const p1 = document.getElementById("t_regPass").value.trim();
+        const p2 = document.getElementById("t_regPass2").value.trim();
+        if(!fullName || !phone || !p1 || !p2) return toast("Vui lòng nhập đủ thông tin.");
+        if(p1 !== p2) return toast("Mật khẩu nhập lại chưa khớp.");
+
+        await api("authTeacherRegister", { fullName, phone, email, password: p1 });
+        toast("Đã tạo tài khoản ✅");
+        showLogin();
+      }catch(err){
+        toast(err.message || "Không tạo được tài khoản.");
+      }
+    });
+
+    // ===== STUDENT login =====
+    document.getElementById("btnStudentLogin").addEventListener("click", async ()=>{
+      try{
+        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        const classId = document.getElementById("s_classId").value;
+        const studentId = document.getElementById("s_studentId").value.trim();
+        if(!classId || !studentId) return toast("Vui lòng chọn lớp và nhập mã học sinh.");
+
+        const r = await api("authStudentLogin", { classId, studentId });
+        if(typeof saveSession === "function") saveSession(r.session);
+
+        const url = resolveAfterLogin("pages/student/dashboard.html");
+        location.href = url;
+      }catch(err){
+        toast(err.message || "Không đăng nhập được.");
+      }
+    });
+
+    // ===== PARENT login =====
+    document.getElementById("btnParentLogin").addEventListener("click", async ()=>{
+      try{
+        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        const classId = document.getElementById("p_classId").value;
+        const studentId = document.getElementById("p_studentId").value.trim();
+        if(!classId || !studentId) return toast("Vui lòng chọn lớp và nhập mã học sinh.");
+
+        const r = await api("authParentLogin", { classId, studentId });
+        if(typeof saveSession === "function") saveSession(r.session);
+
+        const url = resolveAfterLogin("pages/parent/week.html");
+        location.href = url;
+      }catch(err){
+        toast(err.message || "Không vào được sổ liên lạc.");
+      }
+    });
+  </script>
+</body>
+</html>
