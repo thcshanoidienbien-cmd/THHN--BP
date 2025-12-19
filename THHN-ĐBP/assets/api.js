@@ -1,4 +1,5 @@
-// assets/api.js — HEDU API client (SSOT, stable)
+// assets/api.js — HEDU API client (CORS-safe, SSOT)
+// ✅ Use application/x-www-form-urlencoded to avoid CORS preflight on Apps Script WebApp
 
 async function api(action, payload = {}) {
   const cfg = (typeof getConfig === "function") ? getConfig() : (window.HEDU_CONFIG || {});
@@ -8,23 +9,27 @@ async function api(action, payload = {}) {
     throw new Error("Hệ thống chưa cấu hình SCRIPT_URL (assets/config.js).");
   }
 
+  // body chuẩn
   const body = { action, ...(payload || {}) };
 
-  // ✅ SSOT token: token == sessionId
-  // ưu tiên token truyền vào, nếu không có thì tự gắn từ session
+  // ✅ tự gắn token nếu chưa có
   try {
-    if (body.token === undefined || body.token === null || body.token === "") {
-      if (typeof getSession === "function") {
-        const s = getSession();
-        const tk = s?.token || s?.sessionId || "";
-        if (tk) body.token = tk;
-      }
-      if ((body.token === undefined || body.token === null || body.token === "") && typeof getToken === "function") {
-        const tk2 = getToken();
-        if (tk2) body.token = tk2;
-      }
+    if (typeof getSession === "function") {
+      const s = getSession();
+      if (s?.token && body.token === undefined) body.token = s.token;
+    }
+    if (typeof getToken === "function") {
+      const tk = getToken();
+      if (tk && body.token === undefined) body.token = tk;
     }
   } catch (_) {}
+
+  // ✅ Encode form (avoid preflight)
+  const form = new URLSearchParams();
+  Object.keys(body).forEach((k) => {
+    const v = body[k];
+    form.append(k, (typeof v === "object") ? JSON.stringify(v) : String(v ?? ""));
+  });
 
   const ctrl = new AbortController();
   const tm = setTimeout(() => ctrl.abort(), 25000);
@@ -33,9 +38,9 @@ async function api(action, payload = {}) {
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: ctrl.signal
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: form.toString(),
+      signal: ctrl.signal,
     });
   } catch (e) {
     clearTimeout(tm);
@@ -50,24 +55,24 @@ async function api(action, payload = {}) {
   }
 
   if (!res.ok) {
+    // cố parse json lỗi
     try {
       const j = JSON.parse(text);
       throw new Error(j?.error || `HTTP ${res.status}`);
     } catch (_) {
-      throw new Error(`Máy chủ lỗi HTTP ${res.status}. (Có thể deploy sai quyền hoặc sai URL Web App)`);
+      throw new Error(`Máy chủ lỗi HTTP ${res.status}. (Deploy sai quyền hoặc URL Web App sai)`);
     }
   }
 
+  // parse JSON
   try {
     data = JSON.parse(text);
-  } catch (e) {
-    // Apps Script đôi khi trả HTML (đăng nhập, lỗi deploy...)
-    throw new Error("Máy chủ không trả JSON hợp lệ. (Có thể URL sai hoặc Apps Script trả trang HTML)");
+  } catch (_) {
+    throw new Error("Máy chủ không trả JSON hợp lệ. (Có thể Apps Script trả HTML)");
   }
 
   if (!data || data.ok !== true) {
     throw new Error(data?.error || "API lỗi");
   }
-
   return data;
 }
