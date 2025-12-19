@@ -1,10 +1,10 @@
-// assets/core.js — HEDU Core (stable) — UPDATED for 5 teacher pages (final mapping)
-// Pages:
-// - teacher-dashboard.html
-// - teacher-tasks.html
-// - teacher-submissions.html
-// - teacher-grading.html
-// - teacher-insights.html
+// assets/core.js — HEDU Core (SSOT chuẩn) — FIXED
+// Teacher pages:
+// - pages/teacher/teacher-dashboard.html
+// - pages/teacher/teacher-tasks.html
+// - pages/teacher/teacher-submissions.html
+// - pages/teacher/teacher-grading.html
+// - pages/teacher/teacher-insights.html
 
 (function () {
   // ---------- Toast ----------
@@ -28,7 +28,6 @@
     return u.origin + "/index.html";
   }
 
-  // Teacher base folder (works in /pages/teacher/*)
   function teacherBaseHref() {
     const u = new URL(window.location.href);
     const p = u.pathname;
@@ -74,7 +73,7 @@
     if (typeof opts.remember !== "undefined") {
       localStorage.setItem("hedu_remember", opts.remember ? "1" : "0");
     }
-    if (norm.classId) localStorage.setItem("hedu_class", norm.classId);
+    if (norm.classId) localStorage.setItem("hedu_class", String(norm.classId).trim().toUpperCase());
     if (norm.displayName) localStorage.setItem("hedu_teacher_name", norm.displayName);
   }
 
@@ -105,8 +104,6 @@
     localStorage.removeItem("hedu_remember");
     localStorage.removeItem("hedu_teacher_name");
     localStorage.removeItem("hedu_class");
-
-    // teacher SSOT
     localStorage.removeItem("hedu_teacher_classId");
 
     // legacy cleanup
@@ -119,23 +116,29 @@
     return s?.token ? String(s.token) : "";
   }
 
-  // ---------- SSOT: selected class for teacher pages ----------
-  function getTeacherClassId(fallback) {
+  // ---------- SSOT Teacher classId ----------
+  // 1) ưu tiên lớp teacher đang chọn (hedu_teacher_classId)
+  // 2) fallback lớp trong session
+  // 3) fallback hedu_class / rw_class
+  function getTeacherClassId(fallback = "") {
     const s = getSession();
     return (
       localStorage.getItem("hedu_teacher_classId") ||
       s?.classId ||
       localStorage.getItem("hedu_class") ||
+      localStorage.getItem("rw_class") ||
       fallback ||
       ""
     );
   }
+
   function setTeacherClassId(cid) {
     const v = String(cid || "").trim().toUpperCase();
-    if (!v) return;
+    if (!v) return "";
     localStorage.setItem("hedu_teacher_classId", v);
-    // update topbar badge if exists
+    localStorage.setItem("hedu_class", v); // giữ tương thích
     updateTopbarClassBadge();
+    return v;
   }
 
   // ---------- Auth guards ----------
@@ -165,12 +168,6 @@
   }
 
   // ---------- Teacher Topbar (5 pages FINAL) ----------
-  // Mapping 10 features -> 5 pages:
-  // - teacher-dashboard: overview + quick actions
-  // - teacher-tasks: classes + task library + assign entrypoints
-  // - teacher-submissions: list submissions + filter + status
-  // - teacher-grading: open 1 submission/task -> rubric + AI + save feedback
-  // - teacher-insights: gradebook + reports + learning path + messages
   function renderTeacherTopbar(active = "") {
     const s = getSession();
     const name = s?.displayName || "Giáo viên";
@@ -180,7 +177,7 @@
       (window.HEDU_CONFIG?.DEFAULT_SUBJECT) ||
       "";
 
-        const nav = [
+    const nav = [
       { key: "dashboard", label: "Dashboard", href: "teacher-dashboard.html" },
       { key: "tasks", label: "Ngân hàng bài", href: "teacher-tasks.html" },
       { key: "subs", label: "Bài nộp", href: "teacher-submissions.html" },
@@ -242,27 +239,9 @@
       .replaceAll("'", "&#039;");
   }
 
-    // ---------- Teacher Class SSOT ----------
-  function getTeacherClassId() {
-    const s = getSession();
-    return (
-      localStorage.getItem("hedu_teacher_classId") ||
-      s?.classId ||
-      localStorage.getItem("hedu_class") ||
-      localStorage.getItem("rw_class") ||
-      ""
-    );
-  }
-
-  function setTeacherClassId(cid) {
-    cid = String(cid || "").trim().toUpperCase();
-    if (!cid) return "";
-    localStorage.setItem("hedu_teacher_classId", cid);
-    localStorage.setItem("hedu_class", cid); // keep compatible
-    return cid;
-  }
-
   // ---------- export ----------
+  window.toast = window.toast || toast;
+
   window.normalizeSession = normalizeSession;
   window.saveSession = saveSession;
   window.getSession = getSession;
@@ -284,8 +263,4 @@
   window.renderTeacherTopbar = renderTeacherTopbar;
   window.loginHref = loginHref;
   window.indexHref = indexHref;
-
-  window.getTeacherClassId = getTeacherClassId;
-  window.setTeacherClassId = setTeacherClassId;
-
 })();

@@ -28,106 +28,129 @@
         <div style="color:var(--muted);font-size:13px" id="who">—</div>
       </div>
       <div class="pills">
-        <a class="pill active" href="dashboard.html">Dashboard</a><a class="pill " href="do-task.html">Làm bài</a><a class="pill " href="progress.html">Tiến bộ</a>
+        <a class="pill" href="dashboard.html">Dashboard</a>
+        <a class="pill" href="do-task.html">Làm bài</a>
+        <a class="pill" href="progress.html">Tiến bộ</a>
       </div>
     </div>
 
-    
-<div class="card" style="padding:14px">
-  <div style="font-weight:900;font-size:16px">Làm bài</div>
-  <div style="color:var(--muted);font-size:12px;margin-top:4px">Đọc kỹ yêu cầu và trả lời. Nộp bài khi hoàn thành.</div>
+    <div class="card" style="padding:14px">
+      <div style="font-weight:900;font-size:16px">Làm bài</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px">Đọc kỹ yêu cầu và trả lời. Nộp bài khi hoàn thành.</div>
 
-  <div class="divider"></div>
+      <div class="divider"></div>
 
-  <div class="field">
-    <label>Chọn bài</label>
-    <select id="taskSel"><option value="">— Chọn bài —</option></select>
-  </div>
+      <div class="field">
+        <label>Chọn bài</label>
+        <select id="taskSel"><option value="">— Chọn bài —</option></select>
+      </div>
 
-  <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
-    <div style="font-weight:900" id="taskTitle">—</div>
-    <div style="color:var(--muted);font-size:12px;margin:6px 0">Nội dung</div>
-    <div style="white-space:pre-wrap;line-height:1.6" id="taskBody">—</div>
-  </div>
+      <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
+        <div style="font-weight:900" id="taskTitle">—</div>
+        <div style="color:var(--muted);font-size:12px;margin:6px 0">Nội dung</div>
+        <div style="white-space:pre-wrap;line-height:1.6" id="taskBody">—</div>
+      </div>
 
-  <div class="field" style="margin-top:12px">
-    <label>Bài làm của em</label>
-    <textarea id="answer" rows="8" placeholder="Nhập câu trả lời ở đây…"></textarea>
-  </div>
+      <div class="field" style="margin-top:12px">
+        <label>Bài làm của em</label>
+        <textarea id="answer" rows="8" placeholder="Nhập câu trả lời ở đây…"></textarea>
+      </div>
 
-  <div class="actions">
-    <button class="btn" id="btnSubmit">Nộp bài</button>
-    <button class="btn secondary" id="btnLoadFeedback" type="button">Xem nhận xét</button>
-  </div>
+      <div class="actions">
+        <button class="btn" id="btnSubmit">Nộp bài</button>
+        <button class="btn secondary" id="btnLoadFeedback" type="button">Xem nhận xét</button>
+      </div>
 
-  <div style="height:10px"></div>
-  <div class="card" style="padding:12px;background:#fff;border-color:#e5e7eb">
-    <div style="font-weight:900">Nhận xét</div>
-    <div style="color:var(--muted);font-size:12px;margin:6px 0 8px">Nhận xét của giáo viên.</div>
-    <div style="white-space:pre-wrap;line-height:1.6" id="feedback">—</div>
-  </div>
-</div>
-
+      <div style="height:10px"></div>
+      <div class="card" style="padding:12px;background:#fff;border-color:#e5e7eb">
+        <div style="font-weight:900">Nhận xét</div>
+        <div style="color:var(--muted);font-size:12px;margin:6px 0 8px">Nhận xét của giáo viên.</div>
+        <div style="white-space:pre-wrap;line-height:1.6" id="feedback">—</div>
+      </div>
+    </div>
   </div>
 
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
+  <script src="../../assets/student-snippet.js"></script>
+
   <script>
-    const cfg = getConfig();
-    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
-    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
-    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
-    
-const s = requireRole(["STUDENT"]);
-document.getElementById("who").textContent = `${s.studentId||"Học sinh"} • ${s.classId||""} • ${s.schoolYear||""}`;
+    function getParam(name){
+      const u = new URL(location.href);
+      return u.searchParams.get(name);
+    }
 
-const sel = document.getElementById("taskSel");
-const titleEl = document.getElementById("taskTitle");
-const bodyEl = document.getElementById("taskBody");
-let tasks = [];
+    let tasks = [];
 
-function getParam(name){
-  const u = new URL(location.href);
-  return u.searchParams.get(name);
-}
+    function pickTaskById_(taskId){
+      return tasks.find(x => String(x.taskId||"") === String(taskId||""));
+    }
 
-async function loadTasks(){
-  const r = await api("studentListTasks", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
-  tasks = r.tasks || [];
-  sel.innerHTML = '<option value="">— Chọn bài —</option>' + tasks.map(t=>`<option value="${t.taskId}">${t.taskId} • ${t.title}</option>`).join("");
-  const qTask = getParam("taskId");
-  if(qTask) sel.value = qTask;
-  sel.dispatchEvent(new Event("change"));
-}
+    async function loadTasks_(){
+      const s = window.__STU__;
+      const token = s.sessionId || s.token || "";
+      const r = await api("listTasksForStudent", { token, classId:s.classId, studentId:s.studentId });
+      tasks = r.tasks || [];
 
-sel.onchange = ()=>{
-  const t = tasks.find(x=>x.taskId===sel.value);
-  titleEl.textContent = t?.title || "—";
-  bodyEl.textContent = t?.body || t?.passage || t?.prompt || "—";
-};
+      const sel = document.getElementById("taskSel");
+      sel.innerHTML = '<option value="">— Chọn bài —</option>' +
+        tasks.map(t=>`<option value="${t.taskId}">${t.taskId} • ${t.topic||t.unit||t.domain||""}</option>`).join("");
 
-document.getElementById("btnSubmit").onclick = async ()=>{
-  try{
-    const taskId = sel.value;
-    const answer = stripMd(document.getElementById("answer").value.trim());
-    if(!taskId) return toast("Vui lòng chọn bài.");
-    if(!answer) return toast("Vui lòng nhập bài làm.");
-    await api("studentSubmit", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId, taskId, answer });
-    toast("Đã nộp bài ✅");
-  }catch(e){ toast(e.message); }
-};
+      const qTask = getParam("taskId");
+      if (qTask) sel.value = qTask;
+      sel.dispatchEvent(new Event("change"));
+    }
 
-document.getElementById("btnLoadFeedback").onclick = async ()=>{
-  try{
-    const taskId = sel.value;
-    if(!taskId) return toast("Vui lòng chọn bài.");
-    const r = await api("studentGetFeedback", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId, taskId });
-    document.getElementById("feedback").textContent = stripMd(r.feedbackText || "Chưa có nhận xét.");
-  }catch(e){ toast(e.message); }
-};
+    document.getElementById("taskSel").onchange = ()=>{
+      const t = pickTaskById_(document.getElementById("taskSel").value);
+      document.getElementById("taskTitle").textContent = t?.topic || t?.unit || t?.taskId || "—";
+      document.getElementById("taskBody").textContent = t?.body || "—";
+      document.getElementById("feedback").textContent = "—";
+    };
 
-loadTasks().catch(e=>toast(e.message));
+    document.getElementById("btnSubmit").onclick = async ()=>{
+      try{
+        const s = window.__STU__;
+        const token = s.sessionId || s.token || "";
 
+        const taskId = document.getElementById("taskSel").value;
+        const answer = stripMd(document.getElementById("answer").value.trim());
+
+        if(!taskId) return toast("Vui lòng chọn bài.");
+        if(!answer) return toast("Vui lòng nhập bài làm.");
+
+        await api("submitAnswer", { token, classId:s.classId, studentId:s.studentId, taskId, answer });
+        toast("Đã nộp bài ✅");
+      }catch(e){
+        toast(e.message || "Không nộp được bài.");
+      }
+    };
+
+    document.getElementById("btnLoadFeedback").onclick = async ()=>{
+      try{
+        const s = window.__STU__;
+        const token = s.sessionId || s.token || "";
+        const taskId = document.getElementById("taskSel").value;
+        if(!taskId) return toast("Vui lòng chọn bài.");
+
+        const r = await api("getMyHistory", { token, classId:s.classId, studentId:s.studentId, limit: 200 });
+        const fbs = (r.feedbacks || []).filter(x => String(x.taskId||"").trim() === String(taskId).trim());
+        if(!fbs.length){
+          document.getElementById("feedback").textContent = "Chưa có nhận xét.";
+          return;
+        }
+        // lấy feedback mới nhất
+        fbs.sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+        document.getElementById("feedback").textContent = stripMd(fbs[0].feedbackHS || "Chưa có nhận xét.");
+      }catch(e){
+        toast(e.message || "Không tải được nhận xét.");
+      }
+    };
+
+    (async ()=>{
+      await studentInit("do-task");
+      await loadTasks_();
+    })();
   </script>
 </body>
 </html>

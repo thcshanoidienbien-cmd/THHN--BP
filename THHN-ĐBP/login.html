@@ -399,7 +399,7 @@
                 <span>Ghi nhớ đăng nhập</span>
               </label>
               <div class="helperLinks">
-                <a class="link" href="#" onclick="toast('Bản thi: có thể bổ sung sau.');return false;">Quên mật khẩu?</a>
+                <a class="link" href="#" onclick="toast('Bản pilot: có thể bổ sung sau.');return false;">Quên mật khẩu?</a>
                 <a class="link" href="#" id="btnOpenTeacherRegister">Tạo tài khoản</a>
               </div>
             </div>
@@ -518,6 +518,12 @@
     function clearIntentEntry(){ localStorage.removeItem("hedu_entry"); }
     function clearIntentRole(){ localStorage.removeItem("hedu_role"); }
 
+    // ✅ chỉ xoá role nếu role = ADMIN (tránh mất intent TEACHER/STUDENT/PARENT)
+    function clearIntentAdminOnly(){
+      const r = (localStorage.getItem("hedu_role") || "").toUpperCase();
+      if(r === "ADMIN") localStorage.removeItem("hedu_role");
+    }
+
     // consume intent (one-time) to avoid "kẹt luồng"
     function resolveAfterLogin(defaultUrl){
       const { entry } = getIntent();
@@ -565,6 +571,28 @@
       setRole(start);
     })();
 
+    // ✅ Auto redirect if session still valid
+    (function autoBySession(){
+      try{
+        const s = (typeof getSession === "function") ? getSession() : null;
+        if(!s || !s.token) return;
+
+        const entry = (localStorage.getItem("hedu_entry") || "").trim();
+        if(entry){
+          localStorage.removeItem("hedu_entry");
+          localStorage.removeItem("hedu_role");
+          location.replace(entry);
+          return;
+        }
+
+        const role = String(s.role || "").toUpperCase();
+        if(role === "TEACHER") return location.replace("pages/teacher/teacher-dashboard.html");
+        if(role === "STUDENT") return location.replace("pages/student/dashboard.html");
+        if(role === "PARENT")  return location.replace("pages/parent/week.html");
+        if(role === "ADMIN")   return location.replace("pages/admin/dashboard.html");
+      }catch(_){}
+    })();
+
     // ===== password eye =====
     document.addEventListener("click", (e)=>{
       const eye = e.target.closest(".pwEye");
@@ -588,7 +616,7 @@
       regView.style.display = "none";
       card.classList.remove("registerOnly");
     }
-    openReg.addEventListener("click", (e)=>{ e.preventDefault(); clearIntentRole(); showRegister(); });
+    openReg.addEventListener("click", (e)=>{ e.preventDefault(); clearIntentAdminOnly(); showRegister(); });
     back1.addEventListener("click", showLogin);
 
     // ===== load classes (public) =====
@@ -630,7 +658,6 @@
     document.getElementById("btnAdminLink").addEventListener("click", async (e)=>{
       e.preventDefault();
       localStorage.setItem("hedu_role", "ADMIN");
-      // chủ đích vào admin => set entry mặc định admin (để auto prompt hợp lệ)
       if(!localStorage.getItem("hedu_entry")){
         localStorage.setItem("hedu_entry", "pages/admin/dashboard.html");
       }
@@ -660,7 +687,7 @@
     // ===== TEACHER login =====
     document.getElementById("btnTeacherLogin").addEventListener("click", async ()=>{
       try{
-        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN, giữ intent từ index
         const account = document.getElementById("t_account").value.trim();
         const password = document.getElementById("t_password").value.trim();
         const remember = document.getElementById("t_remember").checked;
@@ -672,7 +699,7 @@
           try{ saveSession(r.session, { remember }); }catch(_){ saveSession(r.session); }
         }
 
-        const url = resolveAfterLogin("pages/teacher/dashboard.html");
+        const url = resolveAfterLogin("pages/teacher/teacher-dashboard.html");
         location.href = url;
       }catch(err){
         toast(err.message || "Đăng nhập thất bại.");
@@ -682,7 +709,7 @@
     // ===== TEACHER register =====
     document.getElementById("btnTeacherRegister").addEventListener("click", async ()=>{
       try{
-        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN
         const fullName = document.getElementById("t_fullName").value.trim();
         const phone = document.getElementById("t_phone").value.trim();
         const email = document.getElementById("t_email").value.trim();
@@ -702,7 +729,7 @@
     // ===== STUDENT login =====
     document.getElementById("btnStudentLogin").addEventListener("click", async ()=>{
       try{
-        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN
         const classId = document.getElementById("s_classId").value;
         const studentId = document.getElementById("s_studentId").value.trim();
         if(!classId || !studentId) return toast("Vui lòng chọn lớp và nhập mã học sinh.");
@@ -720,7 +747,7 @@
     // ===== PARENT login =====
     document.getElementById("btnParentLogin").addEventListener("click", async ()=>{
       try{
-        clearIntentRole(); // ✅ tránh kẹt ADMIN
+        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN
         const classId = document.getElementById("p_classId").value;
         const studentId = document.getElementById("p_studentId").value.trim();
         if(!classId || !studentId) return toast("Vui lòng chọn lớp và nhập mã học sinh.");
@@ -733,6 +760,16 @@
       }catch(err){
         toast(err.message || "Không vào được sổ liên lạc.");
       }
+    });
+
+    // ✅ Enter-to-submit for convenience
+    document.addEventListener("keydown", (e)=>{
+      if(e.key !== "Enter") return;
+      const r = (localStorage.getItem("hedu_login_role") || "TEACHER").toUpperCase();
+      if(card.classList.contains("registerOnly")) return; // avoid accidental submit while registering
+      if(r === "TEACHER") document.getElementById("btnTeacherLogin")?.click();
+      if(r === "STUDENT") document.getElementById("btnStudentLogin")?.click();
+      if(r === "PARENT")  document.getElementById("btnParentLogin")?.click();
     });
   </script>
 </body>

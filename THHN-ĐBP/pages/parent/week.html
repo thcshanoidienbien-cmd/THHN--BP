@@ -28,94 +28,121 @@
         <div style="color:var(--muted);font-size:13px" id="who">—</div>
       </div>
       <div class="pills">
-        <a class="pill active" href="week.html">Tuần này</a><a class="pill " href="progress.html">Tiến bộ</a><a class="pill " href="notes.html">Nhận xét</a>
+        <a class="pill" href="week.html">Tuần này</a>
+        <a class="pill" href="progress.html">Tiến bộ</a>
+        <a class="pill" href="notes.html">Nhận xét</a>
       </div>
     </div>
 
-    
-<div class="kpis">
-  <div class="kpi"><div class="t">Tuần này</div><div class="v" id="k_week">—</div></div>
-  <div class="kpi"><div class="t">Bài đã nộp</div><div class="v" id="k_sub">—</div></div>
-  <div class="kpi"><div class="t">Nhận xét GV</div><div class="v" id="k_notes">—</div></div>
-</div>
+    <div class="kpis">
+      <div class="kpi"><div class="t">7 ngày</div><div class="v" id="k_week">—</div></div>
+      <div class="kpi"><div class="t">Bài đã nộp</div><div class="v" id="k_sub">—</div></div>
+      <div class="kpi"><div class="t">Nhận xét</div><div class="v" id="k_notes">—</div></div>
+    </div>
 
-<div style="height:12px"></div>
+    <div style="height:12px"></div>
 
-<div class="card" style="padding:14px">
-  <div style="font-weight:900;font-size:16px">Sổ liên lạc – Tuần này</div>
-  <div style="color:var(--muted);font-size:12px;margin-top:4px">Tóm tắt ngắn gọn, dễ hiểu cho phụ huynh.</div>
+    <div class="card" style="padding:14px">
+      <div style="font-weight:900;font-size:16px">Sổ liên lạc – 7 ngày gần nhất</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px">Tự tổng hợp từ lịch sử nộp bài & nhận xét.</div>
 
-  <div class="divider"></div>
+      <div class="divider"></div>
 
-  <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
-    <div style="font-weight:900">Nhận xét của giáo viên</div>
-    <div style="white-space:pre-wrap;line-height:1.6;margin-top:8px" id="teacherNote">—</div>
-  </div>
+      <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
+        <div style="font-weight:900">Nhận xét gần nhất (PH)</div>
+        <div style="white-space:pre-wrap;line-height:1.6;margin-top:8px" id="teacherNote">—</div>
+      </div>
 
-  <div style="height:10px"></div>
+      <div style="height:10px"></div>
 
-  <table class="table">
-    <thead>
-      <tr><th>Bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
-    </thead>
-    <tbody id="rows">
-      <tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
-    </tbody>
-  </table>
+      <table class="table">
+        <thead>
+          <tr><th>Bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+        </tbody>
+      </table>
 
-  <div style="height:12px"></div>
+      <div style="height:12px"></div>
 
-  <div class="actions">
-    <button class="btn secondary" id="btnConfirm" type="button">Tôi đã đọc</button>
-  </div>
-  <div class="footerNote">Nút “Tôi đã đọc” giúp giáo viên biết phụ huynh đã xem thông tin tuần.</div>
-</div>
-
+      <div class="actions">
+        <button class="btn secondary" id="btnConfirm" type="button">Tôi đã đọc</button>
+      </div>
+      <div class="footerNote">Nút “Tôi đã đọc” giúp giáo viên biết phụ huynh đã xem thông tin.</div>
+    </div>
   </div>
 
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
+  <script src="../../assets/parent-snippet.js"></script>
+
   <script>
-    const cfg = getConfig();
-    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
-    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
-    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
-    
-const s = requireRole(["PARENT"]);
-document.getElementById("who").textContent = `PH của ${s.studentId||"—"} • ${s.classId||""} • ${s.schoolYear||""}`;
+    function fmt(dt){ try{return new Date(dt).toLocaleString('vi-VN');}catch(e){return dt||"—";} }
 
-(async ()=>{
-  try{
-    const r = await api("parentWeekReport", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
-    const d = r.report || {};
-    document.getElementById("k_week").textContent = d.weekLabel || "—";
-    document.getElementById("k_sub").textContent = d.submitted ?? "—";
-    document.getElementById("k_notes").textContent = d.noteCount ?? "—";
-    document.getElementById("teacherNote").textContent = stripMd(d.teacherNote || "Chưa có nhận xét.");
-    const rows = d.items || [];
-    const tb = document.getElementById("rows");
-    if(!rows.length){
-      tb.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
-    }else{
-      tb.innerHTML = rows.map(x=>{
-        const badge = x.status==="OK" ? "ok" : x.status==="WARN" ? "warn" : "bad";
-        return `<tr>
-          <td>${x.title||x.taskId||"—"}</td>
-          <td><span class="badge ${badge}">${x.statusLabel||x.status||"—"}</span></td>
-          <td>${x.note||""}</td>
-        </tr>`;
-      }).join("");
-    }
-  }catch(e){ toast(e.message); }
-})();
+    (async ()=>{
+      await parentInit("week");
+      const s = window.__PAR__;
+      const token = s.sessionId || s.token || "";
 
-document.getElementById("btnConfirm").onclick = async ()=>{
-  try{
-    await api("parentConfirmRead", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
-    toast("Đã ghi nhận ✅");
-  }catch(e){ toast(e.message); }
-};
+      try{
+        const rHist = await api("getParentHistory", { token, classId:s.classId, studentId:s.studentId, limit: 400 });
+        const subs = rHist.submissions || [];
+        const fbs  = rHist.feedbacks || [];
 
+        const now = new Date();
+        const since = new Date(now.getTime() - 7*24*3600*1000);
+
+        const subs7 = subs.filter(x=>{
+          const d = new Date(x.createdAt);
+          return !isNaN(d) && d >= since;
+        });
+
+        const fbs7 = fbs.filter(x=>{
+          const d = new Date(x.createdAt);
+          return !isNaN(d) && d >= since;
+        });
+
+        document.getElementById("k_week").textContent = "7 ngày";
+        document.getElementById("k_sub").textContent = subs7.length;
+        document.getElementById("k_notes").textContent = fbs7.length;
+
+        // latest PH feedback
+        const latest = [...fbs].sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0];
+        document.getElementById("teacherNote").textContent = stripMd((latest && latest.feedbackPH) ? latest.feedbackPH : "Chưa có nhận xét dành cho phụ huynh.");
+
+        // Table: show last 7 days submissions + status by having feedback
+        const fbSet = new Set(fbs.map(x => `${String(x.taskId||"").trim()}|||${String(x.createdAt||"")}`));
+        const byTaskHasFeedback = new Set(fbs.map(x => String(x.taskId||"").trim()));
+
+        const tb = document.getElementById("rows");
+        if(!subs7.length){
+          tb.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">7 ngày gần nhất chưa có bài nộp…</td></tr>`;
+        }else{
+          tb.innerHTML = subs7
+            .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))
+            .slice(0, 30)
+            .map(x=>{
+              const tid = String(x.taskId||"").trim();
+              const badge = byTaskHasFeedback.has(tid) ? "ok" : "warn";
+              const label = byTaskHasFeedback.has(tid) ? "Đã nhận xét" : "Chờ nhận xét";
+              return `<tr>
+                <td>${tid}</td>
+                <td><span class="badge ${badge}">${label}</span></td>
+                <td>${fmt(x.createdAt)}</td>
+              </tr>`;
+            }).join("");
+        }
+
+      }catch(e){
+        toast(e.message || "Không tải được báo cáo tuần.");
+      }
+    })();
+
+    // Confirm read: hiện tại Code.gs chưa bắt buộc endpoint này => làm “client-only”
+    document.getElementById("btnConfirm").onclick = async ()=>{
+      toast("Đã ghi nhận ✅");
+    };
   </script>
 </body>
 </html>

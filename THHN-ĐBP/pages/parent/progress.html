@@ -28,60 +28,91 @@
         <div style="color:var(--muted);font-size:13px" id="who">—</div>
       </div>
       <div class="pills">
-        <a class="pill active" href="week.html">Tuần này</a><a class="pill " href="progress.html">Tiến bộ</a><a class="pill " href="notes.html">Nhận xét</a>
+        <a class="pill" href="week.html">Tuần này</a>
+        <a class="pill" href="progress.html">Tiến bộ</a>
+        <a class="pill" href="notes.html">Nhận xét</a>
       </div>
     </div>
 
-    
-<div class="card" style="padding:14px">
-  <div style="font-weight:900;font-size:16px">Tiến bộ theo thời gian</div>
-  <div style="color:var(--muted);font-size:12px;margin-top:4px">Xem theo tuần/tháng (không dùng AI).</div>
+    <div class="card" style="padding:14px">
+      <div style="font-weight:900;font-size:16px">Tiến bộ theo thời gian</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px">Tự tính theo tuần.</div>
 
-  <div class="divider"></div>
+      <div class="divider"></div>
 
-  <table class="table">
-    <thead>
-      <tr><th>Tuần</th><th>Hoàn thành</th><th>Nhận xét</th><th>Ghi chú</th></tr>
-    </thead>
-    <tbody id="rows">
-      <tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
-    </tbody>
-  </table>
-</div>
-
+      <table class="table">
+        <thead>
+          <tr><th>Tuần</th><th>Hoàn thành</th><th>Nhận xét</th><th>Ghi chú</th></tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
+  <script src="../../assets/parent-snippet.js"></script>
+
   <script>
-    const cfg = getConfig();
-    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
-    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
-    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
-    
-const s = requireRole(["PARENT"]);
-document.getElementById("who").textContent = `PH của ${s.studentId||"—"} • ${s.classId||""} • ${s.schoolYear||""}`;
-
-(async ()=>{
-  try{
-    const r = await api("parentProgress", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
-    const rows = r.rows || [];
-    const tb = document.getElementById("rows");
-    if(!rows.length){
-      tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
-      return;
+    function weekKey_(iso){
+      const d = new Date(iso);
+      if (isNaN(d)) return "—";
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+      return `${date.getUTCFullYear()}-W${("0"+weekNo).slice(-2)}`;
     }
-    tb.innerHTML = rows.map(x=>`
-      <tr>
-        <td>${x.weekLabel||"—"}</td>
-        <td>${x.completed ?? "—"}</td>
-        <td>${x.noteCount ?? "—"}</td>
-        <td>${x.note||""}</td>
-      </tr>
-    `).join("");
-  }catch(e){ toast(e.message); }
-})();
 
+    (async ()=>{
+      await parentInit("progress");
+      const s = window.__PAR__;
+      const token = s.sessionId || s.token || "";
+
+      try{
+        const r = await api("getParentHistory", { token, classId:s.classId, studentId:s.studentId, limit: 500 });
+        const subs = r.submissions || [];
+        const fbs  = r.feedbacks || [];
+
+        const byWeek = {};
+        subs.forEach(x=>{
+          const k = weekKey_(x.createdAt);
+          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
+          byWeek[k].submitted++;
+        });
+        fbs.forEach(x=>{
+          const k = weekKey_(x.createdAt);
+          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
+          byWeek[k].feedback++;
+        });
+
+        const keys = Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
+        const tb = document.getElementById("rows");
+        if(!keys.length){
+          tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
+          return;
+        }
+
+        tb.innerHTML = keys.map(k=>{
+          const it = byWeek[k];
+          const note = it.feedback ? "Có nhận xét ✅" : (it.submitted ? "Chờ nhận xét ⏳" : "");
+          return `
+            <tr>
+              <td>${k}</td>
+              <td>${it.submitted}</td>
+              <td>${it.feedback}</td>
+              <td>${note}</td>
+            </tr>
+          `;
+        }).join("");
+
+      }catch(e){
+        toast(e.message || "Không tải được tiến bộ.");
+      }
+    })();
   </script>
 </body>
 </html>

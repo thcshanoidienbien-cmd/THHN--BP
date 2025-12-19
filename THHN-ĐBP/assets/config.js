@@ -10,7 +10,7 @@
     SCHOOL_NAME: "Trường Tiểu học Hà Nội – Điện Biên Phủ",
 
     // Web App Apps Script (exec)
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbygWQIyQ2cBSTKJ44R1M8zOVz-Tf8ROmq4n-C9TapuXTt_dsTB95SL1k0Y4oRGIEvvc3A/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwvyVmFT0uym_x5h1nvDik5R7uRvo5Y73GOxgdn6eZpa7Ucsq9qAsuJWFBE6sRv0ofkjw/exec",
 
     // ===== SYSTEM MODE =====
     MODE: "production", // development | production

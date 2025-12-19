@@ -28,72 +28,79 @@
         <div style="color:var(--muted);font-size:13px" id="who">—</div>
       </div>
       <div class="pills">
-        <a class="pill active" href="dashboard.html">Dashboard</a><a class="pill " href="do-task.html">Làm bài</a><a class="pill " href="progress.html">Tiến bộ</a>
+        <a class="pill" href="dashboard.html">Dashboard</a>
+        <a class="pill" href="do-task.html">Làm bài</a>
+        <a class="pill" href="progress.html">Tiến bộ</a>
       </div>
     </div>
 
-    
-<div class="kpis">
-  <div class="kpi"><div class="t">Bài được giao</div><div class="v" id="k_tasks">—</div></div>
-  <div class="kpi"><div class="t">Đã nộp</div><div class="v" id="k_submitted">—</div></div>
-  <div class="kpi"><div class="t">Nhận xét mới</div><div class="v" id="k_feedback">—</div></div>
-</div>
+    <div class="kpis">
+      <div class="kpi"><div class="t">Bài được giao</div><div class="v" id="k_tasks">—</div></div>
+      <div class="kpi"><div class="t">Đã nộp</div><div class="v" id="k_submitted">—</div></div>
+      <div class="kpi"><div class="t">Nhận xét</div><div class="v" id="k_feedback">—</div></div>
+    </div>
 
-<div style="height:12px"></div>
+    <div style="height:12px"></div>
 
-<div class="card" style="padding:14px">
-  <div style="font-weight:900">Bài cần làm</div>
-  <div style="color:var(--muted);font-size:12px;margin-top:4px">Chọn một bài để làm và nộp.</div>
+    <div class="card" style="padding:14px">
+      <div style="font-weight:900">Bài cần làm</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px">Chọn một bài để làm và nộp.</div>
 
-  <div style="height:10px"></div>
-  <table class="table">
-    <thead>
-      <tr><th>Mã bài</th><th>Tiêu đề</th><th>Loại</th><th></th></tr>
-    </thead>
-    <tbody id="rows">
-      <tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>
-    </tbody>
-  </table>
-</div>
-
+      <div style="height:10px"></div>
+      <table class="table">
+        <thead>
+          <tr><th>Mã bài</th><th>Chủ đề</th><th>Mảng</th><th></th></tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
+  <script src="../../assets/student-snippet.js"></script>
+
   <script>
-    const cfg = getConfig();
-    document.getElementById("brandName").textContent = cfg.APP_NAME || "HEDU";
-    document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
-    document.getElementById("btnLogout").onclick = (e)=>{ e.preventDefault(); clearSession(); location.href='../../index.html'; };
-    
-const s = requireRole(["STUDENT"]);
-document.getElementById("who").textContent = `${s.studentId||"Học sinh"} • ${s.classId||""} • ${s.schoolYear||""}`;
+    (async ()=>{
+      await studentInit("dashboard");
+      const s = window.__STU__;
+      const token = s.sessionId || s.token || "";
 
-(async ()=>{
-  try{
-    const r = await api("studentDashboard", { schoolYear:s.schoolYear, classId:s.classId, studentId:s.studentId });
-    const d = r.dashboard || {};
-    document.getElementById("k_tasks").textContent = (d.totalTasks ?? 0);
-    document.getElementById("k_submitted").textContent = (d.submitted ?? 0);
-    document.getElementById("k_feedback").textContent = (d.newFeedback ?? 0);
+      try{
+        const rTasks = await api("listTasksForStudent", { token, classId:s.classId, studentId:s.studentId });
+        const tasks = rTasks.tasks || [];
 
-    const rows = d.tasks || [];
-    const tb = document.getElementById("rows");
-    if(!rows.length){
-      tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>`;
-      return;
-    }
-    tb.innerHTML = rows.map(x=>`
-      <tr>
-        <td>${x.taskId||"—"}</td>
-        <td>${x.title||"—"}</td>
-        <td>${x.typeLabel||x.type||"—"}</td>
-        <td><a class="smallLink" href="do-task.html?taskId=${encodeURIComponent(x.taskId)}">Làm bài</a></td>
-      </tr>
-    `).join("");
-  }catch(e){ toast(e.message); }
-})();
+        const rHist = await api("getMyHistory", { token, classId:s.classId, studentId:s.studentId, limit: 200 });
+        const fbs = rHist.feedbacks || [];
+        const subs = rHist.submissions || [];
 
+        const submittedSet = new Set(subs.map(x=> String(x.taskId||"").trim()).filter(Boolean));
+        const need = tasks.filter(t => !submittedSet.has(String(t.taskId||"").trim()));
+
+        document.getElementById("k_tasks").textContent = tasks.length;
+        document.getElementById("k_submitted").textContent = submittedSet.size;
+        document.getElementById("k_feedback").textContent = fbs.length;
+
+        const tb = document.getElementById("rows");
+        if(!need.length){
+          tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Không còn bài cần làm 🎉</td></tr>`;
+          return;
+        }
+
+        tb.innerHTML = need.map(t=>`
+          <tr>
+            <td>${t.taskId||"—"}</td>
+            <td>${t.topic||t.unit||"—"}</td>
+            <td>${t.domain||"—"}</td>
+            <td><a class="smallLink" href="do-task.html?taskId=${encodeURIComponent(t.taskId)}">Làm bài</a></td>
+          </tr>
+        `).join("");
+      }catch(e){
+        toast(e.message || "Không tải được dữ liệu.");
+      }
+    })();
   </script>
 </body>
 </html>

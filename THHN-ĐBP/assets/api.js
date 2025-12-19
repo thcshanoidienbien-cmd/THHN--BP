@@ -1,4 +1,4 @@
-// assets/api.js — HEDU API client (PRO, stable)
+// assets/api.js — HEDU API client (SSOT, stable)
 
 async function api(action, payload = {}) {
   const cfg = (typeof getConfig === "function") ? getConfig() : (window.HEDU_CONFIG || {});
@@ -8,19 +8,21 @@ async function api(action, payload = {}) {
     throw new Error("Hệ thống chưa cấu hình SCRIPT_URL (assets/config.js).");
   }
 
-  // body chuẩn
   const body = { action, ...(payload || {}) };
 
-  // ✅ tự gắn token nếu chưa có (token = sessionId)
+  // ✅ SSOT token: token == sessionId
+  // ưu tiên token truyền vào, nếu không có thì tự gắn từ session
   try {
-    if (typeof getSession === "function") {
-      const s = getSession();
-      if (s?.token && body.token === undefined) body.token = s.token;
-    }
-    // fallback: nếu core có getToken()
-    if (typeof getToken === "function") {
-      const tk = getToken();
-      if (tk && body.token === undefined) body.token = tk;
+    if (body.token === undefined || body.token === null || body.token === "") {
+      if (typeof getSession === "function") {
+        const s = getSession();
+        const tk = s?.token || s?.sessionId || "";
+        if (tk) body.token = tk;
+      }
+      if ((body.token === undefined || body.token === null || body.token === "") && typeof getToken === "function") {
+        const tk2 = getToken();
+        if (tk2) body.token = tk2;
+      }
     }
   } catch (_) {}
 
@@ -31,7 +33,7 @@ async function api(action, payload = {}) {
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },  // ✅ quan trọng
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       signal: ctrl.signal
     });
@@ -41,16 +43,13 @@ async function api(action, payload = {}) {
   }
   clearTimeout(tm);
 
-  // ✅ đọc text trước để xử lý trường hợp server trả HTML lỗi
   try {
     text = await res.text();
   } catch (_) {
     throw new Error("Không đọc được phản hồi từ máy chủ.");
   }
 
-  // ✅ nếu HTTP lỗi -> báo rõ
   if (!res.ok) {
-    // cố gắng parse JSON để lấy error (nếu có)
     try {
       const j = JSON.parse(text);
       throw new Error(j?.error || `HTTP ${res.status}`);
@@ -59,15 +58,16 @@ async function api(action, payload = {}) {
     }
   }
 
-  // ✅ parse JSON
   try {
     data = JSON.parse(text);
   } catch (e) {
+    // Apps Script đôi khi trả HTML (đăng nhập, lỗi deploy...)
     throw new Error("Máy chủ không trả JSON hợp lệ. (Có thể URL sai hoặc Apps Script trả trang HTML)");
   }
 
   if (!data || data.ok !== true) {
     throw new Error(data?.error || "API lỗi");
   }
+
   return data;
 }
