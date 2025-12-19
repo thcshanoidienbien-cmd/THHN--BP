@@ -1,6 +1,4 @@
-// assets/api.js — HEDU API client (CORS-safe, SSOT)
-// ✅ Use application/x-www-form-urlencoded to avoid CORS preflight on Apps Script WebApp
-
+// assets/api.js — HEDU API client (NO-CORS preflight version)
 async function api(action, payload = {}) {
   const cfg = (typeof getConfig === "function") ? getConfig() : (window.HEDU_CONFIG || {});
   const url = cfg.SCRIPT_URL;
@@ -9,27 +7,23 @@ async function api(action, payload = {}) {
     throw new Error("Hệ thống chưa cấu hình SCRIPT_URL (assets/config.js).");
   }
 
-  // body chuẩn
-  const body = { action, ...(payload || {}) };
+  const bodyObj = { action, ...(payload || {}) };
 
-  // ✅ tự gắn token nếu chưa có
+  // auto token
   try {
     if (typeof getSession === "function") {
       const s = getSession();
-      if (s?.token && body.token === undefined) body.token = s.token;
+      if (s?.token && bodyObj.token === undefined) bodyObj.token = s.token;
     }
     if (typeof getToken === "function") {
       const tk = getToken();
-      if (tk && body.token === undefined) body.token = tk;
+      if (tk && bodyObj.token === undefined) bodyObj.token = tk;
     }
   } catch (_) {}
 
-  // ✅ Encode form (avoid preflight)
+  // ✅ gửi dạng form-urlencoded để tránh preflight CORS
   const form = new URLSearchParams();
-  Object.keys(body).forEach((k) => {
-    const v = body[k];
-    form.append(k, (typeof v === "object") ? JSON.stringify(v) : String(v ?? ""));
-  });
+  form.set("payload", JSON.stringify(bodyObj));
 
   const ctrl = new AbortController();
   const tm = setTimeout(() => ctrl.abort(), 25000);
@@ -40,7 +34,7 @@ async function api(action, payload = {}) {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body: form.toString(),
-      signal: ctrl.signal,
+      signal: ctrl.signal
     });
   } catch (e) {
     clearTimeout(tm);
@@ -48,31 +42,13 @@ async function api(action, payload = {}) {
   }
   clearTimeout(tm);
 
-  try {
-    text = await res.text();
-  } catch (_) {
-    throw new Error("Không đọc được phản hồi từ máy chủ.");
-  }
-
-  if (!res.ok) {
-    // cố parse json lỗi
-    try {
-      const j = JSON.parse(text);
-      throw new Error(j?.error || `HTTP ${res.status}`);
-    } catch (_) {
-      throw new Error(`Máy chủ lỗi HTTP ${res.status}. (Deploy sai quyền hoặc URL Web App sai)`);
-    }
-  }
+  try { text = await res.text(); }
+  catch { throw new Error("Không đọc được phản hồi từ máy chủ."); }
 
   // parse JSON
-  try {
-    data = JSON.parse(text);
-  } catch (_) {
-    throw new Error("Máy chủ không trả JSON hợp lệ. (Có thể Apps Script trả HTML)");
-  }
+  try { data = JSON.parse(text); }
+  catch { throw new Error("Máy chủ không trả JSON hợp lệ."); }
 
-  if (!data || data.ok !== true) {
-    throw new Error(data?.error || "API lỗi");
-  }
+  if (!data || data.ok !== true) throw new Error(data?.error || "API lỗi");
   return data;
 }
