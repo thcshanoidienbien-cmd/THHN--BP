@@ -3,69 +3,334 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Học sinh • Dashboard</title>
+  <title>Học sinh • Bảng điều khiển</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
   <script src="../../assets/config.js"></script>
+
+  <style>
+    /* ===== Topbar (giống tinh thần index/teacher) ===== */
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
+    .topbar .inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#2563eb,#60a5fa)}
+    .logoImg{width:40px;height:40px;border-radius:12px;object-fit:cover;display:block}
+    .btext{min-width:0}
+    .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bsub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+
+    .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{
+      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
+    }
+    .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
+    .rightActions{display:flex;align-items:center;gap:10px}
+    .btnLogout{
+      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
+    }
+
+    /* ===== Page ===== */
+    .container{max-width:1180px}
+    .heroHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
+    }
+    .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
+    .heroSub{margin-top:6px}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chipLite{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;font-weight:900;font-size:13px;white-space:nowrap;
+      box-shadow:0 8px 22px rgba(15,23,42,.04)
+    }
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
+
+    .gridKpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    @media(max-width:980px){.gridKpi{grid-template-columns:1fr}}
+    .kpiCard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .kpiCard .t{color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .kpiCard .v{font-size:22px;font-weight:900;margin-top:6px}
+
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
+
+    /* ===== Kid mode ===== */
+    body.kid .heroTitle{font-size:30px}
+    body.kid .pill, body.kid .btnLogout{font-size:14px;padding:12px 16px}
+    body.kid .chipLite{font-size:14px;padding:10px 14px}
+    body.kid .kpiCard .t{font-size:13px}
+    body.kid .kpiCard .v{font-size:26px}
+    body.kid .dcard{border-radius:20px}
+    body.kid .muted{font-size:13px}
+
+    /* Card list for Kid mode */
+    .taskCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    @media(max-width:900px){.taskCards{grid-template-columns:1fr}}
+    .taskCard{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .taskCard .left{min-width:0}
+    .taskCard .title{font-weight:900;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .taskCard .meta{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.35}
+    .taskCard .go{
+      white-space:nowrap;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:10px 12px;
+      font-weight:900;
+      text-decoration:none;
+      color:#fff;
+      background:var(--primary);
+      box-shadow:0 10px 26px rgba(37,99,235,.14)
+    }
+
+    /* hide helpers */
+    .hidden{display:none !important}
+  </style>
 </head>
+
 <body>
+  <!-- ===== TOPBAR ===== -->
   <div class="topbar">
     <div class="inner">
       <div class="brand">
-        <div class="logo">H</div>
-        <div>
-          <div class="name" id="brandName"></div>
-          <div class="sub" id="brandSub"></div>
+          <div class="btext">
+          <!-- ✅ Theo yêu cầu: dòng 1 = TÊN TRƯỜNG, dòng 2 = TÊN HỌC SINH -->
+          <div class="bname" id="brandName">—</div>
+          <div class="bsub" id="brandSub">—</div>
         </div>
       </div>
-      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
+
+      <div class="navMid">
+        <div class="pills">
+          <a class="pill" href="dashboard.html">Bảng điều khiển</a>
+          <a class="pill" href="do-task.html">Làm bài</a>
+          <a class="pill" href="progress.html">Tiến bộ</a>
+        </div>
+
+        <div class="rightActions">
+          <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="shell">
-    <div class="shellTop">
-      <div>
-        <div style="font-weight:900;font-size:18px">Cổng Học sinh</div>
-        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+  <main class="container">
+    <section class="card" style="padding:18px;margin-top:14px">
+
+      <!-- ===== HERO ===== -->
+      <div class="heroHead">
+        <div>
+          <h1 class="heroTitle" id="pageTitle">Trang Học sinh</h1>
+          <div class="muted heroSub" id="who">—</div>
+        </div>
+
+        <!-- ✅ Chỉ hiển thị chip LỚP bên phải (không lặp “Học sinh • 5A1” trên menu) -->
+        <div class="heroRight">
+          <div class="chips">
+            <span class="chipLite" id="chipClass">🏷️ <strong id="studentClass">—</strong></span>
+          </div>
+          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
+        </div>
       </div>
-      <div class="pills">
-        <a class="pill" href="dashboard.html">Dashboard</a>
-        <a class="pill" href="do-task.html">Làm bài</a>
-        <a class="pill" href="progress.html">Tiến bộ</a>
+
+      <!-- ===== Tổng quan ===== -->
+      <div class="dcard">
+        <div style="font-weight:900" id="overviewTitle">📒 Tổng quan học tập</div>
+        <div class="muted" style="margin-top:6px" id="overviewSub">Thống kê nhanh dựa trên bài được giao, lịch sử nộp và nhận xét.</div>
+
+        <div class="gridKpi mt">
+          <div class="kpiCard">
+            <div class="t" id="kpi1t">📚 Bài được giao</div>
+            <div class="v" id="k_tasks">—</div>
+          </div>
+          <div class="kpiCard">
+            <div class="t" id="kpi2t">📨 Con đã nộp</div>
+            <div class="v" id="k_submitted">—</div>
+          </div>
+          <div class="kpiCard">
+            <div class="t" id="kpi3t">💬 Lời nhận xét</div>
+            <div class="v" id="k_feedback">—</div>
+          </div>
+        </div>
+
+        <!-- Kid-only friendly line -->
+        <div class="muted mt hidden" id="kidLine" style="font-weight:900"></div>
       </div>
-    </div>
 
-    <div class="kpis">
-      <div class="kpi"><div class="t">Bài được giao</div><div class="v" id="k_tasks">—</div></div>
-      <div class="kpi"><div class="t">Đã nộp</div><div class="v" id="k_submitted">—</div></div>
-      <div class="kpi"><div class="t">Nhận xét</div><div class="v" id="k_feedback">—</div></div>
-    </div>
+      <div style="height:12px"></div>
 
-    <div style="height:12px"></div>
+      <!-- ===== Bài cần làm ===== -->
+      <div class="dcard">
+        <div class="row">
+          <div>
+            <div style="font-weight:900" id="needTitle">👨‍🎓 Bài cần làm</div>
+            <div class="muted" style="font-size:12px;margin-top:4px" id="needSub">
+              Chọn một bài để làm và nộp. Danh sách tự ẩn các bài đã nộp.
+            </div>
+          </div>
+          <button class="btn" id="btnReload" type="button">Tải lại</button>
+        </div>
 
-    <div class="card" style="padding:14px">
-      <div style="font-weight:900">Bài cần làm</div>
-      <div style="color:var(--muted);font-size:12px;margin-top:4px">Chọn một bài để làm và nộp.</div>
+        <div class="divider"></div>
 
-      <div style="height:10px"></div>
-      <table class="table">
-        <thead>
-          <tr><th>Mã bài</th><th>Chủ đề</th><th>Mảng</th><th></th></tr>
-        </thead>
-        <tbody id="rows">
-          <tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+        <!-- Standard: table -->
+        <table class="table" id="tableWrap">
+          <thead>
+            <tr><th>Mã bài</th><th>Chủ đề</th><th>Mảng</th><th></th></tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="4" style="color:var(--muted)">Chưa có bài…</td></tr>
+          </tbody>
+        </table>
 
+        <!-- Kid: cards -->
+        <div id="cardsWrap" class="taskCards hidden"></div>
+
+        <div class="muted" style="margin-top:10px;font-size:12px;font-weight:800" id="tipLine">
+          Mẹo: Nếu em đã làm xong, hãy sang mục <b>Tiến bộ</b> để xem nhận xét và điểm.
+        </div>
+      </div>
+
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <script src="../../assets/app.js"></script>
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
   <script src="../../assets/student-snippet.js"></script>
 
   <script>
-    (async ()=>{
-      await studentInit("dashboard");
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show");t.hidden=true;},2400);
+    }
+
+    function fmtTime_(d){
+      const pad=n=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+    }
+
+    function getGradeFromClassId_(classId){
+      // Ưu tiên format "1A1..5A1"
+      const s = String(classId||"").trim();
+      const m = s.match(/^(\d)/);
+      const g = m ? Number(m[1]) : 0;
+      return (g>=1 && g<=5) ? g : 0;
+    }
+
+    function applyKidModeUI_(grade){
+      const isKid = grade > 0 && grade <= 2;
+      document.body.classList.toggle("kid", isKid);
+
+      // Copywriting theo lứa tuổi
+      if(isKid){
+        document.getElementById("pageTitle").textContent = "Góc học tập của con ✨";
+        document.getElementById("overviewTitle").textContent = "📒 Hôm nay con học gì?";
+        document.getElementById("overviewSub").textContent = "Con xem bài cần làm và bấm “Làm bài” nhé 😊";
+        document.getElementById("needTitle").textContent = "🧸 Bài con cần làm";
+        document.getElementById("needSub").textContent = "Chọn 1 bài để làm và nộp. Các bài đã nộp sẽ tự ẩn.";
+        document.getElementById("btnReload").textContent = "Làm mới 🔄";
+        document.getElementById("tipLine").innerHTML = "Mẹo: Xong rồi nhớ sang <b>Tiến bộ</b> để xem lời nhận xét nha 💬";
+      }else{
+        // Standard (giữ đúng như hiện tại)
+        document.getElementById("pageTitle").textContent = "Trang Học sinh";
+        document.getElementById("overviewTitle").textContent = "📒 Tổng quan học tập";
+        document.getElementById("overviewSub").textContent = "Thống kê nhanh dựa trên bài được giao, lịch sử nộp và nhận xét.";
+        document.getElementById("needTitle").textContent = "👨‍🎓 Bài cần làm";
+        document.getElementById("needSub").textContent = "Chọn một bài để làm và nộp. Danh sách tự ẩn các bài đã nộp.";
+        document.getElementById("btnReload").textContent = "Tải lại";
+        document.getElementById("tipLine").innerHTML = "Mẹo: Nếu em đã làm xong, hãy sang mục <b>Tiến bộ</b> để xem nhận xét và điểm.";
+      }
+
+      return isKid;
+    }
+
+      function renderTasksStandard_(need){
+      const tb = document.getElementById("rows");
+      if(!need.length){
+        tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Không còn bài cần làm 🎉</td></tr>`;
+        return;
+      }
+      tb.innerHTML = need.map(t=>`
+        <tr>
+          <td>${t.taskId||"—"}</td>
+          <td>${t.topic||t.unit||"—"}</td>
+          <td>${t.domain||"—"}</td>
+          <td><a class="smallLink" href="do-task.html?taskId=${encodeURIComponent(t.taskId)}">Làm bài</a></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderTasksKid_(need){
+      const wrap = document.getElementById("cardsWrap");
+      if(!need.length){
+        wrap.innerHTML = `
+          <div class="taskCard">
+            <div class="left">
+              <div class="title">🎉 Hôm nay con xong rồi!</div>
+              <div class="meta">Con có thể sang mục <b>Tiến bộ</b> để xem lời nhận xét 💬</div>
+            </div>
+            <a class="go" href="progress.html">Xem Tiến bộ</a>
+          </div>
+        `;
+        return;
+      }
+      wrap.innerHTML = need.map(t=>{
+        const topic = (t.topic||t.unit||"Bài tập");
+        const domain = (t.domain||"");
+        return `
+          <div class="taskCard">
+            <div class="left">
+              <div class="title">📘 ${topic}</div>
+              <div class="meta">
+                Mã bài: <b>${t.taskId||"—"}</b>${domain ? `<br/>Mảng: <b>${domain}</b>` : ""}
+              </div>
+            </div>
+            <a class="go" href="do-task.html?taskId=${encodeURIComponent(t.taskId)}">Làm bài</a>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadData_(){
       const s = window.__STU__;
+      if(!s) return;
+
+      const cfg = (typeof getConfig === "function") ? getConfig() : {};
+      setBrand_(cfg, s);
+
+      // Who line (nhẹ nhàng)
+      const who = document.getElementById("who");
+      if(who) who.textContent = ""; // ✅ không hiện “Học sinh • 5A1”
+
+      // Chip lớp (bên phải)
+      document.getElementById("studentClass").textContent = (s.classId||"—");
+
+      const grade = getGradeFromClassId_(s.classId);
+      const isKid = applyKidModeUI_(grade);
+
+      document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
+
+      // Toggle list layout
+      document.getElementById("tableWrap").classList.toggle("hidden", isKid);
+      document.getElementById("cardsWrap").classList.toggle("hidden", !isKid);
+
       const token = s.sessionId || s.token || "";
 
       try{
@@ -83,23 +348,27 @@
         document.getElementById("k_submitted").textContent = submittedSet.size;
         document.getElementById("k_feedback").textContent = fbs.length;
 
-        const tb = document.getElementById("rows");
-        if(!need.length){
-          tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Không còn bài cần làm 🎉</td></tr>`;
-          return;
+        // Kid friendly line
+        const kidLine = document.getElementById("kidLine");
+        if(isKid){
+          kidLine.classList.remove("hidden");
+          kidLine.textContent = `🌟 Hôm nay con còn ${need.length} bài cần làm nhé!`;
+        }else{
+          kidLine.classList.add("hidden");
         }
 
-        tb.innerHTML = need.map(t=>`
-          <tr>
-            <td>${t.taskId||"—"}</td>
-            <td>${t.topic||t.unit||"—"}</td>
-            <td>${t.domain||"—"}</td>
-            <td><a class="smallLink" href="do-task.html?taskId=${encodeURIComponent(t.taskId)}">Làm bài</a></td>
-          </tr>
-        `).join("");
+        if(isKid) renderTasksKid_(need);
+        else renderTasksStandard_(need);
+
       }catch(e){
         toast(e.message || "Không tải được dữ liệu.");
       }
+    }
+
+    (async ()=>{
+      await studentInit("dashboard"); // ✅ wire logout -> ../../index.html
+      document.getElementById("btnReload").onclick = loadData_;
+      await loadData_();
     })();
   </script>
 </body>

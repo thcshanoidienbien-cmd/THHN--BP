@@ -3,154 +3,190 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Học sinh • Làm bài</title>
+  <title>Học sinh • Làm bài</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
   <script src="../../assets/config.js"></script>
-</head>
-<body>
-  <div class="topbar">
-    <div class="inner">
-      <div class="brand">
-        <div class="logo">H</div>
-        <div>
-          <div class="name" id="brandName"></div>
-          <div class="sub" id="brandSub"></div>
-        </div>
-      </div>
-      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
-    </div>
-  </div>
 
-  <div class="shell">
-    <div class="shellTop">
-      <div>
-        <div style="font-weight:900;font-size:18px">Cổng Học sinh</div>
-        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+  <style>
+    /* ===== Topbar (SSOT – giống dashboard) ===== */
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
+    .topbar .inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .logoImg{width:40px;height:40px;border-radius:12px;object-fit:cover;display:block}
+    .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#2563eb,#60a5fa)}
+    .btext{min-width:0}
+    .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bsub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+
+    .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{
+      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
+    }
+    .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
+    .btnLogout{
+      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
+    }
+
+    /* ===== Page ===== */
+    .container{max-width:1180px}
+    .heroHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
+    }
+    .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
+    .heroSub{margin-top:6px}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .chipLite{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;font-weight:900;font-size:13px;
+    }
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;white-space:nowrap}
+
+    /* Kid mode */
+    body.kid .heroTitle{font-size:30px}
+    body.kid .pill, body.kid .btnLogout{font-size:14px;padding:12px 16px}
+  </style>
+</head>
+
+<body>
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+  <div class="inner">
+    <div class="brand">
+        <div class="btext">
+        <div class="bname" id="brandName">—</div>
+        <div class="bsub" id="brandSub">—</div>
       </div>
+    </div>
+
+    <div class="navMid">
       <div class="pills">
-        <a class="pill" href="dashboard.html">Dashboard</a>
-        <a class="pill" href="do-task.html">Làm bài</a>
+        <a class="pill" href="dashboard.html">Bảng điều khiển</a>
+        <a class="pill active" href="do-task.html">Làm bài</a>
         <a class="pill" href="progress.html">Tiến bộ</a>
       </div>
+      <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
     </div>
+  </div>
+</div>
 
-    <div class="card" style="padding:14px">
-      <div style="font-weight:900;font-size:16px">Làm bài</div>
-      <div style="color:var(--muted);font-size:12px;margin-top:4px">Đọc kỹ yêu cầu và trả lời. Nộp bài khi hoàn thành.</div>
+<main class="container">
+<section class="card" style="padding:18px;margin-top:14px">
 
-      <div class="divider"></div>
-
-      <div class="field">
-        <label>Chọn bài</label>
-        <select id="taskSel"><option value="">— Chọn bài —</option></select>
-      </div>
-
-      <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
-        <div style="font-weight:900" id="taskTitle">—</div>
-        <div style="color:var(--muted);font-size:12px;margin:6px 0">Nội dung</div>
-        <div style="white-space:pre-wrap;line-height:1.6" id="taskBody">—</div>
-      </div>
-
-      <div class="field" style="margin-top:12px">
-        <label>Bài làm của em</label>
-        <textarea id="answer" rows="8" placeholder="Nhập câu trả lời ở đây…"></textarea>
-      </div>
-
-      <div class="actions">
-        <button class="btn" id="btnSubmit">Nộp bài</button>
-        <button class="btn secondary" id="btnLoadFeedback" type="button">Xem nhận xét</button>
-      </div>
-
-      <div style="height:10px"></div>
-      <div class="card" style="padding:12px;background:#fff;border-color:#e5e7eb">
-        <div style="font-weight:900">Nhận xét</div>
-        <div style="color:var(--muted);font-size:12px;margin:6px 0 8px">Nhận xét của giáo viên.</div>
-        <div style="white-space:pre-wrap;line-height:1.6" id="feedback">—</div>
-      </div>
+  <!-- ===== HERO ===== -->
+  <div class="heroHead">
+    <div>
+      <h1 class="heroTitle" id="pageTitle">Làm bài</h1>
+      <div class="muted heroSub" id="who"></div>
+    </div>
+    <div class="heroRight">
+      <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+      <div class="lastUpdate" id="lastUpdate">—</div>
     </div>
   </div>
 
-  <script src="../../assets/core.js"></script>
-  <script src="../../assets/api.js"></script>
-  <script src="../../assets/student-snippet.js"></script>
+  <!-- ===== NỘI DUNG ===== -->
+  <div class="card" style="padding:16px">
+    <div class="field">
+      <label>📘 Chọn bài</label>
+      <select id="taskSel"><option value="">— Chọn bài —</option></select>
+    </div>
 
-  <script>
-    function getParam(name){
-      const u = new URL(location.href);
-      return u.searchParams.get(name);
-    }
+    <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
+      <div style="font-weight:900" id="taskTitle">—</div>
+      <div class="muted" style="margin:6px 0">Nội dung</div>
+      <div style="white-space:pre-wrap;line-height:1.6" id="taskBody">—</div>
+    </div>
 
-    let tasks = [];
+    <div class="field" style="margin-top:12px">
+      <label>✍️ Bài làm của em</label>
+      <textarea id="answer" rows="8" placeholder="Nhập câu trả lời ở đây…"></textarea>
+    </div>
 
-    function pickTaskById_(taskId){
-      return tasks.find(x => String(x.taskId||"") === String(taskId||""));
-    }
+    <div class="actions">
+      <button class="btn" id="btnSubmit">Nộp bài</button>
+      <button class="btn secondary" id="btnLoadFeedback" type="button">Xem nhận xét</button>
+    </div>
 
-    async function loadTasks_(){
-      const s = window.__STU__;
-      const token = s.sessionId || s.token || "";
-      const r = await api("listTasksForStudent", { token, classId:s.classId, studentId:s.studentId });
-      tasks = r.tasks || [];
+    <div class="card" style="margin-top:12px">
+      <div style="font-weight:900">💬 Nhận xét</div>
+      <div id="feedback" style="white-space:pre-wrap;margin-top:6px">—</div>
+    </div>
+  </div>
 
-      const sel = document.getElementById("taskSel");
-      sel.innerHTML = '<option value="">— Chọn bài —</option>' +
-        tasks.map(t=>`<option value="${t.taskId}">${t.taskId} • ${t.topic||t.unit||t.domain||""}</option>`).join("");
+</section>
+</main>
 
-      const qTask = getParam("taskId");
-      if (qTask) sel.value = qTask;
-      sel.dispatchEvent(new Event("change"));
-    }
+<script src="../../assets/app.js"></script>
+<script src="../../assets/core.js"></script>
+<script src="../../assets/api.js"></script>
+<script src="../../assets/student-snippet.js"></script>
 
-    document.getElementById("taskSel").onchange = ()=>{
-      const t = pickTaskById_(document.getElementById("taskSel").value);
-      document.getElementById("taskTitle").textContent = t?.topic || t?.unit || t?.taskId || "—";
-      document.getElementById("taskBody").textContent = t?.body || "—";
-      document.getElementById("feedback").textContent = "—";
-    };
+<script>
+  function fmtTime_(d){
+    const p=n=>String(n).padStart(2,"0");
+    return `${p(d.getHours())}:${p(d.getMinutes())} - ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+  }
 
-    document.getElementById("btnSubmit").onclick = async ()=>{
-      try{
-        const s = window.__STU__;
-        const token = s.sessionId || s.token || "";
+  function getGrade_(cid){
+    const m=String(cid||"").match(/^(\d)/);
+    return m?Number(m[1]):0;
+  }
 
-        const taskId = document.getElementById("taskSel").value;
-        const answer = stripMd(document.getElementById("answer").value.trim());
+  async function init_(){
+    await studentInit("do-task");
+    const s=window.__STU__;
+    const cfg=getConfig();
+    setBrand_(cfg,s);
 
-        if(!taskId) return toast("Vui lòng chọn bài.");
-        if(!answer) return toast("Vui lòng nhập bài làm.");
+    document.getElementById("who").textContent="";
+    document.getElementById("studentClass").textContent=s.classId||"—";
+    document.getElementById("lastUpdate").textContent="Cập nhật: "+fmtTime_(new Date());
 
-        await api("submitAnswer", { token, classId:s.classId, studentId:s.studentId, taskId, answer });
-        toast("Đã nộp bài ✅");
-      }catch(e){
-        toast(e.message || "Không nộp được bài.");
-      }
-    };
+    const g=getGrade_(s.classId);
+    document.body.classList.toggle("kid", g>0 && g<=2);
+  }
 
-    document.getElementById("btnLoadFeedback").onclick = async ()=>{
-      try{
-        const s = window.__STU__;
-        const token = s.sessionId || s.token || "";
-        const taskId = document.getElementById("taskSel").value;
-        if(!taskId) return toast("Vui lòng chọn bài.");
+  /* ===== logic làm bài giữ nguyên ===== */
+  let tasks=[];
+  function getParam(n){return new URL(location.href).searchParams.get(n);}
 
-        const r = await api("getMyHistory", { token, classId:s.classId, studentId:s.studentId, limit: 200 });
-        const fbs = (r.feedbacks || []).filter(x => String(x.taskId||"").trim() === String(taskId).trim());
-        if(!fbs.length){
-          document.getElementById("feedback").textContent = "Chưa có nhận xét.";
-          return;
-        }
-        // lấy feedback mới nhất
-        fbs.sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
-        document.getElementById("feedback").textContent = stripMd(fbs[0].feedbackHS || "Chưa có nhận xét.");
-      }catch(e){
-        toast(e.message || "Không tải được nhận xét.");
-      }
-    };
+  async function loadTasks_(){
+    const s=window.__STU__, token=s.sessionId||s.token||"";
+    const r=await api("listTasksForStudent",{token,classId:s.classId,studentId:s.studentId});
+    tasks=r.tasks||[];
+    const sel=document.getElementById("taskSel");
+    sel.innerHTML='<option value="">— Chọn bài —</option>'+tasks.map(t=>`<option value="${t.taskId}">${t.taskId} • ${t.topic||""}</option>`).join("");
+    const q=getParam("taskId"); if(q) sel.value=q;
+    sel.dispatchEvent(new Event("change"));
+  }
 
-    (async ()=>{
-      await studentInit("do-task");
-      await loadTasks_();
-    })();
-  </script>
+  document.getElementById("taskSel").onchange=()=>{
+    const t=tasks.find(x=>String(x.taskId)===String(taskSel.value));
+    taskTitle.textContent=t?.topic||t?.taskId||"—";
+    taskBody.textContent=t?.body||"—";
+    feedback.textContent="—";
+  };
+
+  btnSubmit.onclick=async()=>{
+    const s=window.__STU__, token=s.sessionId||s.token||"";
+    if(!taskSel.value||!answer.value.trim()) return toast("Chưa đủ thông tin");
+    await api("submitAnswer",{token,classId:s.classId,studentId:s.studentId,taskId:taskSel.value,answer:answer.value.trim()});
+    toast("Đã nộp bài ✅");
+  };
+
+  btnLoadFeedback.onclick=async()=>{
+    const s=window.__STU__, token=s.sessionId||s.token||"";
+    const r=await api("getMyHistory",{token,classId:s.classId,studentId:s.studentId,limit:200});
+    const fb=(r.feedbacks||[]).find(x=>String(x.taskId)===String(taskSel.value));
+    feedback.textContent=fb?.feedbackHS||"Chưa có nhận xét";
+  };
+
+  (async()=>{await init_(); await loadTasks_();})();
+</script>
 </body>
 </html>

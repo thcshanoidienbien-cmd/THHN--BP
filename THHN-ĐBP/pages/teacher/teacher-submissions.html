@@ -3,45 +3,244 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Submissions</title>
+  <title>Bài nộp</title>
   <link rel="stylesheet" href="../../assets/styles.css">
   <meta name="theme-color" content="#1a73e8"/>
+
   <style>
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:900px){.grid2{grid-template-columns:1fr}}
     .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
-    .list{display:grid;gap:10px}
+
+    /* =========================
+       ✅ MENU GIỐNG teacher-grading.html
+       - KHÔNG kéo ngang
+       - HIỂN THỊ ĐỦ MỤC (cho phép xuống dòng)
+       - KHÔNG hiện lớp trên topbar
+       (Không sửa teacher.js, chỉ override tại trang này)
+    ========================== */
+    #teacherBadge{display:none !important;} /* không hiện lớp trên topbar */
+
+    .hedu-nav-one-line{
+      overflow: visible !important;
+      overflow-x: visible !important;
+      flex-wrap: wrap !important;        /* ✅ hiển thị đủ mục (xuống dòng nếu cần) */
+      justify-content:center !important;
+      gap: 10px !important;
+    }
+    .hedu-nav-one-line .chip{
+      flex: 0 0 auto !important;
+      white-space: nowrap !important;
+    }
+
+    /* nếu teacher.js lỡ tạo scroll bar thì chặn triệt để */
+    .hedu-nav-one-line::-webkit-scrollbar{display:none !important;}
+    .hedu-nav-one-line{scrollbar-width:none !important;}
+
+    /* ===== Page header ===== */
+    .pageHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+      margin-top:6px;
+      padding-bottom:12px;
+      border-bottom:1px dashed rgba(148,163,184,.55);
+    }
+    .pageTitle{display:flex; align-items:flex-start; gap:12px;}
+    .picon{
+      width:44px;height:44px;border-radius:14px;
+      display:grid;place-items:center;
+      background: linear-gradient(135deg, rgba(37,99,235,.14), rgba(96,165,250,.25));
+      border:1px solid rgba(37,99,235,.18);
+      font-size:22px;
+    }
+    .pageTitle h1{margin:0;font-size:30px;letter-spacing:.2px}
+    .pageTitle .sub{margin-top:6px;color:var(--muted);font-size:13px}
+    .pill{
+      padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;
+      font-weight:900;font-size:13px; white-space:nowrap;
+    }
+
+    /* ===== Tabs bar ===== */
+    .tabsBar{
+      margin-top:14px;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(255,255,255,.78);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .tab{
+      padding:10px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;
+      font-weight:900;cursor:pointer;display:flex;align-items:center;gap:8px;
+      transition:.12s ease;user-select:none;
+    }
+    .tab:hover{transform:translateY(-1px); border-color:rgba(37,99,235,.35);}
+    .tab.active{
+      background:var(--primary);border-color:var(--primary);color:#fff;
+      box-shadow:0 10px 26px rgba(37,99,235,.14);
+    }
+    .tab .count{
+      min-width:26px;height:22px;padding:0 8px;border-radius:999px;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:900;border:1px solid rgba(2,6,23,.08);
+      background: rgba(15,23,42,.05);color:inherit;
+    }
+    .tab.active .count{
+      background: rgba(255,255,255,.22);
+      border-color: rgba(255,255,255,.25);
+      color:#fff;
+    }
+    .tabNote{color:var(--muted);font-size:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+    .notePill{
+      padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;
+      font-weight:800;font-size:12px;color:#334155;
+    }
+
+    /* ===== Control bar ===== */
+    .controlBar{
+      margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff;
+      display:grid;grid-template-columns: 1fr 1fr auto;gap:12px;align-items:end;
+    }
+    @media(max-width:900px){.controlBar{grid-template-columns:1fr}}
+    .btnsRight{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+    .btnSm{padding:10px 14px;border-radius:12px;font-weight:900;font-size:13px;}
+
+    /* ===== List ===== */
+    .list{display:grid;gap:10px;margin-top:12px}
+    .itemRow{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;
+      transition:.14s ease;
+    }
+    .itemRow:hover{
+      border-color:rgba(37,99,235,.25);
+      box-shadow:0 10px 26px rgba(2,6,23,.06);
+      transform:translateY(-1px);
+    }
+    .itemLeft{min-width:0; flex:1}
+    .itemTitle{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .itemMeta{
+      margin-top:5px;color:var(--muted);font-size:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+    .dot{width:6px;height:6px;border-radius:999px;background:rgba(148,163,184,.9);display:inline-block;}
+    .itemRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+
+    .emptyBox{
+      border:1px dashed rgba(148,163,184,.6);
+      border-radius:16px;padding:14px;background: rgba(255,255,255,.7);
+    }
+    .emptyBox .t{font-weight:900}
+    .emptyBox .m{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.5}
+
+    .footLine{
+      margin-top:10px;display:flex;align-items:center;justify-content:space-between;
+      gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px;
+    }
+
+    /* =========================
+   FIX 1 DÒNG: Tên trường + Đăng xuất (không xuống dòng)
+   (Không đổi teacher.js)
+========================= */
+
+/* cho khối brand co giãn đúng */
+.topbar .inner{ gap:12px !important; }
+.topbar .brand{ min-width:0 !important; }          /* ✅ cho phép co lại */
+.topbar .meta{ min-width:0 !important; }
+
+/* ✅ Tên trường luôn 1 dòng, quá dài thì ... */
+.topbar .meta .title{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  max-width: 520px; /* desktop default */
+}
+
+/* GV: ... cũng 1 dòng */
+.topbar .meta .sub{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+/* ✅ Nút "Đăng xuất" luôn 1 dòng */
+.topbar .top-actions .btn,
+.topbar .top-actions button{
+  white-space:nowrap !important;
+  min-width: 110px;  /* tránh bị bó hẹp gây xuống dòng */
+}
+
+/* nếu có chip/nav bị bó, vẫn giữ đẹp */
+@media (max-width: 1100px){
+  .topbar .meta .title{ max-width: 360px; }
+}
+@media (max-width: 900px){
+  .topbar .meta .title{ max-width: 260px; }
+}
+@media (max-width: 640px){
+  .topbar .meta .title{ max-width: 190px; }
+  .topbar .top-actions .btn{ min-width: 100px; }
+}
+
   </style>
 </head>
+
 <body data-active="subs">
   <div id="topbar"></div>
 
   <main class="container">
     <section class="card" style="padding:16px">
-      <div class="row">
-        <div>
-          <h1 style="margin:0">Bài nộp 📨</h1>
-          <div class="muted" id="sub">—</div>
+      <div class="pageHead">
+        <div class="pageTitle">
+          <div class="picon">📨</div>
+          <div>
+            <h1>Bài nộp</h1>
+            <div class="sub" id="sub">—</div>
+          </div>
         </div>
         <div class="pill" id="me">—</div>
       </div>
 
-      <div class="grid2 mt">
-        <div>
-          <label>Lọc theo Task</label>
-          <select id="taskId"><option value="">— Tất cả —</option></select>
+      <div class="tabsBar">
+        <div class="tabs" id="tabs"></div>
+        <div class="tabNote">
+          <span class="notePill" id="filterNote">Đang xem: Tất cả</span>
+          <span class="notePill" id="totalNote">—</span>
         </div>
-        <div class="actions" style="align-items:flex-end;justify-content:flex-end">
-          <button class="btn ghost" id="btnGoTasks" type="button">📚 Tasks</button>
-          <button class="btn" id="btnReload" type="button">Tải lại</button>
+      </div>
+
+      <div class="controlBar">
+        <div>
+          <label>Lọc theo bài (mã bài)</label>
+          <select id="taskId">
+            <option value="">— Tất cả —</option>
+          </select>
+          <div class="helper">Chọn mã bài để xem riêng các bài nộp của bài đó.</div>
+        </div>
+
+        <div>
+          <label>Tìm nhanh</label>
+          <input id="q" placeholder="Nhập mã học sinh hoặc mã bài...">
+          <div class="helper">Ví dụ: 5A1-12 hoặc T638...</div>
+        </div>
+
+        <div class="btnsRight">
+          <button class="btn ghost btnSm" id="btnGoTasks" type="button">📚 Ngân hàng bài</button>
+          <button class="btn btnSm" id="btnReload" type="button">Tải lại</button>
         </div>
       </div>
 
       <div class="divider"></div>
+
       <div class="list" id="list"></div>
-      <div class="muted mt" id="hint"></div>
+      <div class="footLine">
+        <span id="hint"></span>
+        <span id="countShown"></span>
+      </div>
     </section>
 
     <div class="toast" id="toast" hidden></div>
@@ -50,7 +249,7 @@
   <script src="../../assets/config.js"></script>
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <script src="../../assets/teacher-snippet.js"></script>
+  <script src="../../assets/teacher.js"></script>
 
   <script>
     function toast(msg){
@@ -61,50 +260,141 @@
     }
     function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
 
-    const session=requireRole("TEACHER");
-    const token=session.token;
-    const classId=localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
-    me.textContent = `${session.displayName||"Giáo viên"} • ${classId}`;
+    const session = requireRole("TEACHER");
+    if(!session) { throw new Error("Redirecting..."); }
+    const token = session?.token || "";
+
+    function currentClassId(){
+      return getTeacherClassId(session.classId || "5A1");
+    }
+
+    const meEl = document.getElementById("me");
+    function syncMe_(){
+      meEl.textContent = `${session.displayName||"Giáo viên"} • ${currentClassId()}`;
+      /* ✅ TUYỆT ĐỐI KHÔNG setTeacherHeaderBadge ở trang này */
+    }
+    syncMe_();
+
+    const sub = document.getElementById("sub");
+    const list = document.getElementById("list");
+    const hint = document.getElementById("hint");
+    const countShown = document.getElementById("countShown");
+    const filterNote = document.getElementById("filterNote");
+    const totalNote = document.getElementById("totalNote");
+    const tabs = document.getElementById("tabs");
+    const taskId = document.getElementById("taskId");
+    const q = document.getElementById("q");
+
+    const btnGoTasks = document.getElementById("btnGoTasks");
+    const btnReload = document.getElementById("btnReload");
 
     btnGoTasks.onclick = ()=> location.href="./teacher-tasks.html";
 
-    async function loadFilters(){
-      // dùng listTasks (PUBLISHED) để đổ filter
-      const r = await api("listTasks", { token, classId, status:"PUBLISHED" });
-      sub.textContent = `Pilot ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
-      const items = r.tasks || [];
-      taskId.innerHTML =
-        `<option value="">— Tất cả —</option>` +
-        items.map(t=>`<option value="${esc(t.taskId)}">${esc(t.taskId)} • ${esc(t.topic||"")}</option>`).join("");
+    let __filterMode = "ALL"; // ALL | PENDING | GRADED | LATE
+    function modeLabel_(m){
+      return ({ALL:"Tất cả",PENDING:"Chờ chấm",GRADED:"Đã chấm",LATE:"Nộp muộn"})[m] || "Tất cả";
     }
 
     function badge_(x){
       const st=String(x.status||"").toUpperCase();
-      if(st.includes("GRADED")) return `<span class="badge ok">✓ ${esc(x.statusLabel||"Đã nhận xét")}</span>`;
+      if(st.includes("GRADED")) return `<span class="badge ok">✓ ${esc(x.statusLabel||"Đã chấm")}</span>`;
       if(x.isLate) return `<span class="badge warn">⏰ ${esc(x.statusLabel||"Nộp muộn")}</span>`;
       return `<span class="badge">• ${esc(x.statusLabel||"Chờ chấm")}</span>`;
     }
 
-    function renderList(items){
+    function computeCounts_(items){
+      const arr = items || [];
+      let graded = 0, late = 0;
+      arr.forEach(x=>{
+        const st = String(x.status||"").toUpperCase();
+        if(st.includes("GRADED")) graded++;
+        if(!!x.isLate) late++;
+      });
+      const total = arr.length;
+      const pending = Math.max(total - graded, 0);
+      return { total, pending, graded, late };
+    }
+
+    function applyMode_(items){
+      const arr = items || [];
+      if(__filterMode==="ALL") return arr;
+      if(__filterMode==="LATE") return arr.filter(x=>!!x.isLate);
+      if(__filterMode==="GRADED") return arr.filter(x=>String(x.status||"").toUpperCase().includes("GRADED"));
+      return arr.filter(x=>!String(x.status||"").toUpperCase().includes("GRADED"));
+    }
+
+    function applySearch_(items){
+      const key = String(q.value||"").trim().toLowerCase();
+      if(!key) return items;
+      return (items||[]).filter(x=>{
+        const a = String(x.studentId||"").toLowerCase();
+        const b = String(x.taskId||"").toLowerCase();
+        const c = String(x.submissionId||"").toLowerCase();
+        return a.includes(key) || b.includes(key) || c.includes(key);
+      });
+    }
+
+    function renderTabs_(counts){
+      const data = [
+        {k:"ALL", t:"Tất cả", icon:"📌", v:counts.total||0},
+        {k:"PENDING", t:"Chờ chấm", icon:"🕒", v:counts.pending||0},
+        {k:"GRADED", t:"Đã chấm", icon:"✅", v:counts.graded||0},
+        {k:"LATE", t:"Nộp muộn", icon:"⏰", v:counts.late||0},
+      ];
+
+      tabs.innerHTML = data.map(x=>`
+        <div class="tab ${__filterMode===x.k?'active':''}" data-k="${x.k}">
+          <span>${x.icon} ${x.t}</span>
+          <span class="count">${x.v}</span>
+        </div>
+      `).join("");
+
+      tabs.querySelectorAll(".tab").forEach(el=>{
+        el.onclick = ()=>{
+          __filterMode = el.getAttribute("data-k") || "ALL";
+          filterNote.textContent = `Đang xem: ${modeLabel_(__filterMode)}`;
+          renderFromCache_();
+        };
+      });
+
+      filterNote.textContent = `Đang xem: ${modeLabel_(__filterMode)}`;
+    }
+
+    function renderList_(items){
       list.innerHTML="";
-      if(!items.length){
-        list.innerHTML = `<div class="muted">Chưa có bài nộp.</div>`;
+      const arr = items || [];
+
+      if(!arr.length){
+        list.innerHTML = `
+          <div class="emptyBox">
+            <div class="t">Không có bài nộp phù hợp 👇</div>
+            <div class="m">
+              • Thử chuyển tab “Tất cả” hoặc xoá ô “Tìm nhanh”.<br/>
+              • Hoặc đổi “Lọc theo bài (mã bài)” để xem bài khác.
+            </div>
+          </div>
+        `;
         hint.textContent = "";
+        countShown.textContent = "";
         return;
       }
-      items.forEach(x=>{
+
+      arr.forEach(x=>{
         const div=document.createElement("div");
-        div.className="dcard";
+        div.className="itemRow";
         div.innerHTML=`
-          <div class="row">
-            <div>
-              <div style="font-weight:900">${esc(x.studentId)} • ${esc(x.taskId)}</div>
-              <div class="muted" style="font-size:12px">${esc(x.createdAt||"")}</div>
+          <div class="itemLeft">
+            <div class="itemTitle">${esc(x.studentId)} • ${esc(x.taskId)}</div>
+            <div class="itemMeta">
+              <span>🕒 ${esc(x.createdAt||"")}</span>
+              <span class="dot"></span>
+              <span>📎 Mã nộp: ${esc(x.submissionId||"")}</span>
             </div>
-            ${badge_(x)}
           </div>
-          <div class="actions mt">
-            <button class="btn" data-act="grade" type="button">📝 Chấm / Nhận xét</button>
+
+          <div class="itemRight">
+            ${badge_(x)}
+            <button class="btn btnSm" data-act="grade" type="button">📝 Chấm</button>
           </div>
         `;
         div.querySelector('[data-act="grade"]').onclick=()=>{
@@ -112,14 +402,49 @@
         };
         list.appendChild(div);
       });
-      hint.textContent = `Tổng: ${items.length} bài nộp.`;
+
+      hint.textContent = "Mẹo: gõ nhanh mã học sinh/mã bài để lọc.";
+      countShown.textContent = `Đang hiển thị: ${arr.length}`;
+    }
+
+    let __lastAllItems = [];
+    function renderFromCache_(){
+      const tid = taskId.value || "";
+      const base = __lastAllItems || [];
+      const byMode = applyMode_(base);
+      const bySearch = applySearch_(byMode);
+      renderList_(bySearch);
+
+      totalNote.textContent = tid ? `Mã bài: ${tid}` : `Không lọc theo mã bài`;
+      syncMe_();
+    }
+
+    async function loadFilters(){
+      const r = await api("listTasks", { token, classId: currentClassId(), status:"PUBLISHED" });
+      if(r.system){
+        sub.textContent = `Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+      }
+      const items = r.tasks || [];
+      taskId.innerHTML =
+        `<option value="">— Tất cả —</option>` +
+        items.map(t=>`<option value="${esc(t.taskId)}">${esc(t.taskId)} • ${esc(t.topic||"")}</option>`).join("");
     }
 
     async function loadList(){
       try{
         const tid = taskId.value || "";
-        const r = await api("listSubmissions", { token, classId, taskId: tid });
-        renderList(r.submissions || []);
+        const r = await api("listSubmissions", { token, classId: currentClassId(), taskId: tid });
+
+        if(r.system){
+          sub.textContent = `Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+        }
+
+        __lastAllItems = r.submissions || [];
+
+        const counts = computeCounts_(__lastAllItems);
+        renderTabs_(counts);
+
+        renderFromCache_();
         toast("Đã tải ✅");
       }catch(e){
         toast(e.message||"Không tải được bài nộp.");
@@ -129,8 +454,14 @@
     btnReload.onclick = loadList;
     taskId.onchange = loadList;
 
+    let __tq;
+    q.oninput = ()=>{
+      clearTimeout(__tq);
+      __tq = setTimeout(renderFromCache_, 120);
+    };
+
     (async ()=>{
-      renderTeacherTopbar("subs");
+      renderTeacherTopbar("submissions");  // ✅ chip “Bài nộp” sáng đúng
       await loadFilters();
       await loadList();
     })();

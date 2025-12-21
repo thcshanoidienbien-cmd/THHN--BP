@@ -3,71 +3,172 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Phụ huynh • Nhận xét</title>
+  <title>Phụ huynh • Nhận xét</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
   <script src="../../assets/config.js"></script>
+
+  <style>
+    .container{ max-width:1100px; }
+
+    .heroHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
+    }
+    .heroTitle{margin:0;font-size:32px;letter-spacing:-.02em}
+    .heroSub{margin-top:6px;color:var(--muted)}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chipLite{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;
+      box-shadow:0 8px 22px rgba(15,23,42,.04)
+    }
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
+    .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
+  </style>
 </head>
-<body>
-  <div class="topbar">
-    <div class="inner">
-      <div class="brand">
-        <div class="logo">H</div>
+
+<body data-active="notes">
+  <!-- ✅ TOPBAR SSOT Parent -->
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:18px;margin-top:14px">
+
+      <div class="heroHead">
         <div>
-          <div class="name" id="brandName"></div>
-          <div class="sub" id="brandSub"></div>
+          <h1 class="heroTitle">Nhận xét của giáo viên</h1>
+          <div class="heroSub">Tổng hợp ý kiến đánh giá, góp ý trong quá trình học tập của học sinh.</div>
+        </div>
+
+        <div class="heroRight">
+          <div class="chips">
+            <span class="chipLite">👨‍👩‍👧 Phụ huynh</span>
+            <span class="chipLite">🧒 <strong id="studentName">—</strong></span>
+            <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+          </div>
+          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
         </div>
       </div>
-      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
-    </div>
-  </div>
 
-  <div class="shell">
-    <div class="shellTop">
-      <div>
-        <div style="font-weight:900;font-size:18px">Sổ liên lạc điện tử</div>
-        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+      <div class="dcard">
+        <div style="font-weight:900">📬 Danh sách nhận xét</div>
+        <div class="muted" style="margin-top:6px">
+          Nhận xét do giáo viên gửi, giúp phụ huynh theo dõi sát quá trình học tập của con.
+        </div>
+
+        <div class="divider"></div>
+
+        <table class="table">
+          <thead>
+            <tr><th style="width:180px">Thời gian</th><th>Nội dung nhận xét</th></tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="2" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+          </tbody>
+        </table>
+
+        <div class="muted" style="margin-top:10px;font-size:12px;font-weight:800">
+          ℹ️ Ghi chú: Nhận xét được cập nhật trực tiếp từ giáo viên giảng dạy.
+        </div>
       </div>
-      <div class="pills">
-        <a class="pill" href="week.html">Tuần này</a>
-        <a class="pill" href="progress.html">Tiến bộ</a>
-        <a class="pill" href="notes.html">Nhận xét</a>
-      </div>
-    </div>
+    </section>
 
-    <div class="card" style="padding:14px">
-      <div style="font-weight:900;font-size:16px">Nhận xét của giáo viên</div>
-      <div style="color:var(--muted);font-size:12px;margin-top:4px">Tổng hợp nhận xét (kênh PH).</div>
+    <div class="toast" id="toast" hidden></div>
+  </main>
 
-      <div class="divider"></div>
-
-      <table class="table">
-        <thead><tr><th>Thời gian</th><th>Nội dung</th></tr></thead>
-        <tbody id="rows">
-          <tr><td colspan="2" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <script src="../../assets/core.js"></script>
+  <!-- ✅ ĐÚNG THỨ TỰ SSOT -->
   <script src="../../assets/api.js"></script>
-  <script src="../../assets/parent-snippet.js"></script>
+  <script src="../../assets/core.js"></script>
+
+  <!-- ✅ File chung Parent Topbar -->
+  <script src="../../assets/parent-ui.js"></script>
 
   <script>
-    function fmt(dt){ try{return new Date(dt).toLocaleString('vi-VN');}catch(e){return dt||"—";} }
+    const $ = (id)=>document.getElementById(id);
+
+    function toast(msg){
+      const t = $("toast");
+      if(!t) return;
+      t.hidden = false;
+      t.textContent = msg || "—";
+      t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t = setTimeout(()=>{ t.classList.remove("show"); t.hidden = true; }, 2400);
+    }
+
+    function fmt(dt){
+      try{ return new Date(dt).toLocaleString('vi-VN'); }
+      catch(e){ return dt || "—"; }
+    }
+    function fmtTime_(d){
+      const pad=n=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+    }
+
+    function readSession_(){
+      try{
+        if(typeof getSession==="function"){
+          const s = getSession();
+          if(s) return s;
+        }
+      }catch(_){}
+      try{
+        const raw = localStorage.getItem("hedu_session");
+        if(!raw) return null;
+        return JSON.parse(raw);
+      }catch(_){ return null; }
+    }
+
+    // an toàn: nếu core.js có stripMd thì dùng, không có thì fallback nhẹ
+    function stripMdSafe_(s){
+      try{ if(typeof stripMd === "function") return stripMd(s); }catch(_){}
+      return String(s||"").replace(/[*_`>#-]/g,"").trim();
+    }
 
     (async ()=>{
-      await parentInit("notes");
-      const s = window.__PAR__;
+      // ✅ render topbar trước để không “mất menu/logo”
+      try{ window.renderParentTopbar && window.renderParentTopbar("notes"); }catch(_){}
+
+      const s = readSession_();
+      const role = String(s?.role || s?.userRole || "").toUpperCase();
+
+      // ✅ Không redirect cứng – chỉ báo nhẹ
+      if(role !== "PARENT"){
+        toast("Vui lòng đăng nhập Phụ huynh để xem nhận xét.");
+        return;
+      }
+
       const token = s.sessionId || s.token || "";
+      const classId = s.classId || "";
+      const studentId = s.studentId || "";
+
+      $("studentName").textContent = s.studentName || studentId || "—";
+      $("studentClass").textContent = classId || "—";
+      $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
+
+      // ✅ BỎ KHỐI CẢNH BÁO (khung đỏ). Nếu thiếu info -> chỉ toast và giữ bảng trống.
+      if(!token || !classId || !studentId){
+        toast("Thiếu thông tin (lớp / mã HS). Vui lòng đăng nhập lại nếu cần.");
+        return;
+      }
 
       try{
-        const r = await api("getParentHistory", { token, classId:s.classId, studentId:s.studentId, limit: 500 });
+        const r = await apiPost("getParentHistory", {
+          token,
+          classId,
+          studentId,
+          limit: 500
+        });
+
         const fbs = (r.feedbacks || [])
           .filter(x => String(x.feedbackPH||"").trim())
           .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
 
-        const tb = document.getElementById("rows");
+        const tb = $("rows");
         if(!fbs.length){
           tb.innerHTML = `<tr><td colspan="2" style="color:var(--muted)">Chưa có nhận xét…</td></tr>`;
           return;
@@ -76,12 +177,12 @@
         tb.innerHTML = fbs.slice(0,200).map(x=>`
           <tr>
             <td>${fmt(x.createdAt)}</td>
-            <td style="white-space:pre-wrap;line-height:1.6">${stripMd(x.feedbackPH||"")}</td>
+            <td style="white-space:pre-wrap;line-height:1.6">${stripMdSafe_(x.feedbackPH||"")}</td>
           </tr>
         `).join("");
 
       }catch(e){
-        toast(e.message || "Không tải được nhận xét.");
+        toast(e?.message || "Không tải được nhận xét.");
       }
     })();
   </script>

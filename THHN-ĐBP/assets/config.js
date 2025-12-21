@@ -1,46 +1,41 @@
 // assets/config.js
 // ===============================
-// HEDU – Global App Configuration
+// HEDU – Global App Configuration (SSOT)
 // ===============================
 // ⚠️ Chỉ DEV / ADMIN chỉnh file này
 
 (function () {
+  "use strict";
+
   const CFG = {
+    // Brand
     APP_NAME: "HEDU – Sổ liên lạc & Học tập",
     SCHOOL_NAME: "Trường Tiểu học Hà Nội – Điện Biên Phủ",
+    LOGO_URL: "assets/img/logo-school.jpg", // ✅ đặt 1 nơi cho toàn hệ thống
 
     // Web App Apps Script (exec)
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwvyVmFT0uym_x5h1nvDik5R7uRvo5Y73GOxgdn6eZpa7Ucsq9qAsuJWFBE6sRv0ofkjw/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxFIobdfLDp4ImouzCHcxnRAujDKgub2KiGnT6R5YKTuVZ_EtM9HzKhmBMt036fP5nm5w/exec",
 
     // ===== SYSTEM MODE =====
     MODE: "production", // development | production
     LOCK_SCOPE: "GRADE_SUBJECT", // GRADE | SUBJECT | GRADE_SUBJECT
 
-    // ===== DEFAULT CONTEXT =====
-    DEFAULT_SCHOOL_YEAR: "2025-2026",
-    DEFAULT_GRADE: "5",
-    DEFAULT_CLASS_ID: "5A1",
-    DEFAULT_SUBJECT: "Tiếng Việt",
-    DEFAULT_BOOK: "Kết nối tri thức",
-
     // ===== FEATURE FLAGS =====
     ALLOW_PARENT_HISTORY: true,
     ENABLE_AI_SUGGESTION: true,
-
-    // ⚠️ CHỈ DÙNG DEMO – KHÔNG DÙNG KHI TRIỂN KHAI THẬT
-    ADMIN_SETUP_CODE: "BGH2026@"
   };
 
-  // Expose global
+  // Expose global (SSOT)
   window.HEDU_CONFIG = CFG;
 
-  // ===== Alias cho toàn hệ thống =====
+  // Aliases (để code cũ vẫn chạy)
   window.APP_NAME = CFG.APP_NAME;
   window.SCHOOL_NAME = CFG.SCHOOL_NAME;
   window.SCRIPT_URL = CFG.SCRIPT_URL;
   window.LOCK_SCOPE = CFG.LOCK_SCOPE;
   window.APP_MODE = CFG.MODE;
 
+  // ✅ Single source of truth
   window.getConfig = function () {
     return CFG;
   };

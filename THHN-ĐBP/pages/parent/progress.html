@@ -3,23 +3,15 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Phụ huynh • Tiến bộ</title>
+  <title>Phụ huynh • Tiến bộ</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
-  <script src="../../assets/config.js"></script>
+  <meta name="theme-color" content="#2563eb"/>
 </head>
-<body>
-  <div class="topbar">
-    <div class="inner">
-      <div class="brand">
-        <div class="logo">H</div>
-        <div>
-          <div class="name" id="brandName"></div>
-          <div class="sub" id="brandSub"></div>
-        </div>
-      </div>
-      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
-    </div>
-  </div>
+
+<body data-active="progress">
+  <!-- ✅ TOPBAR chung -->
+  <div id="topbar"></div>
 
   <div class="shell">
     <div class="shellTop">
@@ -27,12 +19,7 @@
         <div style="font-weight:900;font-size:18px">Sổ liên lạc điện tử</div>
         <div style="color:var(--muted);font-size:13px" id="who">—</div>
       </div>
-      <div class="pills">
-        <a class="pill" href="week.html">Tuần này</a>
-        <a class="pill" href="progress.html">Tiến bộ</a>
-        <a class="pill" href="notes.html">Nhận xét</a>
-      </div>
-    </div>
+  </div>
 
     <div class="card" style="padding:14px">
       <div style="font-weight:900;font-size:16px">Tiến bộ theo thời gian</div>
@@ -49,13 +36,27 @@
         </tbody>
       </table>
     </div>
+
+    <div class="toast" id="toast" hidden></div>
   </div>
 
+  <!-- ✅ SSOT script order -->
+  <script src="../../assets/config.js"></script>
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <script src="../../assets/parent-snippet.js"></script>
+
+  <!-- ✅ UI chung Parent -->
+  <script src="../../assets/parent-ui.js"></script>
 
   <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      if(!t) return;
+      t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
+    }
+
     function weekKey_(iso){
       const d = new Date(iso);
       if (isNaN(d)) return "—";
@@ -68,12 +69,37 @@
     }
 
     (async ()=>{
-      await parentInit("progress");
-      const s = window.__PAR__;
+      // render topbar
+      try{ renderParentTopbar("progress"); }catch(_){}
+
+      // guard role
+      let s=null;
+      try{ s=(typeof requireRole==="function") ? requireRole(["PARENT"]) : null; }catch(_){}
+      if(!s){
+        toast("Vui lòng đăng nhập phụ huynh để xem tiến bộ.");
+        return;
+      }
+
+      // (Nếu muốn hiện badge lớp ở topbar thì bật)
+      // setParentBadge(s.classId || "");
+
+      document.getElementById("who").textContent =
+        (s.studentName ? `${s.studentName} • ${s.classId||""}` : (s.studentId || "—"));
+
       const token = s.sessionId || s.token || "";
+      if(!token || !s.classId || !s.studentId){
+        toast("Thiếu thông tin (token/lớp/mã HS). Vui lòng đăng nhập lại từ Trang chủ.");
+        return;
+      }
 
       try{
-        const r = await api("getParentHistory", { token, classId:s.classId, studentId:s.studentId, limit: 500 });
+        const r = await apiPost("getParentHistory", {
+          token,
+          classId: s.classId,
+          studentId: s.studentId,
+          limit: 500
+        });
+
         const subs = r.submissions || [];
         const fbs  = r.feedbacks || [];
 
@@ -91,6 +117,7 @@
 
         const keys = Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
         const tb = document.getElementById("rows");
+
         if(!keys.length){
           tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
           return;

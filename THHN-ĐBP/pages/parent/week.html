@@ -4,89 +4,189 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>HEDU • Phụ huynh • Tuần này</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
   <script src="../../assets/config.js"></script>
+
+  <style>
+    .container{max-width:1100px}
+
+    /* HERO giống Admin/Teacher */
+    .heroHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
+    }
+    .heroTitle{margin:0;font-size:32px;letter-spacing:-.02em}
+    .heroSub{margin-top:6px;color:var(--muted)}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chipLite{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;
+      box-shadow:0 8px 22px rgba(15,23,42,.04)
+    }
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
+
+    .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
+
+    /* KPI gọn đẹp */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media(max-width:820px){ .kpis{grid-template-columns:1fr} }
+    .kpiBox{
+      padding:14px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:center;
+    }
+    .kpiBox .t{color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .kpiBox .v{font-size:22px;font-weight:1000;margin-top:6px}
+
+    /* cảnh báo nhỏ gọn (không “đỏ chói”) */
+    .miniAlert{
+      display:none;
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(245,158,11,.35);
+      background:rgba(245,158,11,.12);
+      color:#92400e;
+      font-weight:900;
+      font-size:13px;
+    }
+    .miniAlert.show{display:block}
+    .miniAlert .muted{font-weight:800;font-size:12px;margin-top:4px;color:#92400e}
+  </style>
 </head>
-<body>
-  <div class="topbar">
-    <div class="inner">
-      <div class="brand">
-        <div class="logo">H</div>
+
+<body data-active="week">
+  <!-- TOPBAR chung -->
+  <div id="topbar"></div>
+
+  <main class="container">
+    <section class="card" style="padding:18px;margin-top:14px">
+
+      <div class="heroHead">
         <div>
-          <div class="name" id="brandName"></div>
-          <div class="sub" id="brandSub"></div>
+          <h1 class="heroTitle">Sổ liên lạc điện tử • 7 ngày gần nhất</h1>
+          <div class="heroSub">Tự tổng hợp từ lịch sử nộp bài và nhận xét để phụ huynh theo dõi nhanh.</div>
+        </div>
+
+        <div class="heroRight">
+          <div class="chips">
+            <span class="chipLite">👨‍👩‍👧 Phụ huynh</span>
+            <span class="chipLite">🧒 <strong id="studentName">—</strong></span>
+            <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+          </div>
+          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
         </div>
       </div>
-      <a class="smallLink" href="#" id="btnLogout">Đăng xuất</a>
-    </div>
-  </div>
 
-  <div class="shell">
-    <div class="shellTop">
-      <div>
-        <div style="font-weight:900;font-size:18px">Sổ liên lạc điện tử</div>
-        <div style="color:var(--muted);font-size:13px" id="who">—</div>
-      </div>
-      <div class="pills">
-        <a class="pill" href="week.html">Tuần này</a>
-        <a class="pill" href="progress.html">Tiến bộ</a>
-        <a class="pill" href="notes.html">Nhận xét</a>
-      </div>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi"><div class="t">7 ngày</div><div class="v" id="k_week">—</div></div>
-      <div class="kpi"><div class="t">Bài đã nộp</div><div class="v" id="k_sub">—</div></div>
-      <div class="kpi"><div class="t">Nhận xét</div><div class="v" id="k_notes">—</div></div>
-    </div>
-
-    <div style="height:12px"></div>
-
-    <div class="card" style="padding:14px">
-      <div style="font-weight:900;font-size:16px">Sổ liên lạc – 7 ngày gần nhất</div>
-      <div style="color:var(--muted);font-size:12px;margin-top:4px">Tự tổng hợp từ lịch sử nộp bài & nhận xét.</div>
-
-      <div class="divider"></div>
-
-      <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
-        <div style="font-weight:900">Nhận xét gần nhất (PH)</div>
-        <div style="white-space:pre-wrap;line-height:1.6;margin-top:8px" id="teacherNote">—</div>
+      <div class="kpis">
+        <div class="kpiBox"><div class="t">Khoảng thời gian</div><div class="v" id="k_week">—</div></div>
+        <div class="kpiBox"><div class="t">Bài đã nộp</div><div class="v" id="k_sub">—</div></div>
+        <div class="kpiBox"><div class="t">Nhận xét</div><div class="v" id="k_notes">—</div></div>
       </div>
 
-      <div style="height:10px"></div>
-
-      <table class="table">
-        <thead>
-          <tr><th>Bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
-        </thead>
-        <tbody id="rows">
-          <tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
-        </tbody>
-      </table>
-
-      <div style="height:12px"></div>
-
-      <div class="actions">
-        <button class="btn secondary" id="btnConfirm" type="button">Tôi đã đọc</button>
+      <div class="miniAlert" id="miniAlert">
+        ⚠️ Thiếu thông tin phiên đăng nhập
+        <div class="muted">Vui lòng đăng nhập lại từ Trang chủ để xem dữ liệu.</div>
       </div>
-      <div class="footerNote">Nút “Tôi đã đọc” giúp giáo viên biết phụ huynh đã xem thông tin.</div>
-    </div>
-  </div>
 
+      <div class="dcard" style="margin-top:14px">
+        <div style="font-weight:1000;font-size:16px">📝 Nhận xét gần nhất (PH)</div>
+
+        <div class="divider"></div>
+
+        <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
+          <div style="white-space:pre-wrap;line-height:1.6" id="teacherNote">—</div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div style="font-weight:1000;font-size:16px">📌 Bài nộp trong 7 ngày</div>
+        <div class="muted" style="margin-top:6px;font-weight:800;font-size:12px">
+          Trạng thái “Đã nhận xét/Chờ nhận xét” được suy ra từ dữ liệu phản hồi.
+        </div>
+
+        <div class="divider"></div>
+
+        <table class="table">
+          <thead>
+            <tr><th>Bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+          </tbody>
+        </table>
+
+        <div style="height:12px"></div>
+
+        <div class="actions">
+          <button class="btn secondary" id="btnConfirm" type="button">Tôi đã đọc</button>
+        </div>
+        <div class="footerNote">Nút “Tôi đã đọc” giúp giáo viên biết phụ huynh đã xem thông tin.</div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <!-- ✅ SSOT scripts -->
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <script src="../../assets/parent-snippet.js"></script>
+  <script src="../../assets/parent-ui.js"></script>
 
   <script>
+    function toast(msg){
+      const t=document.getElementById("toast");
+      if(!t) return;
+      t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
+    }
     function fmt(dt){ try{return new Date(dt).toLocaleString('vi-VN');}catch(e){return dt||"—";} }
 
+    function stripMdSafe_(s){
+      try{ if(typeof stripMd==="function") return stripMd(s); }catch(_){}
+      return String(s||"").replace(/[*_`>#-]/g,"").trim();
+    }
+
     (async ()=>{
-      await parentInit("week");
-      const s = window.__PAR__;
+      // Guard đúng role
+      let s = null;
+      try{ s = requireRole(["PARENT"]); }catch(_){}
+      if(!s){
+        document.getElementById("miniAlert").classList.add("show");
+        toast("Vui lòng đăng nhập lại.");
+        return;
+      }
+
+      // Topbar chuẩn
+      renderParentTopbar("week", s.classId || "");
+      window.__PAR__ = s;
+
+      document.getElementById("studentName").textContent = s.studentName || s.studentId || "—";
+      document.getElementById("studentClass").textContent = s.classId || "—";
+      document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTimeHedu(new Date());
+
       const token = s.sessionId || s.token || "";
+      if(!token || !s.classId || !s.studentId){
+        document.getElementById("miniAlert").classList.add("show");
+        return;
+      }
 
       try{
-        const rHist = await api("getParentHistory", { token, classId:s.classId, studentId:s.studentId, limit: 400 });
+        const rHist = await apiPost("getParentHistory", {
+          token,
+          classId: s.classId,
+          studentId: s.studentId,
+          limit: 400
+        });
+
         const subs = rHist.submissions || [];
         const fbs  = rHist.feedbacks || [];
 
@@ -108,12 +208,17 @@
         document.getElementById("k_notes").textContent = fbs7.length;
 
         // latest PH feedback
-        const latest = [...fbs].sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0];
-        document.getElementById("teacherNote").textContent = stripMd((latest && latest.feedbackPH) ? latest.feedbackPH : "Chưa có nhận xét dành cho phụ huynh.");
+        const latestPH = [...fbs]
+          .filter(x => String(x.feedbackPH||"").trim())
+          .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0];
 
-        // Table: show last 7 days submissions + status by having feedback
-        const fbSet = new Set(fbs.map(x => `${String(x.taskId||"").trim()}|||${String(x.createdAt||"")}`));
-        const byTaskHasFeedback = new Set(fbs.map(x => String(x.taskId||"").trim()));
+        document.getElementById("teacherNote").textContent =
+          stripMdSafe_(latestPH ? latestPH.feedbackPH : "Chưa có nhận xét dành cho phụ huynh.");
+
+        // Table 7 ngày + trạng thái theo feedback
+        const byTaskHasFeedback = new Set(
+          fbs.map(x => String(x.taskId||"").trim()).filter(Boolean)
+        );
 
         const tb = document.getElementById("rows");
         if(!subs7.length){
@@ -124,10 +229,11 @@
             .slice(0, 30)
             .map(x=>{
               const tid = String(x.taskId||"").trim();
-              const badge = byTaskHasFeedback.has(tid) ? "ok" : "warn";
-              const label = byTaskHasFeedback.has(tid) ? "Đã nhận xét" : "Chờ nhận xét";
+              const hasFb = byTaskHasFeedback.has(tid);
+              const badge = hasFb ? "ok" : "warn";
+              const label = hasFb ? "Đã nhận xét" : "Chờ nhận xét";
               return `<tr>
-                <td>${tid}</td>
+                <td>${tid || "—"}</td>
                 <td><span class="badge ${badge}">${label}</span></td>
                 <td>${fmt(x.createdAt)}</td>
               </tr>`;
@@ -139,7 +245,6 @@
       }
     })();
 
-    // Confirm read: hiện tại Code.gs chưa bắt buộc endpoint này => làm “client-only”
     document.getElementById("btnConfirm").onclick = async ()=>{
       toast("Đã ghi nhận ✅");
     };

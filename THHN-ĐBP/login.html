@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>HEDU – Đăng nhập</title>
 
-  <!-- Optional: nếu anh đã có styles.css thì bỏ phần <style> này, giữ nguyên HTML+JS -->
   <style>
     :root{
       --bg:#f5f8ff;
@@ -30,7 +29,6 @@
       min-height:100vh;
     }
 
-    /* Topbar */
     .topbar{
       position:sticky; top:0; z-index:5;
       background: rgba(245,248,255,.86);
@@ -68,7 +66,6 @@
     }
     .adminLink:hover{border-color:#cfe1ff}
 
-    /* Layout */
     .wrap{
       max-width: 1180px;
       margin: 0 auto;
@@ -81,7 +78,6 @@
       align-items: stretch;
     }
 
-    /* Left illustration panel */
     .hero{
       background: rgba(255,255,255,.55);
       border:1px solid rgba(230,238,252,.9);
@@ -112,11 +108,9 @@
       transform: translate(-50%,-50%);
       width: 92%;
       max-width: 620px;
-      opacity: 1;
       filter: drop-shadow(0 24px 70px rgba(47,111,237,.20));
     }
 
-    /* Card */
     .card{
       background: var(--card);
       border:1px solid rgba(230,238,252,.95);
@@ -129,7 +123,6 @@
       gap: 14px;
     }
 
-    /* Header inside card */
     .cardHeader{
       display:flex;
       align-items:center;
@@ -150,7 +143,6 @@
       margin-top:4px;
     }
 
-    /* Role segmented control */
     .seg{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -184,7 +176,6 @@
       color: var(--pri2);
     }
 
-    /* Fields */
     .field{display:flex; flex-direction:column; gap:8px;}
     label{font-weight:900; font-size:13px;}
     input, select{
@@ -212,7 +203,6 @@
     .chk{display:flex; align-items:center; gap:8px; user-select:none; color:#0f172a; font-weight:700}
     .chk input{width:16px; height:16px}
 
-    /* Password eye */
     .pwWrap{position:relative}
     .pwWrap input{padding-right:46px}
     .pwEye{
@@ -226,7 +216,6 @@
     }
     .pwEye:hover{background:#f7faff}
 
-    /* Actions */
     .actions{display:flex; gap:10px; align-items:center; margin-top:4px; flex-wrap:wrap;}
     .btn{
       border:none;
@@ -239,20 +228,11 @@
       box-shadow: 0 14px 26px rgba(47,111,237,.22);
     }
     .btn:hover{filter:brightness(.98)}
-    .btn.secondary{
-      background:#fff;
-      color: var(--pri2);
-      border:1px solid rgba(47,111,237,.20);
-      box-shadow: 0 10px 20px rgba(15,23,42,.06);
-    }
-    .btn.secondary:hover{border-color: rgba(47,111,237,.35)}
     .btn.full{width:100%}
 
-    /* Pane */
     .pane{display:block}
     .pane[hidden]{display:none!important}
 
-    /* Register overlay inside card */
     .registerOnly .cardHeader,
     .registerOnly .seg,
     .registerOnly .paneLogin{display:none!important}
@@ -276,7 +256,6 @@
       box-shadow: 0 10px 18px rgba(15,23,42,.05);
     }
 
-    /* Toast */
     .toast{
       position: fixed;
       left: 50%;
@@ -294,7 +273,6 @@
     }
     .toast.show{display:block}
 
-    /* Responsive */
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr; }
       .hero{min-height: 280px;}
@@ -304,11 +282,11 @@
     }
   </style>
 
+  <!-- config trước -->
   <script src="assets/config.js"></script>
 </head>
 
 <body>
-  <!-- Topbar -->
   <div class="topbar">
     <div class="inner">
       <div class="brand">
@@ -324,12 +302,9 @@
 
   <div class="wrap">
     <div class="grid">
-      <!-- Left: illustration only -->
       <div class="hero" aria-hidden="true">
         <div class="bgGrad"></div>
         <div class="dots"></div>
-
-        <!-- Lightweight inline SVG (no text) -->
         <svg class="ill" viewBox="0 0 900 520" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="g1" x1="120" y1="60" x2="760" y2="460" gradientUnits="userSpaceOnUse">
@@ -356,9 +331,7 @@
         </svg>
       </div>
 
-      <!-- Right: login card -->
       <div class="card" id="card">
-
         <div class="cardHeader">
           <div>
             <h1 class="cardTitle">Đăng nhập</h1>
@@ -366,7 +339,6 @@
           </div>
         </div>
 
-        <!-- Segmented roles -->
         <div class="seg" role="tablist" aria-label="Vai trò đăng nhập">
           <button class="segBtn active" data-role="TEACHER" type="button">
             <span class="ico">👩‍🏫</span><span>Giáo viên</span>
@@ -379,7 +351,6 @@
           </button>
         </div>
 
-        <!-- ========= LOGIN PANES ========= -->
         <div class="pane paneLogin" id="paneTeacher">
           <div class="field">
             <label>Tài khoản</label>
@@ -399,7 +370,7 @@
                 <span>Ghi nhớ đăng nhập</span>
               </label>
               <div class="helperLinks">
-                <a class="link" href="#" onclick="toast('Bản pilot: có thể bổ sung sau.');return false;">Quên mật khẩu?</a>
+                <a class="link" href="#" onclick="toast('Bản MVP: sẽ bổ sung sau.');return false;">Quên mật khẩu?</a>
                 <a class="link" href="#" id="btnOpenTeacherRegister">Tạo tài khoản</a>
               </div>
             </div>
@@ -417,12 +388,10 @@
               <option value="">— Chọn lớp —</option>
             </select>
           </div>
-
           <div class="field">
             <label>Mã học sinh</label>
             <input id="s_studentId" placeholder="VD: HS001"/>
           </div>
-
           <div class="actions">
             <button class="btn full" id="btnStudentLogin" type="button">Vào trang học sinh</button>
           </div>
@@ -435,18 +404,15 @@
               <option value="">— Chọn lớp —</option>
             </select>
           </div>
-
           <div class="field">
             <label>Mã học sinh</label>
             <input id="p_studentId" placeholder="VD: HS001"/>
           </div>
-
           <div class="actions">
             <button class="btn full" id="btnParentLogin" type="button">Vào sổ liên lạc</button>
           </div>
         </div>
 
-        <!-- ========= REGISTER (teacher only) ========= -->
         <div class="pane paneRegister" id="teacherRegisterView" style="display:none">
           <div class="miniHeader">
             <div class="miniTitle">Tạo tài khoản giáo viên</div>
@@ -457,17 +423,14 @@
             <label>Họ và tên</label>
             <input id="t_fullName" placeholder="VD: Nguyễn Văn A"/>
           </div>
-
           <div class="field">
             <label>Số điện thoại</label>
             <input id="t_phone" placeholder="VD: 098xxxxxxx"/>
           </div>
-
           <div class="field">
             <label>Email (nếu có)</label>
             <input id="t_email" placeholder="VD: abc@gmail.com"/>
           </div>
-
           <div class="field">
             <label>Mật khẩu</label>
             <div class="pwWrap">
@@ -475,7 +438,6 @@
               <button class="pwEye" type="button" data-eye="t_regPass" aria-label="Hiện/ẩn mật khẩu">👁</button>
             </div>
           </div>
-
           <div class="field">
             <label>Nhập lại mật khẩu</label>
             <div class="pwWrap">
@@ -495,36 +457,28 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Required shared scripts -->
+  <!-- core trước, api sau -->
   <script src="assets/core.js"></script>
   <script src="assets/api.js"></script>
 
   <script>
-    // ===== toast fallback (if core.js not loaded) =====
-    function toast(msg){
+    // toast: ưu tiên core.js, fallback nếu chưa có
+    window.toast = window.toast || function(msg){
       const t = document.getElementById("toast");
       t.textContent = msg || "—";
       t.classList.add("show");
       clearTimeout(window.__t);
       window.__t = setTimeout(()=> t.classList.remove("show"), 2400);
-    }
+    };
 
-    // ===== intent router from index.html =====
     function getIntent(){
-      const role = localStorage.getItem("hedu_role") || "";   // TEACHER/STUDENT/PARENT/ADMIN
-      const entry = localStorage.getItem("hedu_entry") || ""; // target page after login
+      const role = localStorage.getItem("hedu_role") || "";
+      const entry = localStorage.getItem("hedu_entry") || "";
       return { role, entry };
     }
     function clearIntentEntry(){ localStorage.removeItem("hedu_entry"); }
     function clearIntentRole(){ localStorage.removeItem("hedu_role"); }
 
-    // ✅ chỉ xoá role nếu role = ADMIN (tránh mất intent TEACHER/STUDENT/PARENT)
-    function clearIntentAdminOnly(){
-      const r = (localStorage.getItem("hedu_role") || "").toUpperCase();
-      if(r === "ADMIN") localStorage.removeItem("hedu_role");
-    }
-
-    // consume intent (one-time) to avoid "kẹt luồng"
     function resolveAfterLogin(defaultUrl){
       const { entry } = getIntent();
       if(entry && typeof entry === "string" && entry.trim()){
@@ -532,19 +486,19 @@
         clearIntentRole();
         return entry.trim();
       }
-      // không có entry -> chỉ xoá role intent để không tự bật admin prompt
       clearIntentRole();
       return defaultUrl;
     }
 
-    // ===== Brand =====
+    // Brand
     try{
       const cfg = (typeof getConfig === "function") ? getConfig() : {};
-      document.getElementById("brandName").textContent = (cfg.APP_NAME ? cfg.APP_NAME + " – Đăng nhập" : "HEDU – Đăng nhập");
+      document.getElementById("brandName").textContent =
+        (cfg.APP_NAME ? cfg.APP_NAME + " – Đăng nhập" : "HEDU – Đăng nhập");
       document.getElementById("brandSub").textContent = cfg.SCHOOL_NAME || "";
     }catch(e){}
 
-    // ===== role switch =====
+    // role switch
     const card = document.getElementById("card");
     const btns = document.querySelectorAll(".segBtn");
     const panes = {
@@ -552,7 +506,6 @@
       STUDENT: document.getElementById("paneStudent"),
       PARENT:  document.getElementById("paneParent")
     };
-
     function setRole(role){
       btns.forEach(b=>b.classList.toggle("active", b.dataset.role===role));
       Object.keys(panes).forEach(k=> panes[k].hidden = (k!==role));
@@ -560,10 +513,6 @@
     }
     btns.forEach(b=> b.addEventListener("click", ()=> setRole(b.dataset.role)));
 
-    // init role priority:
-    // 1) index intent (hedu_role)
-    // 2) remembered role (hedu_login_role)
-    // 3) default TEACHER
     (function initRole(){
       const intentRole = (localStorage.getItem("hedu_role") || "").toUpperCase();
       const savedRole  = (localStorage.getItem("hedu_login_role") || "").toUpperCase();
@@ -571,29 +520,7 @@
       setRole(start);
     })();
 
-    // ✅ Auto redirect if session still valid
-    (function autoBySession(){
-      try{
-        const s = (typeof getSession === "function") ? getSession() : null;
-        if(!s || !s.token) return;
-
-        const entry = (localStorage.getItem("hedu_entry") || "").trim();
-        if(entry){
-          localStorage.removeItem("hedu_entry");
-          localStorage.removeItem("hedu_role");
-          location.replace(entry);
-          return;
-        }
-
-        const role = String(s.role || "").toUpperCase();
-        if(role === "TEACHER") return location.replace("pages/teacher/teacher-dashboard.html");
-        if(role === "STUDENT") return location.replace("pages/student/dashboard.html");
-        if(role === "PARENT")  return location.replace("pages/parent/week.html");
-        if(role === "ADMIN")   return location.replace("pages/admin/dashboard.html");
-      }catch(_){}
-    })();
-
-    // ===== password eye =====
+    // password eye
     document.addEventListener("click", (e)=>{
       const eye = e.target.closest(".pwEye");
       if(!eye) return;
@@ -603,23 +530,16 @@
       input.type = (input.type === "password") ? "text" : "password";
     });
 
-    // ===== register toggle (teacher) =====
+    // register toggle
     const regView = document.getElementById("teacherRegisterView");
     const openReg = document.getElementById("btnOpenTeacherRegister");
     const back1 = document.getElementById("btnBackTeacherLogin");
-
-    function showRegister(){
-      regView.style.display = "";
-      card.classList.add("registerOnly");
-    }
-    function showLogin(){
-      regView.style.display = "none";
-      card.classList.remove("registerOnly");
-    }
-    openReg.addEventListener("click", (e)=>{ e.preventDefault(); clearIntentAdminOnly(); showRegister(); });
+    function showRegister(){ regView.style.display = ""; card.classList.add("registerOnly"); }
+    function showLogin(){ regView.style.display = "none"; card.classList.remove("registerOnly"); }
+    openReg.addEventListener("click", (e)=>{ e.preventDefault(); clearIntentRole(); showRegister(); });
     back1.addEventListener("click", showLogin);
 
-    // ===== load classes (public) =====
+    // load classes
     async function loadClassesPublic(){
       try{
         const r = await api("listClassesPublic", {});
@@ -629,12 +549,12 @@
         document.getElementById("s_classId").innerHTML = html;
         document.getElementById("p_classId").innerHTML = html;
       }catch(e){
-        // keep default option
+        // nếu lỗi: giữ option mặc định
       }
     }
     loadClassesPublic();
 
-    // ===== ADMIN flow (only when intentionally requested) =====
+    // admin flow
     async function adminLoginFlow(){
       try{
         const cfg = (typeof getConfig === "function") ? getConfig() : {};
@@ -664,9 +584,6 @@
       await adminLoginFlow();
     });
 
-    // Auto admin ONLY if:
-    // - login.html#admin
-    // - OR intent ADMIN + entry points to /pages/admin/
     (function autoAdmin(){
       const { role, entry } = getIntent();
       const isAdminIntent = String(role).toUpperCase() === "ADMIN";
@@ -677,24 +594,21 @@
         setTimeout(()=> adminLoginFlow(), 120);
         return;
       }
-
-      // nếu bị sót role=ADMIN mà không có entry admin => xoá để không bị bật prompt
       if(isAdminIntent && !isAdminEntry && !isAdminHash){
         clearIntentRole();
       }
     })();
 
-    // ===== TEACHER login =====
+    // TEACHER login
     document.getElementById("btnTeacherLogin").addEventListener("click", async ()=>{
       try{
-        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN, giữ intent từ index
+        clearIntentRole();
         const account = document.getElementById("t_account").value.trim();
         const password = document.getElementById("t_password").value.trim();
         const remember = document.getElementById("t_remember").checked;
         if(!account || !password) return toast("Vui lòng nhập tài khoản và mật khẩu.");
 
         const r = await api("authTeacherLogin", { account, password });
-
         if(typeof saveSession === "function"){
           try{ saveSession(r.session, { remember }); }catch(_){ saveSession(r.session); }
         }
@@ -706,10 +620,10 @@
       }
     });
 
-    // ===== TEACHER register =====
+    // TEACHER register
     document.getElementById("btnTeacherRegister").addEventListener("click", async ()=>{
       try{
-        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN
+        clearIntentRole();
         const fullName = document.getElementById("t_fullName").value.trim();
         const phone = document.getElementById("t_phone").value.trim();
         const email = document.getElementById("t_email").value.trim();
@@ -726,10 +640,10 @@
       }
     });
 
-    // ===== STUDENT login =====
+    // STUDENT login
     document.getElementById("btnStudentLogin").addEventListener("click", async ()=>{
       try{
-        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN
+        clearIntentRole();
         const classId = document.getElementById("s_classId").value;
         const studentId = document.getElementById("s_studentId").value.trim();
         if(!classId || !studentId) return toast("Vui lòng chọn lớp và nhập mã học sinh.");
@@ -744,10 +658,10 @@
       }
     });
 
-    // ===== PARENT login =====
+    // PARENT login
     document.getElementById("btnParentLogin").addEventListener("click", async ()=>{
       try{
-        clearIntentAdminOnly(); // ✅ chỉ xoá ADMIN
+        clearIntentRole();
         const classId = document.getElementById("p_classId").value;
         const studentId = document.getElementById("p_studentId").value.trim();
         if(!classId || !studentId) return toast("Vui lòng chọn lớp và nhập mã học sinh.");
@@ -760,16 +674,6 @@
       }catch(err){
         toast(err.message || "Không vào được sổ liên lạc.");
       }
-    });
-
-    // ✅ Enter-to-submit for convenience
-    document.addEventListener("keydown", (e)=>{
-      if(e.key !== "Enter") return;
-      const r = (localStorage.getItem("hedu_login_role") || "TEACHER").toUpperCase();
-      if(card.classList.contains("registerOnly")) return; // avoid accidental submit while registering
-      if(r === "TEACHER") document.getElementById("btnTeacherLogin")?.click();
-      if(r === "STUDENT") document.getElementById("btnStudentLogin")?.click();
-      if(r === "PARENT")  document.getElementById("btnParentLogin")?.click();
     });
   </script>
 </body>

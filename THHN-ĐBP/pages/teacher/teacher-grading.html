@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Grading</title>
+  <title>Chấm bài & Nhận xét</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
-  <meta name="theme-color" content="#1a73e8"/>
+  <meta name="theme-color" content="#2563eb"/>
+
   <style>
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
@@ -18,6 +20,7 @@
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
   </style>
 </head>
+
 <body data-active="grading">
   <div id="topbar"></div>
 
@@ -32,34 +35,34 @@
       </div>
 
       <div class="actions mt">
-        <button class="btn ghost" id="btnBack" type="button">← Quay lại bài nộp</button>
-        <button class="btn ghost" id="btnInsights" type="button">📈 Insights</button>
+        <button class="btn ghost" id="btnBack" type="button">← Quay lại danh sách bài nộp</button>
+        <button class="btn ghost" id="btnInsights" type="button">📊 Thống kê & Phân tích</button>
       </div>
 
       <div class="split mt">
-        <!-- LEFT: submission -->
+        <!-- TRÁI: Bài nộp -->
         <div class="dcard">
           <div style="font-weight:900">📨 Bài nộp</div>
           <div class="muted mt" id="meta">—</div>
 
-          <label class="mt">Đề / Task (tóm tắt)</label>
+          <label class="mt">Đề bài (tóm tắt)</label>
           <textarea id="taskBody" readonly></textarea>
 
-          <label class="mt">Bài làm học sinh</label>
+          <label class="mt">Bài làm của học sinh</label>
           <textarea id="answer" readonly></textarea>
         </div>
 
-        <!-- RIGHT: grading -->
+        <!-- PHẢI: Chấm bài -->
         <div class="dcard">
           <div class="row">
-            <div style="font-weight:900">✅ Chấm & lưu nhận xét</div>
-            <span class="badge ok">● Ready</span>
+            <div style="font-weight:900">✅ Chấm điểm & lưu nhận xét</div>
+            <span class="badge ok">● Sẵn sàng</span>
           </div>
 
           <div class="grid2 mt">
             <div>
               <label>Điểm</label>
-              <input id="score" placeholder="VD: 8">
+              <input id="score" placeholder="Ví dụ: 8">
             </div>
             <div>
               <label>Thang điểm</label>
@@ -67,23 +70,23 @@
             </div>
           </div>
 
-          <label class="mt">Rubric snapshot</label>
+          <label class="mt">Rubric (tiêu chí chấm) – bản chụp</label>
           <textarea id="rubric" class="mono" readonly></textarea>
 
           <div class="actions mt">
             <button class="btn" id="btnAI" type="button">🤖 AI gợi ý nhận xét</button>
-            <button class="btn ghost" id="btnSaveQuickHS" type="button">💬 Lưu nhanh (HS)</button>
-            <button class="btn ghost" id="btnSaveQuickPH" type="button">💬 Lưu nhanh (PH)</button>
+            <button class="btn ghost" id="btnSaveQuickHS" type="button">💬 Lưu nhanh (Học sinh)</button>
+            <button class="btn ghost" id="btnSaveQuickPH" type="button">💬 Lưu nhanh (Phụ huynh)</button>
           </div>
 
           <label class="mt">Nhận xét cho HỌC SINH</label>
-          <textarea id="fbHS" placeholder="👍 2 ý tốt..."></textarea>
+          <textarea id="fbHS" placeholder="Ví dụ: Con làm tốt 2 ý... / Cần bổ sung 1 ý..."></textarea>
 
           <label class="mt">Nhận xét cho PHỤ HUYNH</label>
-          <textarea id="fbPH" placeholder="Hướng dẫn đồng hành 10 phút/ngày..."></textarea>
+          <textarea id="fbPH" placeholder="Ví dụ: Mỗi ngày luyện 10 phút... / Nhắc con đọc kỹ đề..."></textarea>
 
           <label class="mt">Nhận xét lưu HỒ SƠ</label>
-          <textarea id="fbProfile" placeholder="Khách quan, tập trung kỹ năng..."></textarea>
+          <textarea id="fbProfile" placeholder="Khách quan, tập trung vào kỹ năng và tiến bộ..."></textarea>
 
           <div class="actions mt">
             <button class="btn" id="btnSave" type="button">💾 Lưu chấm bài</button>
@@ -97,10 +100,12 @@
     <div class="toast" id="toast" hidden></div>
   </main>
 
+  <!-- ✅ Load đúng thứ tự SSOT -->
   <script src="../../assets/config.js"></script>
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <script src="../../assets/teacher-snippet.js"></script>
+  <!-- ✅ Dùng teacher.js (không dùng teacher-snippet.js theo yêu cầu của anh) -->
+  <script src="../../assets/teacher.js"></script>
 
   <script>
     function toast(msg){
@@ -114,11 +119,40 @@
       return u.searchParams.get(name)||"";
     }
 
-    const session=requireRole("TEACHER");
-    const token=session.token;
-    const classId=localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
-    me.textContent = `${session.displayName||"Giáo viên"} • ${classId}`;
+    const session = requireRole("TEACHER");
+    if(!session) { throw new Error("Đang chuyển về đăng nhập..."); }
+
+    const token = session?.token || "";
+
+    function currentClassId(){
+      return getTeacherClassId(session.classId || "5A1");
+    }
+
+    // pill hiển thị: Tên GV • Lớp hiện tại
+    const meEl = document.getElementById("me");
+    if (meEl) meEl.textContent = `${session.displayName||"Giáo viên"} • ${currentClassId()}`;
+
     const submissionId = qp("submissionId");
+
+    const btnBack = document.getElementById("btnBack");
+    const btnInsights = document.getElementById("btnInsights");
+    const sub = document.getElementById("sub");
+    const meta = document.getElementById("meta");
+    const taskBody = document.getElementById("taskBody");
+    const answer = document.getElementById("answer");
+    const rubric = document.getElementById("rubric");
+
+    const score = document.getElementById("score");
+    const scoreMax = document.getElementById("scoreMax");
+    const fbHS = document.getElementById("fbHS");
+    const fbPH = document.getElementById("fbPH");
+    const fbProfile = document.getElementById("fbProfile");
+    const hint = document.getElementById("hint");
+
+    const btnAI = document.getElementById("btnAI");
+    const btnSaveQuickHS = document.getElementById("btnSaveQuickHS");
+    const btnSaveQuickPH = document.getElementById("btnSaveQuickPH");
+    const btnSave = document.getElementById("btnSave");
 
     btnBack.onclick=()=>location.href="./teacher-submissions.html";
     btnInsights.onclick=()=>location.href="./teacher-insights.html";
@@ -127,10 +161,12 @@
 
     async function load(){
       try{
-        if(!submissionId) throw new Error("Thiếu submissionId");
-        const r = await api("getSubmissionDetail", { token, classId, submissionId });
+        if(!submissionId) throw new Error("Thiếu mã bài nộp (submissionId).");
 
-        sub.textContent = `Pilot ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+        const r = await api("getSubmissionDetail", { token, classId: currentClassId(), submissionId });
+
+        // dòng mô tả hệ thống (giữ nguyên logic, Việt hoá nhãn)
+        sub.textContent = `Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
 
         const s = r.submission || {};
         const t = r.task || {};
@@ -142,7 +178,7 @@
         _ctx.subject = t.subject || r.system.subject;
         _ctx.textbook = t.textbook || r.system.textbook;
 
-        meta.textContent = `HS: ${_ctx.studentId} • Task: ${_ctx.taskId} • Nộp lúc: ${s.createdAt||""}`;
+        meta.textContent = `Học sinh: ${_ctx.studentId} • Bài: ${_ctx.taskId} • Nộp lúc: ${s.createdAt||""}`;
         taskBody.value = (t.body || "").trim();
         answer.value = (s.answer || "").trim();
         rubric.value = (t.rubric || "").trim();
@@ -153,21 +189,24 @@
           fbHS.value = fb.feedbackHS || "";
           fbPH.value = fb.feedbackPH || "";
           fbProfile.value = fb.feedbackProfile || "";
-          hint.textContent = "Đã có nhận xét trước đó (nếu muốn, lưu thêm bản mới).";
+          hint.textContent = "Đã có nhận xét trước đó. Nếu cần, anh có thể chỉnh sửa và lưu lại bản mới.";
         }else{
-          hint.textContent = "Chưa có nhận xét. Có thể dùng AI để gợi ý 🧠";
+          hint.textContent = "Chưa có nhận xét. Anh có thể dùng AI để gợi ý rồi chỉnh lại cho chuẩn ✅";
         }
 
-        toast("Đã tải ✅");
+        // luôn hiện đúng lớp (nếu giáo viên đổi lớp ở nơi khác)
+        if (meEl) meEl.textContent = `${session.displayName||"Giáo viên"} • ${currentClassId()}`;
+
+        toast("Đã tải bài ✅");
       }catch(e){
-        toast(e.message||"Không tải được bài.");
+        toast(e.message||"Không tải được bài nộp.");
       }
     }
 
     btnAI.onclick = async ()=>{
       try{
-        if(!rubric.value.trim()) return toast("Task chưa có rubric.");
-        if(!answer.value.trim()) return toast("Bài làm trống.");
+        if(!rubric.value.trim()) return toast("Bài này chưa có rubric (tiêu chí chấm).");
+        if(!answer.value.trim()) return toast("Bài làm đang trống.");
 
         const r = await api("aiSuggestFeedback",{
           token,
@@ -179,41 +218,45 @@
         });
 
         const txt = String(r.feedbackText||"").trim();
-        if(!txt) return toast("AI không trả nội dung.");
+        if(!txt) return toast("AI chưa trả nội dung gợi ý.");
 
-        // Heuristic split 3 phần
-        // (Nếu AI trả đúng định dạng, vẫn ok; nếu không thì để toàn bộ vào HS)
         fbHS.value = txt;
-        toast("AI đã gợi ý nhận xét ✅ (GV chỉnh lại cho chuẩn)");
-      }catch(e){ toast(e.message||"Gọi AI lỗi"); }
+        toast("AI đã gợi ý ✅ (Anh chỉnh lại câu chữ cho đúng lớp/đúng chuẩn)");
+      }catch(e){
+        toast(e.message||"Gọi AI bị lỗi.");
+      }
     };
 
     btnSaveQuickHS.onclick = async ()=>{
       try{
-        if(!fbHS.value.trim()) return toast("Nhận xét HS đang trống.");
+        if(!fbHS.value.trim()) return toast("Nhận xét cho học sinh đang trống.");
         await api("saveFeedbackTyped",{
-          token, classId,
+          token, classId: currentClassId(),
           studentId:_ctx.studentId,
           taskId:_ctx.taskId,
           feedbackText: fbHS.value.trim(),
           feedbackType:"HS"
         });
-        toast("Đã lưu nhanh (HS) ✅");
-      }catch(e){ toast(e.message||"Lưu lỗi"); }
+        toast("Đã lưu nhanh (Học sinh) ✅");
+      }catch(e){
+        toast(e.message||"Lưu nhanh bị lỗi.");
+      }
     };
 
     btnSaveQuickPH.onclick = async ()=>{
       try{
-        if(!fbPH.value.trim()) return toast("Nhận xét PH đang trống.");
+        if(!fbPH.value.trim()) return toast("Nhận xét cho phụ huynh đang trống.");
         await api("saveFeedbackTyped",{
-          token, classId,
+          token, classId: currentClassId(),
           studentId:_ctx.studentId,
           taskId:_ctx.taskId,
           feedbackText: fbPH.value.trim(),
           feedbackType:"PH"
         });
-        toast("Đã lưu nhanh (PH) ✅");
-      }catch(e){ toast(e.message||"Lưu lỗi"); }
+        toast("Đã lưu nhanh (Phụ huynh) ✅");
+      }catch(e){
+        toast(e.message||"Lưu nhanh bị lỗi.");
+      }
     };
 
     btnSave.onclick = async ()=>{
@@ -222,11 +265,11 @@
         const sm = scoreMax.value.trim() || "10";
 
         if(!fbHS.value.trim() && !fbPH.value.trim() && !fbProfile.value.trim()){
-          return toast("Cần có ít nhất 1 nhận xét.");
+          return toast("Cần có ít nhất 1 nội dung nhận xét trước khi lưu.");
         }
 
         await api("saveGrade",{
-          token, classId,
+          token, classId: currentClassId(),
           taskId:_ctx.taskId,
           studentId:_ctx.studentId,
           score: sc,
@@ -239,11 +282,14 @@
         });
 
         toast("Đã lưu chấm bài ✅");
-      }catch(e){ toast(e.message||"Lưu chấm bài lỗi"); }
+      }catch(e){
+        toast(e.message||"Lưu chấm bài bị lỗi.");
+      }
     };
 
     (async ()=>{
-      renderTeacherTopbar("subs");
+      // ✅ topbar chuẩn (logo + menu + đăng xuất) do teacher.js dựng
+      renderTeacherTopbar("grading");
       await load();
     })();
   </script>

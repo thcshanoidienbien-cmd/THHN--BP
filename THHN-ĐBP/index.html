@@ -6,9 +6,9 @@
   <title>HEDU • Cổng thông tin nhà trường</title>
   <meta name="theme-color" content="#2563eb"/>
 
-  <!-- (Optional) nếu anh có config.js -->
+  <!-- Optional config.js: cung cấp SCRIPT_URL, SCHOOL_NAME, APP_NAME... -->
   <script src="assets/config.js"></script>
-
+  <script src="assets/api.js"></script>
   <style>
     :root{
       --bg:#f6f9ff;
@@ -34,8 +34,6 @@
         radial-gradient(900px 500px at 90% 30%, rgba(59,130,246,.12), transparent 55%),
         linear-gradient(180deg, #f8fbff, var(--bg));
     }
-
-    /* ✅ Background ảnh nền mờ toàn trang */
     body::before{
       content:"";
       position:fixed;
@@ -57,7 +55,6 @@
     a{color:inherit;text-decoration:none}
     .wrap{max-width:var(--max); margin:0 auto; padding:18px 18px 40px}
 
-    /* Topbar */
     .topbar{
       position:sticky; top:0; z-index:20;
       background:rgba(246,249,255,.78);
@@ -68,7 +65,6 @@
     .row{display:flex; align-items:center; justify-content:space-between; gap:14px}
     .brand{display:flex; align-items:center; gap:12px; min-width:260px}
 
-    /* ✅ Logo trường đúng vị trí chữ H */
     .logo{
       width:42px; height:42px; border-radius:14px;
       background:#fff;
@@ -79,10 +75,8 @@
       flex:0 0 auto;
     }
     .logo img{width:100%; height:100%; object-fit:cover; display:block}
-
     .btitle{line-height:1.05}
     .btitle .name{font-weight:900; font-size:16px}
-    .btitle .sub{font-size:12px; color:var(--muted); margin-top:2px}
 
     .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
     .btn{
@@ -99,8 +93,14 @@
     }
     .btn:hover{transform: translateY(-1px)}
     .btn.ghost{ background: rgba(255,255,255,.70); }
+    .btn-primary{
+      border:none;
+      color:#fff;
+      background: linear-gradient(135deg, var(--blue), #60a5fa);
+      box-shadow: 0 14px 30px rgba(37,99,235,.22);
+    }
+    .top-actions{ display:flex; gap:10px; align-items:center; }
 
-    /* ===== Dropdown menu for roles ===== */
     .dd{ position:relative; display:inline-flex; }
     .ddBtn{ user-select:none; }
     .ddMenu{
@@ -134,7 +134,6 @@
     }
     .ddItem:hover{ background: rgba(37,99,235,.08); }
 
-    /* Layout */
     .hero{
       margin-top:18px;
       display:grid;
@@ -150,8 +149,6 @@
       overflow:hidden;
       position:relative;
     }
-
-    /* HERO LEFT */
     .heroLeftCard{ background: rgba(255,255,255,.82); }
 
     .schoolMedia{
@@ -161,22 +158,14 @@
       overflow:hidden;
       border-bottom:1px solid rgba(15,23,42,.06);
     }
-    .schoolImg{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-      transform:scale(1.02);
-      filter:saturate(1.05) contrast(1.02);
-    }
+    .schoolImg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scale(1.02)}
     .schoolOverlay{
       position:absolute; inset:0;
       background:
         radial-gradient(800px 320px at 20% 30%, rgba(37,99,235,.18), transparent 60%),
         linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.70) 70%, rgba(255,255,255,.92) 100%);
     }
-
     .heroCopy{ padding:18px 18px 20px; }
-
     .heroTitle{
       margin:0;
       font-size:42px;
@@ -187,7 +176,6 @@
       background-clip:text;
       color:transparent;
     }
-
     .heroQuote{
       margin-top:12px;
       padding:12px 14px;
@@ -208,12 +196,8 @@
       border:1px solid rgba(37,99,235,.16);
       flex:0 0 auto;
     }
-    .heroQuote .qText{
-      font-size:14px;
-      letter-spacing:-.01em;
-    }
+    .heroQuote .qText{font-size:14px; letter-spacing:-.01em;}
 
-    /* HERO RIGHT: ảnh + nền mờ */
     .illusPhoto{
       min-height: 420px;
       display:flex; align-items:center; justify-content:center;
@@ -245,14 +229,8 @@
       box-shadow: 0 18px 45px rgba(15,23,42,.14);
       background: rgba(255,255,255,.65);
     }
-    .illusFrame img{
-      width:100%;
-      height:auto;
-      display:block;
-      object-fit:cover;
-    }
+    .illusFrame img{width:100%; height:auto; display:block; object-fit:cover;}
 
-    /* Role cards */
     .grid4{
       margin-top:18px;
       display:grid;
@@ -278,56 +256,10 @@
       flex:0 0 auto;
     }
     .card .title{font-weight:900}
-    .card .desc{
-      margin-top:6px;
-      color: rgba(71,85,105,.95);
-      font-weight:700;
-      font-size:13px;
-      line-height:1.35;
-    }
-    .card .desc p{ margin:0; }
-    .card .desc p + p{ margin-top:8px; }
-
-    .card .go{
-      margin-top:auto;
-      width:100%;
-      height:40px;
-      border-radius: 14px;
-      border:1px solid rgba(15,23,42,.10);
-      background: #fff;
-      font-weight:900;
-      cursor:pointer;
-      transition:.15s ease;
-    }
-    .card .go:hover{transform: translateY(-1px)}
-    .card.primary{
-      border-color: rgba(37,99,235,.20);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.80));
-    }
-    .card.primary .go{
-      border:none;
-      background: linear-gradient(135deg, var(--blue), #60a5fa);
-      color:#fff;
-      box-shadow: 0 14px 30px rgba(37,99,235,.25);
-    }
-
-    /* Clamp description to keep cards balanced */
-    @media (min-width: 981px){
-      .card .desc{
-        display:-webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 6;
-        overflow:hidden;
-      }
-    }
-    @media (max-width: 980px){
-      .card .desc{
-        display:-webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 5;
-        overflow:hidden;
-      }
-    }
+    .card .desc{margin-top:6px;color: rgba(71,85,105,.95);font-weight:700;font-size:13px;line-height:1.35;}
+    .card .desc p{margin:0}
+    .card .desc p + p{margin-top:8px}
+    .card.primary{border-color: rgba(37,99,235,.20); background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.80));}
 
     .footer{
       margin-top:18px;
@@ -341,14 +273,145 @@
       font-size:13px;
     }
 
+    /* ===== Modal + Toast ===== */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(15,23,42,.35); backdrop-filter: blur(6px); z-index:9998; padding:18px;}
+    .modal.open{display:flex}
+    .modal-card{
+      width:min(720px, 96vw);
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:22px;
+      box-shadow:0 25px 60px rgba(0,0,0,.22);
+      padding:14px 14px 12px;
+      max-height: calc(100vh - 36px);
+      overflow:auto;
+      transition: .15s ease;
+    }
+    .modal-card.shrink{
+      width:min(640px, 96vw);
+      padding:12px 12px 10px;
+    }
+    .modal-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
+    .modal-title{font-weight:900; font-size:22px; letter-spacing:-.02em;}
+    .role-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 12px}
+    .role-tabs .tab{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.10);
+      background:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .role-tabs .tab.active{
+      background: linear-gradient(135deg, rgba(37,99,235,.16), rgba(96,165,250,.20));
+      border-color: rgba(37,99,235,.55);
+      color:#1d4ed8;
+      box-shadow: 0 14px 26px rgba(37,99,235,.18);
+    }
+    .blk{display:none; margin-top:4px}
+    .blk.active{display:block}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .field label{display:block; margin:8px 0 6px; font-weight:900; color:#334155}
+    .field input,.field select{
+      width:100%;
+      padding:12px 12px;
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:14px;
+      outline:none;
+      background:#fff;
+      font-weight:800;
+    }
+
+    .pw{ position:relative; }
+    .pwWrap{ position:relative; }
+    .pwWrap input{ padding-right:54px; }
+    .pw .eye{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      width:38px; height:38px; border-radius:12px;
+      border:1px solid rgba(15,23,42,.10);
+      background:#fff;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      transition:.15s ease;
+      user-select:none;
+      color: transparent;
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+    }
+    .pw .eye.show{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+    .pw .eye:hover{
+      border-color: rgba(37,99,235,.28);
+      box-shadow: 0 10px 22px rgba(15,23,42,.10);
+    }
+    .pw .eye::before{
+      content:"";
+      width:18px; height:18px;
+      display:block;
+      background-repeat:no-repeat;
+      background-position:center;
+      background-size:18px 18px;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+      opacity:.85;
+    }
+    .pw .eye.on::before{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58'/%3E%3Cpath d='M9.88 4.24A10.94 10.94 0 0 1 12 4c6.5 0 10 8 10 8a18.4 18.4 0 0 1-2.68 3.9'/%3E%3Cpath d='M6.61 6.61A18.4 18.4 0 0 0 2 12s3.5 8 10 8a10.94 10.94 0 0 0 5.76-1.64'/%3E%3Cline x1='2' y1='2' x2='22' y2='22'/%3E%3C/svg%3E");
+      opacity:.85;
+    }
+
+    .muterow{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; flex-wrap:wrap;}
+    .muterow .link{color:#1d4ed8; font-weight:900; cursor:pointer}
+    .check{display:flex; align-items:center; gap:8px; font-weight:900; color:#334155}
+    .modal-foot{display:flex; justify-content:flex-end; gap:10px; margin-top:12px; flex-wrap:wrap;}
+    .btnDanger{
+      border:none;
+      color:#fff;
+      background: linear-gradient(135deg, #ef4444, #fb7185);
+      box-shadow: 0 14px 30px rgba(239,68,68,.18);
+    }
+    .hint{
+      margin-top:8px;
+      font-size:13px;
+      color:rgba(71,85,105,.95);
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background:rgba(15,23,42,.92);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:900;
+      box-shadow:0 18px 55px rgba(15,23,42,.25);
+      display:none;
+      z-index:9999;
+      max-width:min(860px, 92vw);
+      text-align:center;
+    }
+    .toast.show{display:block}
+
     @media (max-width: 980px){
-      .hero{grid-template-columns:1fr; }
+      .hero{grid-template-columns:1fr;}
       .grid4{grid-template-columns: repeat(2, 1fr)}
-      .nav{gap:8px}
       .schoolMedia{height:240px}
       .heroTitle{font-size:34px}
       .illusPhoto{min-height:320px}
       .ddMenu{ right:auto; left:0; }
+      .grid2{grid-template-columns: 1fr}
+      .modal-title{font-size:20px}
     }
     @media (max-width: 520px){
       .wrap{padding:14px 14px 28px}
@@ -356,6 +419,41 @@
       .heroTitle{font-size:30px}
       .grid4{grid-template-columns:1fr}
       .ddMenu{ min-width: 220px; }
+    }
+    .regActions { align-items: stretch; }
+    @media (max-width: 720px){
+      .regActions{ flex-direction: column; }
+    }
+    .regGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 14px;
+      align-items:start;
+    }
+    .rg-name  { grid-column: 1; grid-row: 1; }
+    .rg-phone { grid-column: 2; grid-row: 1; }
+    .rg-email { grid-column: 1; grid-row: 2; }
+    .rg-pass  { grid-column: 2; grid-row: 2; }
+    .rg-pass2 { grid-column: 2; grid-row: 3; }
+
+    .rg-actions{
+      grid-column: 1;
+      grid-row: 3;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin-top: 38px;
+    }
+    .rg-actions .btn{ flex:1; justify-content:center; }
+
+    @media (max-width: 640px){
+      .regGrid{ grid-template-columns: 1fr; }
+      .rg-name  { grid-column: 1; grid-row: 1; }
+      .rg-phone { grid-column: 1; grid-row: 2; }
+      .rg-email { grid-column: 1; grid-row: 3; }
+      .rg-pass  { grid-column: 1; grid-row: 4; }
+      .rg-pass2 { grid-column: 1; grid-row: 5; }
+      .rg-actions{ grid-column: 1; grid-row: 6; }
     }
   </style>
 </head>
@@ -373,74 +471,70 @@
           </div>
         </div>
 
-        <!-- ✅ MENU: 4 vai trò (dropdown) — thao tác được luôn, bỏ nút Đăng nhập -->
         <div class="nav" aria-label="Điều hướng theo vai trò">
           <div class="dd" data-role="TEACHER">
-          <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">👩‍🏫 Giáo viên ▾</button>
+            <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">👩‍🏫 Giáo viên ▾</button>
             <div class="ddMenu" role="menu" aria-label="Menu Giáo viên">
-              <button class="ddItem" type="button" data-entry="pages/teacher/teacher-dashboard.html">📊 Dashboard</button>
-              <button class="ddItem" type="button" data-entry="pages/teacher/teacher-tasks.html">📚 Ngân hàng bài</button>
-              <button class="ddItem" type="button" data-entry="pages/teacher/teacher-submissions.html">📥 Bài nộp</button>
-              <button class="ddItem" type="button" data-entry="pages/teacher/teacher-grading.html">🧾 Chấm/nhận xét</button>
-              <button class="ddItem" type="button" data-entry="pages/teacher/teacher-insights.html">📈 Insights</button>
+              <button class="ddItem" type="button" data-go-role="TEACHER" data-entry="pages/teacher/teacher-dashboard.html">📊 Dashboard</button>
+              <button class="ddItem" type="button" data-go-role="TEACHER" data-entry="pages/teacher/teacher-tasks.html">📚 Ngân hàng bài</button>
+              <button class="ddItem" type="button" data-go-role="TEACHER" data-entry="pages/teacher/teacher-submissions.html">📥 Bài nộp</button>
+              <button class="ddItem" type="button" data-go-role="TEACHER" data-entry="pages/teacher/teacher-grading.html">🧾 Chấm/nhận xét</button>
+              <button class="ddItem" type="button" data-go-role="TEACHER" data-entry="pages/teacher/teacher-insights.html">📈 Insights</button>
             </div>
-        </div>
-
           </div>
 
           <div class="dd" data-role="STUDENT">
             <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">🧒 Học sinh ▾</button>
             <div class="ddMenu" role="menu" aria-label="Menu Học sinh">
-              <button class="ddItem" type="button" data-entry="pages/student/dashboard.html">🏠 Trang học tập cá nhân</button>
-              <button class="ddItem" type="button" data-entry="pages/student/do-task.html">📝 Làm bài</button>
-              <button class="ddItem" type="button" data-entry="pages/student/progress.html">📈 Tiến bộ học tập</button>
+              <button class="ddItem" type="button" data-go-role="STUDENT" data-entry="pages/student/dashboard.html">🏠 Trang học tập cá nhân</button>
+              <button class="ddItem" type="button" data-go-role="STUDENT" data-entry="pages/student/do-task.html">📝 Làm bài</button>
+              <button class="ddItem" type="button" data-go-role="STUDENT" data-entry="pages/student/progress.html">📈 Tiến bộ học tập</button>
             </div>
           </div>
 
           <div class="dd" data-role="PARENT">
             <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">👨‍👩‍👧 Phụ huynh ▾</button>
             <div class="ddMenu" role="menu" aria-label="Menu Phụ huynh">
-              <button class="ddItem" type="button" data-entry="pages/parent/week.html">📅 Theo dõi theo tuần</button>
-              <button class="ddItem" type="button" data-entry="pages/parent/notes.html">💬 Nhận xét giáo viên</button>
-              <button class="ddItem" type="button" data-entry="pages/parent/progress.html">📊 Tiến bộ của con</button>
+              <button class="ddItem" type="button" data-go-role="PARENT" data-entry="pages/parent/week.html">📅 Theo dõi theo tuần</button>
+              <button class="ddItem" type="button" data-go-role="PARENT" data-entry="pages/parent/notes.html">💬 Nhận xét giáo viên</button>
+              <button class="ddItem" type="button" data-go-role="PARENT" data-entry="pages/parent/progress.html">📊 Tiến bộ của con</button>
             </div>
           </div>
 
           <div class="dd" data-role="ADMIN">
             <button class="btn ddBtn" type="button" aria-haspopup="true" aria-expanded="false">🏫 Nhà trường ▾</button>
             <div class="ddMenu" role="menu" aria-label="Menu Nhà trường">
-              <button class="ddItem" type="button" data-entry="pages/admin/dashboard.html">📊 Điều hành tổng thể</button>
-              <button class="ddItem" type="button" data-entry="pages/admin/setup.html">🧩 Thiết lập năm học</button>
+              <button class="ddItem" type="button" data-go-role="ADMIN" data-entry="pages/admin/dashboard.html">📊 Điều hành tổng thể</button>
+              <button class="ddItem" type="button" data-go-role="ADMIN" data-entry="pages/admin/setup.html">🧩 Thiết lập năm học</button>
             </div>
           </div>
+
+          <div class="top-actions">
+            <span id="topUserBadge" style="display:none; padding:8px 10px; border-radius:12px; background:#eef2ff; font-weight:900;"></span>
+            <button id="btnLoginTop" class="btn btn-primary" data-state="login">Đăng nhập</button>
+          </div>
         </div>
-        <!-- /MENU -->
+
       </div>
     </div>
   </div>
 
   <main class="wrap">
     <section class="hero">
-      <!-- LEFT -->
       <div class="panel heroLeftCard">
         <div class="schoolMedia">
           <img class="schoolImg" src="assets/img/school-hero-left.jpg" alt="Ảnh nhà trường"/>
           <div class="schoolOverlay"></div>
         </div>
-
         <div class="heroCopy">
           <h1 class="heroTitle">NỀN TẢNG HỌC TẬP SỐ</h1>
-
           <div class="heroQuote">
             <div class="qIco">🏫</div>
-            <div class="qText">
-              “Mỗi thầy cô làm chủ công nghệ, mỗi học sinh tự tin học tập – chuyển đổi số bắt đầu từ thực tiễn lớp học.”
-            </div>
+            <div class="qText">“Mỗi thầy cô làm chủ công nghệ, mỗi học sinh tự tin học tập – chuyển đổi số bắt đầu từ thực tiễn lớp học.”</div>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT -->
       <div class="panel illusPhoto" aria-label="Minh hoạ nhà trường">
         <div class="illusFrame">
           <img src="assets/img/school-hero-right.jpg" alt="Hình ảnh hoạt động nhà trường">
@@ -448,9 +542,7 @@
       </div>
     </section>
 
-    <!-- ROLES: giữ nguyên (giờ là mô tả lợi ích, không phải định hướng) -->
     <section class="grid4" id="ecosystem" aria-label="Lợi ích theo vai trò">
-
       <div class="card primary">
         <div class="rTop">
           <div class="ico">👩‍🏫</div>
@@ -458,12 +550,11 @@
             <div class="title">Giáo viên</div>
             <div class="desc">
               <p>Giao bài, thu bài, chấm và nhận xét trực tuyến ngay trên hệ thống.</p>
-              <p>Dữ liệu học tập được lưu theo lớp và năm học, giúp theo dõi tiến bộ từng em rõ ràng, giảm áp lực sổ sách và nâng hiệu quả dạy học.</p>
+              <p>Dữ liệu học tập lưu theo lớp & năm học, theo dõi tiến bộ rõ ràng, giảm sổ sách.</p>
             </div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="rTop">
           <div class="ico">🧒</div>
@@ -471,38 +562,35 @@
             <div class="title">Học sinh</div>
             <div class="desc">
               <p>Làm bài, xem nhận xét và kết quả học tập của bản thân.</p>
-              <p>Mỗi em có hồ sơ học tập cá nhân thể hiện tiến bộ theo từng tuần, hình thành thói quen tự học và chủ động phấn đấu.</p>
+              <p>Có hồ sơ học tập cá nhân theo tuần, hình thành thói quen tự học.</p>
             </div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="rTop">
           <div class="ico">👨‍👩‍👧</div>
           <div>
             <div class="title">Phụ huynh</div>
             <div class="desc">
-              <p>Theo dõi kết quả học tập, nhận xét giáo viên và thông báo theo từng tuần.</p>
-              <p>Thông tin rõ ràng, nhất quán theo năm học giúp phụ huynh đồng hành kịp thời và phối hợp hiệu quả cùng nhà trường.</p>
+              <p>Theo dõi kết quả, nhận xét giáo viên và thông báo theo tuần.</p>
+              <p>Đồng hành kịp thời, phối hợp hiệu quả với nhà trường.</p>
             </div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="rTop">
           <div class="ico">🏫</div>
           <div>
             <div class="title">Nhà trường</div>
             <div class="desc">
-              <p>Quản lý tập trung dữ liệu lớp, học sinh và năm học một cách khoa học.</p>
-              <p>Hỗ trợ tổng hợp báo cáo nhanh, theo dõi chất lượng giáo dục và điều hành toàn trường dựa trên dữ liệu thực, phục vụ quản lý lâu dài.</p>
+              <p>Quản lý tập trung dữ liệu lớp, học sinh và năm học khoa học.</p>
+              <p>Tổng hợp báo cáo nhanh, điều hành theo dữ liệu.</p>
             </div>
           </div>
         </div>
-       </div>
-
+      </div>
     </section>
 
     <div class="footer">
@@ -511,76 +599,762 @@
     </div>
   </main>
 
+  <!-- ===== MODAL LOGIN (dùng chung 4 role) ===== -->
+  <div id="loginModal" class="modal" aria-hidden="true">
+    <div id="modalCard" class="modal-card" role="dialog" aria-modal="true" aria-label="Đăng nhập">
+      <div class="modal-head">
+        <div class="modal-title" id="loginRoleTitle">Đăng nhập</div>
+        <button class="btn" type="button" data-close-login>✕</button>
+      </div>
+
+      <div class="role-tabs">
+        <button class="tab" type="button" data-set-login-role="TEACHER">👩‍🏫 Giáo viên</button>
+        <button class="tab" type="button" data-set-login-role="STUDENT">🧒 Học sinh</button>
+        <button class="tab" type="button" data-set-login-role="PARENT">👨‍👩‍👧 Phụ huynh</button>
+        <button class="tab" type="button" data-set-login-role="ADMIN">🏫 Nhà trường</button>
+      </div>
+
+      <!-- ===== TEACHER ===== -->
+      <div id="blkTeacher" class="blk">
+        <div id="t_login_box">
+          <div class="grid2">
+            <div class="field">
+              <label>SĐT hoặc Email</label>
+              <input id="t_username" inputmode="text" autocomplete="username" placeholder="vd: 098xxxxxxx / abc@gmail.com"/>
+            </div>
+            <div class="field pw">
+              <label>Mật khẩu</label>
+              <div class="pwWrap">
+                <input id="t_password" type="password" autocomplete="current-password" placeholder=""/>
+                <button class="eye" type="button" data-toggle-pw="#t_password" aria-label="Hiện/ẩn mật khẩu"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="muterow">
+            <label class="check"><input type="checkbox" id="t_remember"> Ghi nhớ mật khẩu</label>
+            <span class="link" id="t_forgot">Quên mật khẩu?</span>
+          </div>
+
+          <div class="muterow" style="margin-top:8px">
+            <span style="font-weight:900;color:#0f172a">Chưa có tài khoản?</span>
+            <span class="link" id="t_open_register">Tạo tài khoản</span>
+          </div>
+
+          <div class="hint">✅ Giáo viên đăng nhập sẽ vào đúng trang đã bấm ở menu.</div>
+        </div>
+
+        <div id="t_register_box" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed rgba(15,23,42,.12)">
+          <div class="regGrid">
+            <div class="field rg-name">
+              <label>Họ và tên <span style="color:#ef4444">*</span></label>
+              <input id="tr_name" placeholder="vd: Nguyễn Văn A"/>
+            </div>
+
+            <div class="field rg-phone">
+              <label>Số điện thoại <span style="color:#ef4444">*</span></label>
+              <input id="tr_phone" type="tel" inputmode="tel" placeholder="vd: 0982xxxxxx"/>
+            </div>
+
+            <div class="field rg-email">
+              <label>Email (nếu có)</label>
+              <input id="tr_email" inputmode="email" placeholder="vd: abc@gmail.com"/>
+            </div>
+
+            <div class="field pw rg-pass">
+              <label>Mật khẩu <span style="color:#ef4444">*</span></label>
+              <div class="pwWrap">
+                <input id="tr_pass" type="password" placeholder=""/>
+                <button class="eye" type="button" data-toggle-pw="#tr_pass" aria-label="Hiện/ẩn mật khẩu"></button>
+              </div>
+            </div>
+
+            <div class="field pw rg-pass2">
+              <label>Nhập lại mật khẩu <span style="color:#ef4444">*</span></label>
+              <div class="pwWrap">
+                <input id="tr_pass2" type="password" placeholder=""/>
+                <button class="eye" type="button" data-toggle-pw="#tr_pass2" aria-label="Hiện/ẩn mật khẩu"></button>
+              </div>
+            </div>
+
+            <div class="rg-actions">
+              <button class="btn btn-primary" type="button" id="btnTeacherRegister">Tạo tài khoản</button>
+              <button class="btn" type="button" id="btnTeacherRegisterCancel">Huỷ</button>
+            </div>
+          </div>
+
+          <div class="hint">⚠️ Lưu ý: SĐT nhập dạng text để giữ số 0 đầu. Backend Sheets cũng phải để dạng Plain text.</div>
+        </div>
+      </div>
+
+      <!-- ===== STUDENT ===== -->
+      <div id="blkStudent" class="blk">
+        <div class="grid2">
+          <div class="field">
+            <label>Lớp <span style="color:#ef4444">*</span></label>
+            <select id="studentClass">
+              <option value="">-- Chọn lớp --</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mã học sinh <span style="color:#ef4444">*</span></label>
+            <input id="s_username" placeholder="vd: HS01 / 5A1-012"/>
+          </div>
+        </div>
+
+        <div class="hint">🧒 Học sinh: chỉ cần chọn lớp + mã học sinh.</div>
+      </div>
+
+      <!-- ===== PARENT ===== -->
+      <div id="blkParent" class="blk">
+        <div class="grid2">
+          <div class="field">
+            <label>Lớp <span style="color:#ef4444">*</span></label>
+            <select id="parentClass">
+              <option value="">-- Chọn lớp --</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mã học sinh <span style="color:#ef4444">*</span></label>
+            <input id="p_student" placeholder="vd: HS01"/>
+          </div>
+        </div>
+
+        <div class="hint">👨‍👩‍👧 Phụ huynh: chỉ cần chọn lớp + mã học sinh.</div>
+      </div>
+
+      <!-- ===== ADMIN ===== -->
+      <div id="blkAdmin" class="blk">
+        <div class="field">
+          <label>Mã BGH / Quản trị</label>
+          <input id="a_code" placeholder="vd: BGH2026@"/>
+        </div>
+        <div class="hint">🏫 BGH/Quản trị chỉ nhập 1 lần tại đây. (Không hỏi lại ở trang admin nữa.)</div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" type="button" data-close-login>Để sau</button>
+        <button class="btn btn-primary" type="button" data-do-login id="btnDoLogin">Đăng nhập</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
   <script>
-    // ===== Role -> Login (fallback buttons in cards) =====
-    function goLogin(role){
-      localStorage.setItem("hedu_role", role);
-      // nếu bấm nút dưới card thì vào mặc định
-      localStorage.removeItem("hedu_entry");
-      location.href = "login.html";
-    }
-    function goAdmin(){
-      localStorage.setItem("hedu_role", "ADMIN");
-      localStorage.removeItem("hedu_entry");
-      location.href = "login.html#admin";
-    }
+  /**************
+   * HEDU Index – Flow tối giản (gating + modal login)
+   **************/
 
-    // ===== Role entry routing (Index menu -> Login) =====
-    function openLoginWith(role, entry){
-      localStorage.setItem("hedu_role", role);
-      localStorage.setItem("hedu_entry", entry || "");
-      location.href = "login.html";
-    }
+  // ===== Config SCRIPT_URL (giữ nguyên để không phá gì khác) =====
+  const SCRIPT_URL = (function(){
+    try{
+      if(typeof getConfig === "function"){
+        const cfg = getConfig();
+        if(cfg && cfg.SCRIPT_URL) return cfg.SCRIPT_URL;
+      }
+    }catch(e){}
+    return window.SCRIPT_URL || "";
+  })();
 
-    // Dropdown open/close
-    (function initRoleDropdown(){
-      const dds = document.querySelectorAll(".dd");
-      const closeAll = ()=> dds.forEach(d=> {
-        d.classList.remove("open");
-        const btn = d.querySelector(".ddBtn");
-        if(btn) btn.setAttribute("aria-expanded", "false");
+  const LS = {
+    session: "hedu_session",
+    user: "hedu_user",
+    role: "hedu_role",
+    entry: "hedu_entry",
+    rememberT: "hedu_remember_teacher",
+    teacherU: "hedu_teacher_u",
+    teacherP: "hedu_teacher_p",
+    entryByRolePrefix: "hedu_entry_role_"
+  };
+
+  const ROLE_LABEL = {
+    TEACHER: "Giáo viên",
+    STUDENT: "Học sinh",
+    PARENT: "Phụ huynh",
+    ADMIN: "Nhà trường"
+  };
+
+  // ✅ Trang mặc định theo vai trò (khi entry rỗng/không hợp lệ)
+  const DEFAULT_ROUTE = {
+    TEACHER: "pages/teacher/teacher-dashboard.html",
+    STUDENT: "pages/student/dashboard.html",
+    PARENT: "pages/parent/week.html",
+    ADMIN: "pages/admin/dashboard.html"
+  };
+
+  const $ = (s)=>document.querySelector(s);
+  const toastEl = $("#toast");
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 2600);
+  }
+
+  function readJSON(key){
+    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+  }
+  function writeJSON(key, val){
+    localStorage.setItem(key, JSON.stringify(val));
+  }
+
+  // ✅ SSOT: session chỉ đọc/ghi hedu_session (api.js cũng đọc key này)
+  function getSession(){ return readJSON(LS.session); }
+  function setSession(sess){ writeJSON(LS.session, sess); }
+  function clearSession(){
+    localStorage.removeItem(LS.session);
+    localStorage.removeItem(LS.user);
+    localStorage.removeItem(LS.role);
+  }
+
+  // ✅ apiCall: dùng DUY NHẤT api.js (đã có POST + fallback JSONP)
+  async function apiCall(action, payload = {}) {
+    if (typeof window.apiPost !== "function") {
+      return { ok:false, error:"Thiếu apiPost (assets/api.js chưa load)" };
+    }
+    return window.apiPost(action, payload);
+  }
+
+  function safeSetText(id, value){
+    const el = document.getElementById(id);
+    if(el && value) el.textContent = value;
+  }
+
+  // =============================
+  // ✅ ENTRY HARDEN (không bao giờ bị entry phá)
+  // =============================
+  function sanitizeEntry(entry){
+    const e = String(entry || "").trim();
+    if(!e) return "";
+    // chặn URL ngoài
+    if(/^(https?:)?\/\//i.test(e)) return "";
+    // chặn login.html mọi kiểu
+    if(e.toLowerCase().includes("login.html")) return "";
+    // chặn javascript:
+    if(/^javascript:/i.test(e)) return "";
+    // normalize
+    return e.replace(/^\/+/, "");
+  }
+  function setEntryForRole(role, entry){
+    const clean = sanitizeEntry(entry);
+    const key = LS.entryByRolePrefix + String(role || "").toUpperCase();
+    if(clean){
+      localStorage.setItem(key, clean);
+      localStorage.setItem(LS.entry, clean); // giữ tương thích
+    }else{
+      localStorage.removeItem(key);
+      localStorage.removeItem(LS.entry);
+    }
+  }
+  function getEntryForRole(role){
+    const key = LS.entryByRolePrefix + String(role || "").toUpperCase();
+    return sanitizeEntry(localStorage.getItem(key) || localStorage.getItem(LS.entry) || "");
+  }
+  function clearEntry(){
+    localStorage.removeItem(LS.entry);
+    // không cần xoá entryByRole, chỉ xoá “entry hiện hành” để khỏi dính
+  }
+
+  // ===== Dropdown role =====
+  (function initRoleDropdown(){
+    const dds = document.querySelectorAll(".dd");
+    const closeAll = ()=> dds.forEach(d=> {
+      d.classList.remove("open");
+      const btn = d.querySelector(".ddBtn");
+      if(btn) btn.setAttribute("aria-expanded", "false");
+    });
+
+    dds.forEach(dd=>{
+      const btn = dd.querySelector(".ddBtn");
+      const menu = dd.querySelector(".ddMenu");
+      if(!btn || !menu) return;
+
+      btn.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        const isOpen = dd.classList.contains("open");
+        closeAll();
+        if(!isOpen){
+          dd.classList.add("open");
+          btn.setAttribute("aria-expanded", "true");
+        }
       });
+    });
 
-      dds.forEach(dd=>{
-        const role = dd.getAttribute("data-role");
-        const btn = dd.querySelector(".ddBtn");
-        const menu = dd.querySelector(".ddMenu");
-        if(!btn || !menu) return;
+    document.addEventListener("click", (e)=>{
+      const item = e.target.closest(".ddItem");
+      if(!item) return;
+      const role = item.getAttribute("data-go-role");
+      const entry = item.getAttribute("data-entry") || "";
+      closeAll();
+      handleEntry(role, entry);
+    });
 
-        btn.addEventListener("click", (e)=>{
-          e.stopPropagation();
-          const isOpen = dd.classList.contains("open");
-          closeAll();
-          if(!isOpen){
-            dd.classList.add("open");
-            btn.setAttribute("aria-expanded", "true");
-          }
-        });
+    document.addEventListener("click", closeAll);
+    document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeAll(); });
+  })();
 
-        menu.querySelectorAll(".ddItem").forEach(item=>{
-          item.addEventListener("click", (e)=>{
-            e.stopPropagation();
-            const entry = item.getAttribute("data-entry") || "";
-            closeAll();
-            openLoginWith(role, entry);
-          });
-        });
-      });
+  const modal = $("#loginModal");
+  const modalCard = $("#modalCard");
+  const titleEl = $("#loginRoleTitle");
+  const tabs = Array.from(document.querySelectorAll("[data-set-login-role]"));
+  const roleTabsWrap = document.querySelector(".role-tabs");
+  const modalFoot = document.querySelector(".modal-foot");
 
-      document.addEventListener("click", closeAll);
-      document.addEventListener("keydown", (e)=>{
-        if(e.key === "Escape") closeAll();
-      });
-    })();
+  const blocks = {
+    TEACHER: $("#blkTeacher"),
+    STUDENT: $("#blkStudent"),
+    PARENT: $("#blkParent"),
+    ADMIN: $("#blkAdmin")
+  };
 
-    // Year
-    document.getElementById("y").textContent = new Date().getFullYear();
+  let currentRole = "TEACHER";
+  let teacherRegisterMode = false;
 
-    // Optional config support
-    function safeSetText(id, value){
-      const el = document.getElementById(id);
-      if(el && value) el.textContent = value;
+  function openModal(role){
+    currentRole = role || currentRole || "TEACHER";
+    setRoleUI(currentRole);
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+
+    if(currentRole === "STUDENT" || currentRole === "PARENT"){
+      loadClassesIfNeeded();
     }
+
+    setTimeout(()=>{ syncAllPwEyes(); }, 0);
+
+    setTimeout(()=>{
+      const focusMap = {
+        TEACHER: "#t_username",
+        STUDENT: "#studentClass",
+        PARENT: "#parentClass",
+        ADMIN: "#a_code"
+      };
+      const el = document.querySelector(focusMap[currentRole] || "#t_username");
+      if(el) el.focus();
+    }, 10);
+  }
+  function closeModal(){
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+    setRegisterMode(false, true);
+  }
+
+  function setRegisterMode(on, silent){
+    teacherRegisterMode = !!on;
+
+    if(roleTabsWrap) roleTabsWrap.style.display = teacherRegisterMode ? "none" : "flex";
+
+    const loginBox = document.getElementById("t_login_box");
+    if(loginBox) loginBox.style.display = teacherRegisterMode ? "none" : "block";
+
+    if(modalFoot) modalFoot.style.display = teacherRegisterMode ? "none" : "flex";
+
+    if(modalCard) modalCard.classList.toggle("shrink", teacherRegisterMode);
+
+    if(teacherRegisterMode){
+      currentRole = "TEACHER";
+      setRoleUI("TEACHER");
+      titleEl.textContent = "Tạo tài khoản Giáo viên";
+      $("#t_register_box").style.display = "block";
+      if(!silent) toast("🧾 Nhập thông tin để tạo tài khoản");
+
+      setTimeout(()=>{ syncAllPwEyes(); }, 0);
+      setTimeout(()=>{ const el = document.getElementById("tr_name"); if(el) el.focus(); }, 50);
+    }else{
+      titleEl.textContent = "Đăng nhập " + (ROLE_LABEL[currentRole] || "");
+      $("#t_register_box").style.display = "none";
+      setTimeout(()=>{ syncAllPwEyes(); }, 0);
+    }
+  }
+
+  function setRoleUI(role){
+    if(teacherRegisterMode) role = "TEACHER";
+
+    currentRole = role;
+    titleEl.textContent = teacherRegisterMode
+      ? "Tạo tài khoản Giáo viên"
+      : ("Đăng nhập " + (ROLE_LABEL[role] || ""));
+
+    tabs.forEach(t=>{
+      t.classList.toggle("active", t.getAttribute("data-set-login-role") === role);
+    });
+    Object.keys(blocks).forEach(k=>{
+      blocks[k].classList.toggle("active", k === role);
+    });
+    localStorage.setItem(LS.role, role);
+
+    setTimeout(()=>{ syncAllPwEyes(); }, 0);
+  }
+
+  document.addEventListener("click", (e)=>{
+    if(e.target.matches("[data-close-login]")) closeModal();
+    if(e.target === modal) closeModal();
+    const tab = e.target.closest("[data-set-login-role]");
+    if(tab && !teacherRegisterMode){
+      setRoleUI(tab.getAttribute("data-set-login-role"));
+      if(currentRole === "STUDENT" || currentRole === "PARENT") loadClassesIfNeeded();
+    }
+  });
+
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest("[data-toggle-pw]");
+    if(!btn) return;
+    const sel = btn.getAttribute("data-toggle-pw");
+    const input = document.querySelector(sel);
+    if(!input) return;
+
+    input.type = (input.type === "password") ? "text" : "password";
+    btn.classList.toggle("on", input.type === "text");
+  });
+
+  function syncPwEye(input){
+    if(!input) return;
+    const wrap = input.closest(".pwWrap");
+    if(!wrap) return;
+    const btn = wrap.querySelector(".eye");
+    if(!btn) return;
+
+    const has = !!String(input.value || "").length;
+    btn.classList.toggle("show", has);
+
+    if(!has){
+      input.type = "password";
+      btn.classList.remove("on");
+    }else{
+      btn.classList.toggle("on", input.type === "text");
+    }
+  }
+  function syncAllPwEyes(){
+    document.querySelectorAll(".pwWrap input[type='password'], .pwWrap input[type='text']").forEach(syncPwEye);
+  }
+  document.addEventListener("input", (e)=>{
+    const input = e.target && e.target.matches(".pwWrap input") ? e.target : null;
+    if(!input) return;
+    syncPwEye(input);
+  });
+
+  $("#t_open_register").addEventListener("click", ()=>{ setRegisterMode(true); });
+
+  document.addEventListener("click", (e)=>{
+    if(e.target && e.target.id === "btnTeacherRegisterCancel"){
+      setRegisterMode(false);
+      setRoleUI("TEACHER");
+      toast("↩️ Quay lại đăng nhập");
+      setTimeout(()=>{ const el = document.getElementById("t_username"); if(el) el.focus(); }, 50);
+    }
+  });
+
+  $("#t_forgot").addEventListener("click", ()=>{
+    toast("🔐 Quên mật khẩu: hiện backend chưa có endpoint reset. Anh có thể bổ sung action resetTeacherPassword để dùng.");
+  });
+
+  // =========================================================
+  // ✅ FIX #1: loadClassesIfNeeded KHÔNG phụ thuộc data.ok
+  // =========================================================
+  let classesLoaded = false;
+  async function loadClassesIfNeeded(){
+    if(classesLoaded) return;
+    try{
+      $("#studentClass").innerHTML = '<option value="">Đang tải lớp...</option>';
+      $("#parentClass").innerHTML  = '<option value="">Đang tải lớp...</option>';
+
+      const data = await apiCall("listClassesPublic", {});
+
+      // chấp nhận nhiều format:
+      // 1) {classes:[...]} (backend hiện tại của anh)
+      // 2) {ok:true, classes:[...]}
+      // 3) {data:{classes:[...]}}
+      const list =
+        (Array.isArray(data?.classes) && data.classes) ||
+        (Array.isArray(data?.data?.classes) && data.data.classes) ||
+        [];
+
+      // nếu backend trả lỗi rõ ràng
+      if((data && data.ok === false) || (data && data.error)){
+        if(!list.length) throw new Error(data.error || "Không tải được danh sách lớp");
+      }
+
+      const options = ['<option value="">-- Chọn lớp --</option>']
+        .concat(list.map(c=>{
+          const id = (c.classId ?? c.id ?? c.value ?? c.class_id ?? "").toString();
+          const name = (c.className ?? c.name ?? c.label ?? c.class_name ?? id).toString();
+          return `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`;
+        })).join("");
+
+      $("#studentClass").innerHTML = options;
+      $("#parentClass").innerHTML  = options;
+      classesLoaded = true;
+
+    }catch(err){
+      $("#studentClass").innerHTML = '<option value="">-- Không tải được lớp --</option>';
+      $("#parentClass").innerHTML  = '<option value="">-- Không tải được lớp --</option>';
+      toast("⚠️ " + (err.message || "Lỗi tải lớp"));
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function canGo(role){
+    const sess = getSession();
+    const u = readJSON(LS.user);
+    if(!sess || !(sess.token || sess.sessionId)) return false;
+    if(!u || !u.role) return false;
+    return String(u.role).toUpperCase() === String(role).toUpperCase();
+  }
+
+  function handleEntry(role, entry){
+    setEntryForRole(role, entry);
+    localStorage.setItem(LS.role, role || "");
+    if(canGo(role)){
+      const go = getEntryForRole(role) || DEFAULT_ROUTE[role] || "";
+      if(go) location.href = go;
+      else openModal(role);
+    }else{
+      openModal(role);
+    }
+  }
+
+  $("#btnLoginTop").addEventListener("click", async ()=>{
+    const state = $("#btnLoginTop").getAttribute("data-state");
+    if(state === "logout"){
+      await doLogout();
+      return;
+    }
+    clearEntry();
+    const lastRole = localStorage.getItem(LS.role) || "TEACHER";
+    openModal(lastRole);
+  });
+
+  $("#btnDoLogin").addEventListener("click", ()=>doLogin());
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter" && modal.classList.contains("open")){
+      if(teacherRegisterMode) return;
+      e.preventDefault();
+      doLogin();
+    }
+  });
+
+  function getVal(id){
+    const el = document.getElementById(id);
+    return el ? String(el.value || "").trim() : "";
+  }
+
+  // =========================================================
+  // ✅ FIX #2 + #3: payload chuẩn + login success không phụ thuộc resp.ok
+  // =========================================================
+  async function doLogin(){
+    try{
+      $("#btnDoLogin").disabled = true;
+      $("#btnDoLogin").textContent = "Đang xử lý...";
+
+      let resp = null;
+
+      if(currentRole === "TEACHER"){
+        const username = getVal("t_username");
+        const password = (document.getElementById("t_password")?.value || "");
+
+        if(!username) throw new Error("Nhập SĐT hoặc Email");
+        if(!password) throw new Error("Nhập mật khẩu");
+
+        // gửi dạng “chuẩn” + api.js tự map thêm alias
+        resp = await apiCall("authTeacherLogin", { username, password });
+
+        const remember = !!document.getElementById("t_remember")?.checked;
+        localStorage.setItem(LS.rememberT, remember ? "1" : "0");
+        if(remember){
+          localStorage.setItem(LS.teacherU, username);
+          localStorage.setItem(LS.teacherP, password);
+        }else{
+          localStorage.removeItem(LS.teacherU);
+          localStorage.removeItem(LS.teacherP);
+        }
+      }
+
+      if(currentRole === "STUDENT"){
+        const classId = getVal("studentClass");
+        const studentCode = getVal("s_username");
+        if(!classId) throw new Error("Chọn lớp");
+        if(!studentCode) throw new Error("Thiếu mã học sinh");
+
+        // ✅ gửi studentId (chuẩn) + api.js có thể map thêm
+        resp = await apiCall("authStudentLogin", { classId, studentId: studentCode, studentCode });
+      }
+
+      if(currentRole === "PARENT"){
+        const classId = getVal("parentClass");
+        const studentCode = getVal("p_student");
+        if(!classId) throw new Error("Chọn lớp");
+        if(!studentCode) throw new Error("Thiếu mã học sinh");
+
+        resp = await apiCall("authParentLogin", { classId, studentId: studentCode, studentCode });
+      }
+
+      if(currentRole === "ADMIN"){
+        const code = getVal("a_code");
+        if(!code) throw new Error("Nhập mã BGH/Quản trị");
+
+        resp = await apiCall("authAdminLogin", { adminCode: code, code });
+      }
+
+      // ✅ thành công nếu:
+      // - resp.ok === true
+      // - HOẶC có session/token bất kỳ
+      const ok =
+        (resp && resp.ok === true) ||
+        !!(resp && (resp.session || resp.token || resp.sessionId || resp.sessionToken));
+
+      if(!ok){
+        throw new Error(resp && resp.error ? resp.error : "Đăng nhập thất bại");
+      }
+
+      // ===== SSOT session (QUAN TRỌNG) =====
+      const user = resp.user || {
+        role: currentRole,
+        name: resp.name || resp.fullName || "",
+        classId: resp.classId || "",
+        username: resp.username || ""
+      };
+
+      const s0 = resp.session || {};
+      const token = String(
+        s0.token || s0.sessionId ||
+        resp.token || resp.sessionToken || resp.sessionId || ""
+      );
+
+      const session = {
+        token: String(s0.token || resp.token || resp.sessionToken || token || ""),
+        sessionId: String(s0.sessionId || resp.sessionId || token || ""),
+        role: String(currentRole || user.role || "").toUpperCase(),
+        classId: resp.classId || user.classId || "",
+        at: Date.now()
+      };
+
+      // ✅ Lưu đúng 1 nơi duy nhất để api.js/core.js đọc ổn định
+      setSession(session);
+      writeJSON(LS.user, user);
+      localStorage.setItem(LS.role, session.role);
+
+      closeModal();
+      toast("✅ Đăng nhập thành công: " + (ROLE_LABEL[session.role] || session.role));
+
+      updateTopbar();
+
+      // ✅ Điều hướng an toàn (entry không phá)
+      const go = getEntryForRole(session.role);
+      clearEntry();
+      const target = go || DEFAULT_ROUTE[session.role] || "";
+      if(target) location.href = target;
+
+    }catch(err){
+      toast("⚠️ " + (err.message || "Lỗi đăng nhập"));
+    }finally{
+      $("#btnDoLogin").disabled = false;
+      $("#btnDoLogin").textContent = "Đăng nhập";
+    }
+  }
+
+  $("#btnTeacherRegister").addEventListener("click", async ()=>{
+    try{
+      $("#btnTeacherRegister").disabled = true;
+      $("#btnTeacherRegister").textContent = "Đang tạo...";
+
+      const fullName = getVal("tr_name");
+      const phone = getVal("tr_phone");
+      const email = getVal("tr_email");
+      const password = (document.getElementById("tr_pass")?.value || "");
+      const password2 = (document.getElementById("tr_pass2")?.value || "");
+
+      if(!fullName) throw new Error("Thiếu Họ và tên");
+      if(!phone) throw new Error("Thiếu Số điện thoại");
+      if(!password) throw new Error("Thiếu Mật khẩu");
+      if(password !== password2) throw new Error("Mật khẩu nhập lại không khớp");
+
+      const resp = await apiCall("authTeacherRegister", { fullName, phone, email, password });
+
+      if(!resp || !resp.ok){
+        const msg = (resp && resp.error) ? String(resp.error) : "Tạo tài khoản thất bại";
+        const low = msg.toLowerCase();
+        if(low.includes("exist") || low.includes("tồn tại") || low.includes("duplicate") || low.includes("đã đăng ký")){
+          throw new Error("Tài khoản đã tồn tại");
+        }
+        throw new Error(msg);
+      }
+
+      alert("✅ Tạo tài khoản giáo viên thành công!");
+      setRegisterMode(false);
+      setRoleUI("TEACHER");
+
+      $("#t_username").value = resp.username || phone || email;
+      $("#t_password").value = password;
+
+      setTimeout(()=>{ syncAllPwEyes(); }, 0);
+      setTimeout(()=>{ const el = document.getElementById("t_username"); if(el) el.focus(); }, 50);
+
+    }catch(err){
+      toast("⚠️ " + (err.message || "Lỗi tạo tài khoản"));
+    }finally{
+      $("#btnTeacherRegister").disabled = false;
+      $("#btnTeacherRegister").textContent = "Tạo tài khoản";
+    }
+  });
+
+  async function doLogout(){
+    try{
+      await apiCall("authLogout", {});
+    }catch(e){
+    }finally{
+      clearSession();
+      clearEntry();
+      updateTopbar();
+      toast("👋 Đã đăng xuất");
+    }
+  }
+
+  function updateTopbar(){
+    const badge = $("#topUserBadge");
+    const btn = $("#btnLoginTop");
+    const user = readJSON(LS.user);
+    const sess = getSession();
+
+    if(sess && (sess.token || sess.sessionId) && user && user.role){
+      badge.style.display = "inline-flex";
+      badge.textContent = `✅ ${ROLE_LABEL[String(user.role).toUpperCase()] || user.role}${user.name ? " • " + user.name : ""}`;
+      btn.textContent = "Đăng xuất";
+      btn.classList.remove("btn-primary");
+      btn.classList.add("btnDanger");
+      btn.setAttribute("data-state","logout");
+    }else{
+      badge.style.display = "none";
+      btn.textContent = "Đăng nhập";
+      btn.classList.add("btn-primary");
+      btn.classList.remove("btnDanger");
+      btn.setAttribute("data-state","login");
+    }
+
+    const remember = localStorage.getItem(LS.rememberT) === "1";
+    $("#t_remember").checked = remember;
+    if(remember){
+      const u = localStorage.getItem(LS.teacherU) || "";
+      const p = localStorage.getItem(LS.teacherP) || "";
+      if(u && !$("#t_username").value) $("#t_username").value = u;
+      if(p && !$("#t_password").value) $("#t_password").value = p;
+    }
+
+    setTimeout(()=>{ syncAllPwEyes(); }, 0);
+  }
+
+  (function boot(){
+    $("#y").textContent = new Date().getFullYear();
+
     try{
       if(typeof getConfig === "function"){
         const cfg = getConfig();
@@ -590,6 +1364,33 @@
         document.title = (cfg.APP_NAME ? cfg.APP_NAME + " • " : "") + "Cổng thông tin nhà trường";
       }
     }catch(e){}
-  </script>
+
+    updateTopbar();
+        // ✅ FIX: hỗ trợ requireRole() từ core.js (login=1&role=...&return=...)
+    try{
+      const u = new URL(location.href);
+      const sp = u.searchParams;
+      const loginFlag = sp.get("login");
+      const roleParam = (sp.get("role") || "").toUpperCase();
+      const ret = sp.get("return") || "";
+
+      if(loginFlag === "1"){
+        const r = roleParam || (localStorage.getItem(LS.role) || "TEACHER");
+        if(ret) setEntryForRole(r, ret);
+
+        // nếu đã có session đúng role thì đi thẳng luôn
+        if(canGo(r)){
+          const go = getEntryForRole(r) || DEFAULT_ROUTE[r] || "";
+          clearEntry();
+          if(go) location.replace(go);
+        }else{
+          openModal(r);
+        }
+      }
+    }catch(e){}
+
+  })();
+</script>
+
 </body>
 </html>

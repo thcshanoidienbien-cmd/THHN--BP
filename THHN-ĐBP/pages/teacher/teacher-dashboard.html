@@ -3,34 +3,177 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Teacher Portal</title>
+  <title>Cổng Giáo viên</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
-  <meta name="theme-color" content="#1a73e8"/>
+  <meta name="theme-color" content="#2563eb"/>
+
   <style>
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media(max-width:900px){.grid2{grid-template-columns:1fr}}
-    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+
+    .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
     .dash{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
     @media(max-width:980px){.dash{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:520px){.dash{grid-template-columns:1fr}}
+
+    /* ===== Pro Hero ===== */
+    .heroHead{
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:12px;
+      padding:2px 0 12px;
+      border-bottom:1px dashed rgba(148,163,184,.6);
+      margin-bottom:12px;
+    }
+    .heroTitle{margin:0; font-size:34px; letter-spacing:-.02em}
+    .heroSub{margin-top:6px}
+    .heroRight{display:flex; flex-direction:column; align-items:flex-end; gap:8px}
+    .chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .chipLite{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      font-weight:900;
+      font-size:13px;
+      box-shadow: 0 8px 22px rgba(15,23,42,.04);
+      white-space:nowrap;
+    }
+    .chipLite strong{font-weight:900}
+    .lastUpdate{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      text-align:right;
+      max-width:360px;
+    }
+
+    /* ===== Row 2 (Week + Notes) ===== */
+    .miniTitle{margin:0 0 6px; font-size:16px}
+    .summaryGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media(max-width:980px){.summaryGrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.summaryGrid{grid-template-columns:1fr}}
+    .miniKpi{
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+    }
+    .miniKpi .t{color:var(--muted); font-size:12px; font-weight:900}
+    .miniKpi .v{font-size:22px; font-weight:900; margin-top:6px}
+
+    /* ===== OVERRIDE: KPI góc phải (Chỉ số nhanh) ===== */
+    .dash{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+    @media(max-width:980px){.dash{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.dash{grid-template-columns:1fr}}
+
+    .dash .dcard{
+      padding:14px 12px;
+      border-radius:14px;
+      text-align:center;
+    }
+
+    .dash .dcard .muted{
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.2px;
+      white-space:nowrap;   /* ✅ ép 1 dòng */
+    }
+
+    .dash .dcard > div:last-child{
+      font-size:22px;
+      font-weight:800;
+      margin-top:6px;
+    }
+
+    /* ===== OVERRIDE: 3 box Tóm tắt tuần ===== */
+    .summaryGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media(max-width:980px){.summaryGrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.summaryGrid{grid-template-columns:1fr}}
+
+    .miniKpi{
+      padding:14px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      text-align:center;      /* ✅ căn giữa đẹp */
+    }
+
+    .miniKpi .t{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      line-height:1.4;
+    }
+
+    .miniKpi .v{
+      font-size:20px;
+      font-weight:800;
+      margin-top:6px;
+    }
+
+    .noteBox textarea{
+      min-height: 150px;
+    }
+    .noteMeta{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
   </style>
 </head>
+
 <body data-active="dashboard">
+  <!-- TOPBAR DÙNG CHUNG (có LOGO) -->
   <div id="topbar"></div>
 
   <main class="container">
-    <section class="card" style="padding:16px">
-      <div class="row">
+
+    <section class="card" style="padding:18px">
+
+      <!-- ===== HERO (Pro) ===== -->
+      <div class="heroHead">
         <div>
-          <h1 style="margin:0">Teacher Portal 👩‍🏫</h1>
-          <div class="muted" style="margin-top:4px">Dashboard + Quản lý lớp + điều hướng nhanh</div>
+          <h1 class="heroTitle">Cổng Giáo viên</h1>
+          <div class="muted heroSub">Bảng điều khiển • Quản lý lớp • Theo dõi tiến độ</div>
         </div>
-        <div class="pill" id="me">—</div>
+
+        <div class="heroRight">
+          <div class="chips">
+            <!-- ✅ Chỉ hiện tên GV (không kèm “• Lớp …”) -->
+            <span class="chipLite" id="meChip">👩‍🏫 <strong id="meName">—</strong></span>
+
+            <!-- ✅ Chỉ hiện lớp đúng với lớp đang chọn -->
+            <span class="chipLite" id="classChip">🏷️ <strong id="classNow">—</strong></span>
+          </div>
+
+          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
+        </div>
       </div>
 
+      <!-- ===== ROW 1 ===== -->
       <div class="grid2 mt">
+
+        <!-- ===== CỘT TRÁI ===== -->
         <div class="dcard">
           <h3 style="margin:0 0 6px">📌 Lớp đang quản lý</h3>
           <div class="muted">Chọn lớp → các trang khác tự nhận lớp ✅</div>
@@ -41,23 +184,71 @@
           </div>
 
           <div class="mt muted" id="sub">—</div>
-
-          <div class="actions mt">
-            <button class="btn ghost" id="btnGoTasks" type="button">📚 Giao bài & Thư viện</button>
-            <button class="btn ghost" id="btnGoSubs" type="button">📨 Bài nộp</button>
-            <button class="btn" id="btnGoInsights" type="button">📈 Insights</button>
-          </div>
         </div>
 
+        <!-- ===== CỘT PHẢI ===== -->
         <div class="dcard">
-          <h3 style="margin:0 0 6px">⚡ KPI nhanh</h3>
-          <div class="muted">Tổng quan lớp</div>
+          <h3 style="margin:0 0 6px">⚡ Chỉ số nhanh</h3>
+          <div class="muted">Tổng quan theo lớp</div>
+
           <div class="dash mt" id="dash"></div>
 
           <div class="actions mt">
             <button class="btn" id="btnRefresh" type="button">Tải dữ liệu</button>
           </div>
         </div>
+
+      </div>
+
+      <!-- ===== ROW 2 ===== -->
+      <div class="grid2 mt">
+
+        <!-- ===== TÓM TẮT TUẦN ===== -->
+        <div class="dcard">
+          <h3 class="miniTitle">🗓️ Tóm tắt tuần</h3>
+          <div class="muted">Tự tổng hợp từ bài nộp & sổ điểm (không cần endpoint mới)</div>
+
+          <div class="summaryGrid" id="weekBox">
+            <div class="miniKpi">
+              <div class="t">Bài nộp trong tuần</div>
+              <div class="v" id="wk_subs">—</div>
+            </div>
+            <div class="miniKpi">
+              <div class="t">Đã nhận xét trong tuần</div>
+              <div class="v" id="wk_graded">—</div>
+            </div>
+            <div class="miniKpi">
+              <div class="t">Chưa nhận xét (ước tính)</div>
+              <div class="v" id="wk_pending">—</div>
+            </div>
+          </div>
+
+          <div class="muted" style="margin-top:10px; font-weight:800; font-size:12px">
+            Ghi chú: “Chưa nhận xét” được ước tính dựa trên số bài nộp tuần này trừ đi số đã nhận xét (nếu dữ liệu thời gian không đủ, hệ thống sẽ hiển thị theo tổng).
+          </div>
+        </div>
+
+        <!-- ===== GHI CHÚ NHANH ===== -->
+        <div class="dcard noteBox">
+          <h3 class="miniTitle">📝 Ghi chú nhanh</h3>
+          <div class="muted">Lưu theo từng lớp (chỉ lưu trên máy của giáo viên)</div>
+
+          <div class="mt">
+            <label>Nội dung</label>
+            <textarea id="noteText" placeholder="Ví dụ: Nhắc HS nộp bài trước thứ 6 • Danh sách HS cần hỗ trợ…"></textarea>
+          </div>
+
+          <div class="actions mt">
+            <button class="btn" id="btnSaveNote" type="button">Lưu ghi chú</button>
+            <button class="btn ghost" id="btnClearNote" type="button">Xoá</button>
+          </div>
+
+          <div class="noteMeta">
+            <span id="noteKeyHint">Lớp: —</span>
+            <span id="noteSavedAt">Chưa lưu</span>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -65,9 +256,10 @@
   </main>
 
   <script src="../../assets/config.js"></script>
-  <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <script src="../../assets/teacher-snippet.js"></script>
+  <script src="../../assets/core.js"></script>
+  <script src="../../assets/teacher.js"></script>
+
   <script>
     function toast(msg){
       const t=document.getElementById("toast");
@@ -77,16 +269,98 @@
     }
     function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
 
+    // ===== Session =====
     const session = requireRole("TEACHER");
     const token = session?.token || "";
-    const me = `${session.displayName||"Giáo viên"} • ${session.classId||""}`;
-    document.getElementById("me").textContent = me;
 
-    function getSelectedClass_(){
-      return localStorage.getItem("hedu_teacher_classId") || session.classId || "5A1";
+    // ✅ Chip tên GV (không kèm lớp)
+    document.getElementById("meName").textContent = (session.displayName || "Giáo viên").trim();
+
+    function getSelectedClass_(){ return getTeacherClassId(session.classId || ""); }
+    function setSelectedClass_(cid){ setTeacherClassId(cid); }
+
+    // ===== Helpers: time =====
+    function fmtTime_(d){
+      const pad=n=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
     }
-    function setSelectedClass_(cid){
-      localStorage.setItem("hedu_teacher_classId", cid);
+    function setLastUpdate_(){
+      document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
+    }
+
+    // ===== Helpers: submissions time parsing =====
+    function toDate_(x){
+      if(!x) return null;
+      if(x instanceof Date) return x;
+      // number timestamp
+      if(typeof x === "number") {
+        const d = new Date(x);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      // string
+      const s = String(x).trim();
+      if(!s) return null;
+      const t = Date.parse(s);
+      if(!isNaN(t)) return new Date(t);
+      // dd/mm/yyyy fallback
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2}))?$/);
+      if(m){
+        const dd=+m[1], mm=+m[2]-1, yy=+m[3];
+        const hh=+(m[4]||0), mi=+(m[5]||0);
+        const d = new Date(yy,mm,dd,hh,mi,0,0);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      return null;
+    }
+    function startOfWeekMonday_(d){
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0,0,0,0);
+      const day = x.getDay(); // 0=Sun
+      const diff = (day === 0 ? -6 : 1 - day);
+      x.setDate(x.getDate() + diff);
+      return x;
+    }
+
+    // ===== Notes (localStorage by class) =====
+    function noteKey_(classId){
+      return "hedu_teacher_note_" + String(classId||"").trim().toUpperCase();
+    }
+    function loadNote_(classId){
+      const key = noteKey_(classId);
+      document.getElementById("noteKeyHint").textContent = "Lớp: " + (classId || "—");
+      try{
+        const raw = localStorage.getItem(key) || "";
+        document.getElementById("noteText").value = raw;
+        const tkey = key + "_at";
+        const at = localStorage.getItem(tkey);
+        document.getElementById("noteSavedAt").textContent = at ? ("Đã lưu: " + at) : "Chưa lưu";
+      }catch(e){}
+    }
+    function saveNote_(classId){
+      const key = noteKey_(classId);
+      const tkey = key + "_at";
+      const val = document.getElementById("noteText").value || "";
+      try{
+        localStorage.setItem(key, val);
+        const when = fmtTime_(new Date());
+        localStorage.setItem(tkey, when);
+        document.getElementById("noteSavedAt").textContent = "Đã lưu: " + when;
+        toast("Đã lưu ghi chú ✅");
+      }catch(e){
+        toast("Không lưu được ghi chú");
+      }
+    }
+    function clearNote_(classId){
+      const key = noteKey_(classId);
+      const tkey = key + "_at";
+      try{
+        localStorage.removeItem(key);
+        localStorage.removeItem(tkey);
+        document.getElementById("noteText").value = "";
+        document.getElementById("noteSavedAt").textContent = "Chưa lưu";
+        toast("Đã xoá ghi chú ✅");
+      }catch(e){
+        toast("Không xoá được ghi chú");
+      }
     }
 
     async function loadClasses(){
@@ -94,70 +368,147 @@
       try{
         const r=await api("listClassesForTeacher",{token});
         const items=r.classes||[];
-        sel.innerHTML = items.map(c=>`<option value="${esc(c.classId)}">${esc(c.classId)}${c.className?` • ${esc(c.className)}`:""}</option>`).join("")
-          || `<option value="5A1">5A1</option>`;
+        sel.innerHTML = items.map(c=>{
+          const name = c.className && c.className !== c.classId
+            ? `${c.classId} • ${c.className}`
+            : c.classId;
+          return `<option value="${esc(c.classId)}">${esc(name)}</option>`;
+        }).join("") || `<option value="5A1">5A1</option>`;
       }catch(e){
-        sel.innerHTML = `<option value="${esc(getSelectedClass_())}">${esc(getSelectedClass_())}</option>`;
+        const fallback = getSelectedClass_() || "5A1";
+        sel.innerHTML = `<option value="${esc(fallback)}">${esc(fallback)}</option>`;
       }
-      sel.value = getSelectedClass_();
-      sel.addEventListener("change", async ()=>{
-        setSelectedClass_(sel.value || "5A1");
+
+      // set default
+      const current = getSelectedClass_() || sel.value || "5A1";
+      sel.value = current;
+
+      // ✅ class chip (hiện đúng lớp đang chọn)
+      document.getElementById("classNow").textContent = current || "—";
+      loadNote_(current);
+
+      sel.onchange = async ()=>{
+        const cid = sel.value || "5A1";
+        setSelectedClass_(cid);
+        document.getElementById("classNow").textContent = cid;
+        loadNote_(cid);
         toast("Đã chọn lớp ✅");
         await refresh();
-      });
+      };
     }
 
     function renderKpi_(k){
       const box=document.getElementById("dash");
       box.innerHTML="";
       const cards=[
-        {k:"Học sinh", v:k.students||0},
-        {k:"Tasks (đã giao)", v:k.tasks||0},
-        {k:"Bài nộp", v:k.submissions||0},
-        {k:"Đã nhận xét", v:k.feedbacks||0},
+        {t:"👨‍🎓 Học sinh", v:k.students||0},
+        {t:"📚 Bài đã giao", v:k.tasks||0},
+        {t:"📨 Bài nộp", v:k.submissions||0},
+        {t:"📝 Đã nhận xét", v:k.feedbacks||0},
       ];
       cards.forEach(c=>{
         const d=document.createElement("div");
         d.className="dcard";
-        d.innerHTML=`<div class="muted" style="font-weight:900">${esc(c.k)}</div>
+        d.innerHTML=`<div class="muted" style="font-weight:900">${esc(c.t)}</div>
                      <div style="font-size:28px;font-weight:900;margin-top:6px">${esc(c.v)}</div>`;
         box.appendChild(d);
       });
     }
 
+    function renderWeek_(subsList, gradebookRows){
+      // default
+      const elSubs = document.getElementById("wk_subs");
+      const elGr = document.getElementById("wk_graded");
+      const elPend = document.getElementById("wk_pending");
+
+      const now = new Date();
+      const start = startOfWeekMonday_(now).getTime();
+
+      // count subs in week (if have timestamps)
+      let weekSubs = 0;
+      let hasTime = false;
+
+      (subsList || []).forEach(x=>{
+        const dt =
+          toDate_(x.submittedAt) ||
+          toDate_(x.createdAt) ||
+          toDate_(x.time) ||
+          toDate_(x.ts) ||
+          toDate_(x.at) ||
+          null;
+        if(dt){
+          hasTime = true;
+          if(dt.getTime() >= start) weekSubs++;
+        }
+      });
+
+      // graded total (from gradebook rows) — some systems only have totals, no time
+      const totalGraded = (gradebookRows||[]).reduce((a,x)=>a+(Number(x.graded)||0),0);
+
+      // if no time, fallback to total submissions
+      if(!hasTime){
+        weekSubs = (subsList || []).length;
+      }
+
+      // pending estimate
+      const pending = Math.max(0, weekSubs - totalGraded);
+
+      elSubs.textContent = weekSubs;
+      elGr.textContent = totalGraded;
+      elPend.textContent = pending;
+    }
+
     async function refresh(){
       try{
-        const classId=getSelectedClass_();
+        const classId=getSelectedClass_() || document.getElementById("classId").value || "5A1";
+
         const students = await api("listStudents",{token,classId});
         const tasks = await api("listTasks",{token,classId,status:"PUBLISHED"});
         const subs = await api("listSubmissions",{token,classId});
-        // feedback count từ gradebook (đã có graded)
         const gb = await api("getGradebook",{token,classId});
 
-        document.getElementById("sub").textContent =
-          `Pilot ${students.system.classId} • Khối ${students.system.grade} • ${students.system.subject} • ${students.system.textbook} • LockScope: ${students.system.lockScope}`;
+        // dòng mô tả lớp
+        const sys = (students && students.system) ? students.system : {};
+        const grade = sys.grade ? `Khối ${sys.grade}` : "";
+        const subject = sys.subject ? `${sys.subject}` : "";
+        const textbook = sys.textbook ? `${sys.textbook}` : "";
 
-        const totalGraded = (gb.rows||[]).reduce((a,x)=>a+(Number(x.graded)||0),0);
+        const line = [grade, subject, textbook].filter(Boolean).join(" • ");
+        document.getElementById("sub").textContent = line || "—";
+
+        const graded = (gb.rows||[]).reduce((a,x)=>a+(Number(x.graded)||0),0);
 
         renderKpi_({
           students:(students.students||[]).length,
           tasks:(tasks.tasks||[]).length,
           submissions:(subs.submissions||[]).length,
-          feedbacks: totalGraded
+          feedbacks:graded
         });
 
+        // weekly summary
+        renderWeek_(subs.submissions||[], gb.rows||[]);
+
+        setLastUpdate_();
         toast("Đã tải dữ liệu ✅");
       }catch(e){
-        toast(e.message||"Không tải được dữ liệu.");
+        toast("Không tải được dữ liệu");
       }
     }
 
+    // Notes buttons
+    document.getElementById("btnSaveNote").addEventListener("click", ()=>{
+      const cid = getSelectedClass_() || document.getElementById("classId").value || "";
+      saveNote_(cid);
+    });
+    document.getElementById("btnClearNote").addEventListener("click", ()=>{
+      const cid = getSelectedClass_() || document.getElementById("classId").value || "";
+      clearNote_(cid);
+    });
+
     document.getElementById("btnRefresh").addEventListener("click", refresh);
-    document.getElementById("btnGoTasks").addEventListener("click", ()=>location.href="./teacher-tasks.html");
-    document.getElementById("btnGoSubs").addEventListener("click", ()=>location.href="./teacher-submissions.html");
-    document.getElementById("btnGoInsights").addEventListener("click", ()=>location.href="./teacher-insights.html");
 
     (async ()=>{
+      // topbar (logo + menu) vẫn do teacher.js render, không đụng logic
       renderTeacherTopbar("dashboard");
       await loadClasses();
       await refresh();

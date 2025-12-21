@@ -19,14 +19,31 @@
   window.toast = window.toast || toast;
 
   // ---------- URL helpers ----------
-  function loginHref() {
-    const u = new URL(window.location.href);
-    return u.origin + "/login.html";
-  }
+  function loginHref(role, returnTo){
+  const u = new URL(window.location.href);
+  const base = indexHref(); // ✅ đúng root dự án
+  const r = role ? String(role).toUpperCase() : "";
+  const rt = returnTo || (u.pathname + u.search + u.hash);
+
+  const qs = new URLSearchParams();
+  qs.set("login","1");
+  if(r) qs.set("role", r);
+  if(rt) qs.set("return", rt);
+
+  return base + "?" + qs.toString();
+}
+
   function indexHref() {
-    const u = new URL(window.location.href);
-    return u.origin + "/index.html";
-  }
+  const u = new URL(window.location.href);
+  // lấy root theo việc có "pages/" hay không
+  const parts = u.pathname.split("/").filter(Boolean);
+  const i = parts.indexOf("pages");
+  const root = (i >= 0)
+    ? "/" + parts.slice(0, i).join("/") + "/"
+    : "/" + parts.slice(0, Math.max(parts.length - 1, 0)).join("/") + "/";
+  return u.origin + root + "index.html";
+}
+
 
   function teacherBaseHref() {
     const u = new URL(window.location.href);
@@ -38,6 +55,111 @@
   function teacherHref(file) {
     return teacherBaseHref() + String(file || "");
   }
+
+  /***********************
+ * HEDU SSOT Session (Triệt để)
+ * - 1 key duy nhất: hedu_session
+ * - 1 schema duy nhất: { token, role, displayName, classId, ... }
+ * - 1 hàm dùng chung: getTokenOrLogin(role, opts)
+ ***********************/
+(function(){
+  const SESSION_KEY = "hedu_session";
+
+  function normRole_(r){
+    return String(r || "").trim().toUpperCase();
+  }
+
+  function safeJson_(x, fallback=null){
+    try { return JSON.parse(x); } catch(e){ return fallback; }
+  }
+
+  function getSessionSSOT(){
+    const s = safeJson_(localStorage.getItem(SESSION_KEY) || "null", null);
+    if(!s || typeof s !== "object") return null;
+
+    // ✅ Chuẩn hoá token: ưu tiên token, fallback sessionId
+    if(!s.token && s.sessionId) s.token = s.sessionId;
+
+    // ✅ Chuẩn hoá role
+    s.role = normRole_(s.role);
+
+    // ✅ Token rỗng thì coi như không có session
+    if(!s.token) return null;
+
+    return s;
+  }
+
+  function setSessionSSOT(session){
+    const s = session && typeof session === "object" ? { ...session } : null;
+    if(!s){
+      localStorage.removeItem(SESSION_KEY);
+      return;
+    }
+    if(!s.token && s.sessionId) s.token = s.sessionId;
+    s.role = normRole_(s.role);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+  }
+
+  function clearSessionSSOT(){
+    localStorage.removeItem(SESSION_KEY);
+  }
+
+  /**
+   * ✅ Hàm “đập chết” session:
+   * - Nếu đủ role + có token: trả về session (đã chuẩn hoá)
+   * - Nếu thiếu: redirect về index.html để login (có returnUrl)
+   *
+   * opts:
+   *  - returnUrl: mặc định = location.href
+   *  - loginPath: mặc định = "../../index.html"
+   *  - noRedirect: true => không redirect, chỉ throw Error
+   */
+  function getTokenOrLogin(requiredRole, opts={}){
+    const roleNeed = normRole_(requiredRole);
+    const s = getSessionSSOT();
+    const ok = !!(s && s.token && (!roleNeed || s.role === roleNeed));
+
+    if(ok) return s;
+
+    const returnUrl = opts.returnUrl || location.href;
+    const loginPath = opts.loginPath || "../../index.html"; // pages/*/* -> ../../index.html
+    const noRedirect = !!opts.noRedirect;
+
+    const msg = !s
+      ? "Chưa đăng nhập."
+      : `Sai quyền. Cần ${roleNeed}, hiện tại ${s.role || "UNKNOWN"}.`;
+
+    if(noRedirect){
+      throw new Error(msg);
+    }
+
+    // ✅ Redirect có returnUrl để login xong quay lại đúng trang
+    const u = new URL(loginPath, location.href);
+    u.searchParams.set("login", "1");
+    if(roleNeed) u.searchParams.set("role", roleNeed);
+    u.searchParams.set("return", returnUrl);
+
+    location.replace(u.toString());
+    // chặn code chạy tiếp
+    throw new Error("Redirecting to login...");
+  }
+
+  // ✅ Export ra window để mọi trang dùng
+  window.HEDU_SESSION_KEY = SESSION_KEY;
+  window.getSessionSSOT = getSessionSSOT;
+  window.setSessionSSOT = setSessionSSOT;
+  window.clearSessionSSOT = clearSessionSSOT;
+  window.getTokenOrLogin = getTokenOrLogin;
+
+  /**
+   * ✅ Tương thích ngược:
+   * Nếu ông chủ đang dùng requireRole("TEACHER")... thì ép nó gọi SSOT
+   * (nếu requireRole đã tồn tại, mình override nhẹ nhàng để chuẩn hoá hành vi)
+   */
+  window.requireRole = function(role){
+    return getTokenOrLogin(role, { loginPath: "../../index.html" });
+  };
+})();
 
   // ---------- Session normalize ----------
   function normalizeSession(input) {
@@ -143,24 +265,28 @@
 
   // ---------- Auth guards ----------
   function requireRole(role) {
-    const s = getSession();
-    if (!s || !s.token) {
-      window.location.href = loginHref();
+  const s = getSession();
+  const need = role
+    ? (Array.isArray(role) ? role : [role]).map(x => String(x).toUpperCase())
+    : [];
+
+  if (!s || !s.token) {
+    const r = need[0] || "";
+    window.location.href = loginHref(r);
+    return null;
+  }
+
+  if (need.length) {
+    const has = String(s.role || "").toUpperCase();
+    if (!need.includes(has)) {
+      clearSession();
+      window.location.href = loginHref(need[0] || "");
       return null;
     }
-    if (role) {
-      const need = Array.isArray(role)
-        ? role.map((x) => String(x).toUpperCase())
-        : [String(role).toUpperCase()];
-      const has = String(s.role || "").toUpperCase();
-      if (!need.includes(has)) {
-        clearSession();
-        window.location.href = loginHref();
-        return null;
-      }
-    }
-    return s;
   }
+
+  return s;
+}
 
   function logout() {
     clearSession();
