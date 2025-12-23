@@ -18,6 +18,37 @@
   }
   window.toast = window.toast || toast;
 
+  // ---------- Storage fallback ----------
+  // Một số trình duyệt/extension (Tracking Prevention) có thể chặn localStorage,
+  // khiến token biến mất và bị "tự out". Ta giữ thêm bản sao trong RAM + window.name.
+  const __MEM_KEY__ = "__HEDU_MEM_SESSION__";
+  const __WN_KEY__ = "hedu_session_wn";
+
+  function _lsGet_(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
+  function _lsSet_(k,v){ try{ localStorage.setItem(k,v); return true; }catch(_){ return false; } }
+  function _lsDel_(k){ try{ localStorage.removeItem(k); }catch(_){ } }
+
+  function _wnRead_(){
+    try{
+      const raw = String(window.name||"{}");
+      const obj = JSON.parse(raw);
+      const hedu = obj && obj.__hedu__ ? obj.__hedu__ : null;
+      if(hedu && hedu[__WN_KEY__]) return String(hedu[__WN_KEY__]||"");
+    }catch(_){ }
+    return "";
+  }
+  function _wnWrite_(raw){
+    try{
+      const base = String(window.name||"{}");
+      const obj = JSON.parse(base);
+      obj.__hedu__ = obj.__hedu__ || {};
+      obj.__hedu__[__WN_KEY__] = String(raw||"");
+      window.name = JSON.stringify(obj);
+    }catch(_){
+      try{ window.name = JSON.stringify({__hedu__:{[__WN_KEY__]:String(raw||"")}}); }catch(__){ }
+    }
+  }
+
   // ---------- URL helpers ----------
   function loginHref(role, returnTo){
   const u = new URL(window.location.href);
@@ -73,8 +104,31 @@
     try { return JSON.parse(x); } catch(e){ return fallback; }
   }
 
+  // localStorage có thể bị chặn (Tracking Prevention) -> fallback RAM + window.name
   function getSessionSSOT(){
-    const s = safeJson_(localStorage.getItem(SESSION_KEY) || "null", null);
+    let s = null;
+    // 1) localStorage
+    try{
+      s = safeJson_(localStorage.getItem(SESSION_KEY) || "null", null);
+    }catch(_){ s = null; }
+
+    // 2) RAM
+    if(!s || typeof s !== "object"){
+      try{
+        const mem = window.__HEDU_MEM_SESSION__;
+        if(mem && typeof mem === "object") s = { ...mem };
+      }catch(_){ }
+    }
+
+    // 3) window.name
+    if(!s || typeof s !== "object"){
+      try{
+        const name = window.name || "";
+        const m = name.match(/(?:^|;)hedu_session_wn=([^;]+)(?:;|$)/);
+        if(m && m[1]) s = safeJson_(decodeURIComponent(m[1]), null);
+      }catch(_){ s = null; }
+    }
+
     if(!s || typeof s !== "object") return null;
 
     // ✅ Chuẩn hoá token: ưu tiên token, fallback sessionId
@@ -92,16 +146,29 @@
   function setSessionSSOT(session){
     const s = session && typeof session === "object" ? { ...session } : null;
     if(!s){
-      localStorage.removeItem(SESSION_KEY);
+      try{ localStorage.removeItem(SESSION_KEY); }catch(_){ }
+      try{ delete window.__HEDU_MEM_SESSION__; }catch(_){ }
+      try{ window.name = (window.name||"").replace(/(?:^|;)hedu_session_wn=[^;]*;?/g, ""); }catch(_){ }
       return;
     }
     if(!s.token && s.sessionId) s.token = s.sessionId;
     s.role = normRole_(s.role);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    // RAM
+    try{ window.__HEDU_MEM_SESSION__ = { ...s }; }catch(_){ }
+    // window.name
+    try{
+      const enc = encodeURIComponent(JSON.stringify(s));
+      const base = (window.name || "").replace(/(?:^|;)hedu_session_wn=[^;]*;?/g, "");
+      window.name = (base ? base.replace(/;\s*$/,'') + ';' : '') + `hedu_session_wn=${enc};`;
+    }catch(_){ }
+    // localStorage
+    try{ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }catch(_){ }
   }
 
   function clearSessionSSOT(){
-    localStorage.removeItem(SESSION_KEY);
+    try{ localStorage.removeItem(SESSION_KEY); }catch(_){ }
+    try{ delete window.__HEDU_MEM_SESSION__; }catch(_){ }
+    try{ window.name = (window.name||"").replace(/(?:^|;)hedu_session_wn=[^;]*;?/g, ""); }catch(_){ }
   }
 
   /**
@@ -151,91 +218,28 @@
   window.clearSessionSSOT = clearSessionSSOT;
   window.getTokenOrLogin = getTokenOrLogin;
 
-  /**
-   * ✅ Tương thích ngược:
-   * Nếu ông chủ đang dùng requireRole("TEACHER")... thì ép nó gọi SSOT
-   * (nếu requireRole đã tồn tại, mình override nhẹ nhàng để chuẩn hoá hành vi)
-   */
-  window.requireRole = function(role){
-    return getTokenOrLogin(role, { loginPath: "../../index.html" });
-  };
+  // NOTE: requireRole sẽ được export ở cuối file (1 lần duy nhất) để tránh ghi đè.
 })();
 
-  // ---------- Session normalize ----------
-  function normalizeSession(input) {
-    const s = (input && input.session) ? input.session : (input || {});
-    const user = s.user || s.userInfo || s.profile || s || null;
 
-    const role = String(s.role || user?.role || "").toUpperCase();
-    const token = String(s.token || s.sessionId || user?.token || user?.sessionId || "");
-
-    const schoolYear = s.schoolYear || s.year || user?.schoolYear || user?.year || "";
-    const classId =
-      s.classId ||
-      user?.classId ||
-      localStorage.getItem("hedu_class") ||
-      localStorage.getItem("rw_class") ||
-      "";
-
-    const userId = s.userId || user?.userId || user?.id || "";
-    const displayName =
-      s.displayName ||
-      user?.displayName ||
-      user?.fullName ||
-      user?.name ||
-      localStorage.getItem("hedu_teacher_name") ||
-      "";
-
-    return { token, role, schoolYear, classId, userId, displayName, user };
+  // ---------- Session SSOT wrappers (không còn legacy normalize) ----------
+  function getSession(){
+    try{ return (typeof window.getSessionSSOT === "function") ? window.getSessionSSOT() : null; }
+    catch(_){ return null; }
   }
-
-  function saveSession(session, opts = {}) {
-    const norm = normalizeSession(session);
-    localStorage.setItem("hedu_session", JSON.stringify(norm));
-    if (typeof opts.remember !== "undefined") {
-      localStorage.setItem("hedu_remember", opts.remember ? "1" : "0");
-    }
-    if (norm.classId) localStorage.setItem("hedu_class", String(norm.classId).trim().toUpperCase());
-    if (norm.displayName) localStorage.setItem("hedu_teacher_name", norm.displayName);
+  function saveSession(sessionLike){
+    try{ if(typeof window.setSessionSSOT === "function") return window.setSessionSSOT(sessionLike); }
+    catch(_){ }
+    try{ localStorage.setItem("hedu_session", JSON.stringify(sessionLike||null)); }catch(_){ }
   }
-
-  function getSession() {
-    try {
-      const raw = localStorage.getItem("hedu_session");
-      if (raw) return normalizeSession(JSON.parse(raw));
-    } catch (_) {}
-
-    // legacy: rw_user
-    try {
-      const ru = JSON.parse(localStorage.getItem("rw_user") || "null");
-      if (ru) {
-        return normalizeSession({
-          user: ru,
-          role: ru.role,
-          token: ru.token,
-          classId: localStorage.getItem("rw_class") || "",
-        });
-      }
-    } catch (_) {}
-
-    return null;
+  function clearSession(){
+    try{ if(typeof window.clearSessionSSOT === "function") return window.clearSessionSSOT(); }
+    catch(_){ }
+    try{ localStorage.removeItem("hedu_session"); }catch(_){ }
   }
-
-  function clearSession() {
-    localStorage.removeItem("hedu_session");
-    localStorage.removeItem("hedu_remember");
-    localStorage.removeItem("hedu_teacher_name");
-    localStorage.removeItem("hedu_class");
-    localStorage.removeItem("hedu_teacher_classId");
-
-    // legacy cleanup
-    localStorage.removeItem("rw_user");
-    localStorage.removeItem("rw_class");
-  }
-
-  function getToken() {
+  function getToken(){
     const s = getSession();
-    return s?.token ? String(s.token) : "";
+    return s && s.token ? String(s.token) : "";
   }
 
   // ---------- SSOT Teacher classId ----------
@@ -293,67 +297,14 @@
     window.location.href = indexHref();
   }
 
-  // ---------- Teacher Topbar (5 pages FINAL) ----------
-  function renderTeacherTopbar(active = "") {
-    const s = getSession();
-    const name = s?.displayName || "Giáo viên";
-    const cls = getTeacherClassId("—") || "—";
-    const subject =
-      (window.getConfig?.().DEFAULT_SUBJECT) ||
-      (window.HEDU_CONFIG?.DEFAULT_SUBJECT) ||
-      "";
-
-    const nav = [
-      { key: "dashboard", label: "Dashboard", href: "teacher-dashboard.html" },
-      { key: "tasks", label: "Ngân hàng bài", href: "teacher-tasks.html" },
-      { key: "subs", label: "Bài nộp", href: "teacher-submissions.html" },
-      { key: "grading", label: "Chấm/nhận xét", href: "teacher-grading.html" },
-      { key: "insights", label: "Insights", href: "teacher-insights.html" },
-    ];
-
-    const host = document.getElementById("topbar");
-    if (!host) return;
-
-    host.innerHTML = `
-      <div class="topbar">
-        <div class="inner">
-          <div class="brand">
-            <div class="logo">H</div>
-            <div class="meta">
-              <div class="title">HEDU • Portal Giáo viên</div>
-              <div class="sub">
-                GV: <b>${escapeHtml(name)}</b>
-                • Lớp: <b id="heduTopbarClass">${escapeHtml(cls)}</b>
-                ${subject ? ` • <span style="color:#64748b">${escapeHtml(subject)}</span>` : ""}
-              </div>
-            </div>
-          </div>
-
-          <div class="nav">
-            ${nav
-              .map(
-                (i) =>
-                  `<a class="chip ${active === i.key ? "active" : ""}" href="${escapeHtml(
-                    i.href
-                  )}">${escapeHtml(i.label)}</a>`
-              )
-              .join("")}
-          </div>
-
-          <div class="top-actions">
-            <button class="btn ghost" id="btnLogout" type="button">Đăng xuất</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.getElementById("btnLogout")?.addEventListener("click", logout);
-  }
-
+  // ---------- Teacher badge update (UI do teacher.js đảm nhiệm) ----------
   function updateTopbarClassBadge() {
-    const el = document.getElementById("heduTopbarClass");
-    if (!el) return;
-    el.textContent = getTeacherClassId("—") || "—";
+    // Nếu teacher.js có badge riêng, cập nhật qua API đó
+    try {
+      if (typeof window.setTeacherHeaderBadge === "function") {
+        window.setTeacherHeaderBadge(getTeacherClassId("") || "");
+      }
+    } catch (_) {}
   }
 
   function escapeHtml(str) {
@@ -368,7 +319,7 @@
   // ---------- export ----------
   window.toast = window.toast || toast;
 
-  window.normalizeSession = normalizeSession;
+  // ✅ Public SSOT
   window.saveSession = saveSession;
   window.getSession = getSession;
   window.clearSession = clearSession;
@@ -385,8 +336,7 @@
   window.teacherBaseHref = teacherBaseHref;
   window.teacherHref = teacherHref;
 
-  // UI
-  window.renderTeacherTopbar = renderTeacherTopbar;
+  // UI: Teacher topbar dùng assets/teacher.js (tránh trùng hàm)
   window.loginHref = loginHref;
   window.indexHref = indexHref;
 })();

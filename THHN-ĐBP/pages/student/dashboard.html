@@ -9,7 +9,6 @@
   <script src="../../assets/config.js"></script>
 
   <style>
-    /* ===== Topbar (giống tinh thần index/teacher) ===== */
     .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
     .topbar .inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
     .brand{display:flex;align-items:center;gap:10px;min-width:0}
@@ -21,32 +20,18 @@
 
     .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pill{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
-      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
-    }
+    .pill{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
     .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
     .rightActions{display:flex;align-items:center;gap:10px}
-    .btnLogout{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
-      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
-    }
+    .btnLogout{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
 
-    /* ===== Page ===== */
     .container{max-width:1180px}
-    .heroHead{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
-    }
+    .heroHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px}
     .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
     .heroSub{margin-top:6px}
     .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
     .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .chipLite{
-      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
-      border-radius:999px;background:#fff;font-weight:900;font-size:13px;white-space:nowrap;
-      box-shadow:0 8px 22px rgba(15,23,42,.04)
-    }
+    .chipLite{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:13px;white-space:nowrap;box-shadow:0 8px 22px rgba(15,23,42,.04)}
     .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
 
     .gridKpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -58,7 +43,7 @@
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
 
-    /* ===== Kid mode ===== */
+    /* Kid mode */
     body.kid .heroTitle{font-size:30px}
     body.kid .pill, body.kid .btnLogout{font-size:14px;padding:12px 16px}
     body.kid .chipLite{font-size:14px;padding:10px 14px}
@@ -67,46 +52,23 @@
     body.kid .dcard{border-radius:20px}
     body.kid .muted{font-size:13px}
 
-    /* Card list for Kid mode */
     .taskCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     @media(max-width:900px){.taskCards{grid-template-columns:1fr}}
-    .taskCard{
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:#fff;
-      padding:14px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
+    .taskCard{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
     .taskCard .left{min-width:0}
     .taskCard .title{font-weight:900;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .taskCard .meta{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.35}
-    .taskCard .go{
-      white-space:nowrap;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:10px 12px;
-      font-weight:900;
-      text-decoration:none;
-      color:#fff;
-      background:var(--primary);
-      box-shadow:0 10px 26px rgba(37,99,235,.14)
-    }
+    .taskCard .go{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:10px 12px;font-weight:900;text-decoration:none;color:#fff;background:var(--primary);box-shadow:0 10px 26px rgba(37,99,235,.14)}
 
-    /* hide helpers */
     .hidden{display:none !important}
   </style>
 </head>
 
 <body>
-  <!-- ===== TOPBAR ===== -->
   <div class="topbar">
     <div class="inner">
       <div class="brand">
-          <div class="btext">
-          <!-- ✅ Theo yêu cầu: dòng 1 = TÊN TRƯỜNG, dòng 2 = TÊN HỌC SINH -->
+        <div class="btext">
           <div class="bname" id="brandName">—</div>
           <div class="bsub" id="brandSub">—</div>
         </div>
@@ -118,7 +80,6 @@
           <a class="pill" href="do-task.html">Làm bài</a>
           <a class="pill" href="progress.html">Tiến bộ</a>
         </div>
-
         <div class="rightActions">
           <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
         </div>
@@ -128,15 +89,12 @@
 
   <main class="container">
     <section class="card" style="padding:18px;margin-top:14px">
-
-      <!-- ===== HERO ===== -->
       <div class="heroHead">
         <div>
           <h1 class="heroTitle" id="pageTitle">Trang Học sinh</h1>
           <div class="muted heroSub" id="who">—</div>
         </div>
 
-        <!-- ✅ Chỉ hiển thị chip LỚP bên phải (không lặp “Học sinh • 5A1” trên menu) -->
         <div class="heroRight">
           <div class="chips">
             <span class="chipLite" id="chipClass">🏷️ <strong id="studentClass">—</strong></span>
@@ -145,7 +103,6 @@
         </div>
       </div>
 
-      <!-- ===== Tổng quan ===== -->
       <div class="dcard">
         <div style="font-weight:900" id="overviewTitle">📒 Tổng quan học tập</div>
         <div class="muted" style="margin-top:6px" id="overviewSub">Thống kê nhanh dựa trên bài được giao, lịch sử nộp và nhận xét.</div>
@@ -165,27 +122,22 @@
           </div>
         </div>
 
-        <!-- Kid-only friendly line -->
         <div class="muted mt hidden" id="kidLine" style="font-weight:900"></div>
       </div>
 
       <div style="height:12px"></div>
 
-      <!-- ===== Bài cần làm ===== -->
       <div class="dcard">
         <div class="row">
           <div>
             <div style="font-weight:900" id="needTitle">👨‍🎓 Bài cần làm</div>
-            <div class="muted" style="font-size:12px;margin-top:4px" id="needSub">
-              Chọn một bài để làm và nộp. Danh sách tự ẩn các bài đã nộp.
-            </div>
+            <div class="muted" style="font-size:12px;margin-top:4px" id="needSub">Chọn một bài để làm và nộp. Danh sách tự ẩn các bài đã nộp.</div>
           </div>
           <button class="btn" id="btnReload" type="button">Tải lại</button>
         </div>
 
         <div class="divider"></div>
 
-        <!-- Standard: table -->
         <table class="table" id="tableWrap">
           <thead>
             <tr><th>Mã bài</th><th>Chủ đề</th><th>Mảng</th><th></th></tr>
@@ -195,14 +147,12 @@
           </tbody>
         </table>
 
-        <!-- Kid: cards -->
         <div id="cardsWrap" class="taskCards hidden"></div>
 
         <div class="muted" style="margin-top:10px;font-size:12px;font-weight:800" id="tipLine">
           Mẹo: Nếu em đã làm xong, hãy sang mục <b>Tiến bộ</b> để xem nhận xét và điểm.
         </div>
       </div>
-
     </section>
 
     <div class="toast" id="toast" hidden></div>
@@ -227,7 +177,6 @@
     }
 
     function getGradeFromClassId_(classId){
-      // Ưu tiên format "1A1..5A1"
       const s = String(classId||"").trim();
       const m = s.match(/^(\d)/);
       const g = m ? Number(m[1]) : 0;
@@ -238,7 +187,6 @@
       const isKid = grade > 0 && grade <= 2;
       document.body.classList.toggle("kid", isKid);
 
-      // Copywriting theo lứa tuổi
       if(isKid){
         document.getElementById("pageTitle").textContent = "Góc học tập của con ✨";
         document.getElementById("overviewTitle").textContent = "📒 Hôm nay con học gì?";
@@ -248,7 +196,6 @@
         document.getElementById("btnReload").textContent = "Làm mới 🔄";
         document.getElementById("tipLine").innerHTML = "Mẹo: Xong rồi nhớ sang <b>Tiến bộ</b> để xem lời nhận xét nha 💬";
       }else{
-        // Standard (giữ đúng như hiện tại)
         document.getElementById("pageTitle").textContent = "Trang Học sinh";
         document.getElementById("overviewTitle").textContent = "📒 Tổng quan học tập";
         document.getElementById("overviewSub").textContent = "Thống kê nhanh dựa trên bài được giao, lịch sử nộp và nhận xét.";
@@ -257,11 +204,10 @@
         document.getElementById("btnReload").textContent = "Tải lại";
         document.getElementById("tipLine").innerHTML = "Mẹo: Nếu em đã làm xong, hãy sang mục <b>Tiến bộ</b> để xem nhận xét và điểm.";
       }
-
       return isKid;
     }
 
-      function renderTasksStandard_(need){
+    function renderTasksStandard_(need){
       const tb = document.getElementById("rows");
       if(!need.length){
         tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Không còn bài cần làm 🎉</td></tr>`;
@@ -312,14 +258,9 @@
       const s = window.__STU__;
       if(!s) return;
 
-      const cfg = (typeof getConfig === "function") ? getConfig() : {};
-      setBrand_(cfg, s);
-
-      // Who line (nhẹ nhàng)
       const who = document.getElementById("who");
-      if(who) who.textContent = ""; // ✅ không hiện “Học sinh • 5A1”
+      if(who) who.textContent = "";
 
-      // Chip lớp (bên phải)
       document.getElementById("studentClass").textContent = (s.classId||"—");
 
       const grade = getGradeFromClassId_(s.classId);
@@ -327,7 +268,6 @@
 
       document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
 
-      // Toggle list layout
       document.getElementById("tableWrap").classList.toggle("hidden", isKid);
       document.getElementById("cardsWrap").classList.toggle("hidden", !isKid);
 
@@ -348,7 +288,6 @@
         document.getElementById("k_submitted").textContent = submittedSet.size;
         document.getElementById("k_feedback").textContent = fbs.length;
 
-        // Kid friendly line
         const kidLine = document.getElementById("kidLine");
         if(isKid){
           kidLine.classList.remove("hidden");
@@ -366,7 +305,7 @@
     }
 
     (async ()=>{
-      await studentInit("dashboard"); // ✅ wire logout -> ../../index.html
+      await studentInit("dashboard");
       document.getElementById("btnReload").onclick = loadData_;
       await loadData_();
     })();

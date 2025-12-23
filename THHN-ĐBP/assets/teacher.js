@@ -52,7 +52,7 @@
     // Lấy session để hiển thị “GV: ...” (KHÔNG hiện lớp ở dòng này theo yêu cầu #2)
     let s = null;
     try{ s = (typeof requireRole==="function") ? requireRole(["TEACHER"]) : null; }catch(_){}
-    const gvName = (s && s.displayName) ? String(s.displayName) : "Giáo viên";
+    const gvName = (s && (s.displayName||s.name||s.username)) ? String(s.displayName||s.name||s.username) : "Giáo viên";
     const gvLine = `GV: ${gvName}`; // ✅ bỏ dấu • và bỏ “Lớp: ...”
 
     bar.innerHTML = `

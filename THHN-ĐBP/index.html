@@ -698,7 +698,7 @@
           </div>
           <div class="field">
             <label>Mã học sinh <span style="color:#ef4444">*</span></label>
-            <input id="s_username" placeholder="vd: HS01 / 5A1-012"/>
+            <input id="s_username" placeholder="vd: HS001"/>
           </div>
         </div>
 
@@ -716,7 +716,7 @@
           </div>
           <div class="field">
             <label>Mã học sinh <span style="color:#ef4444">*</span></label>
-            <input id="p_student" placeholder="vd: HS01"/>
+            <input id="p_student" placeholder="vd: HS001"/>
           </div>
         </div>
 
@@ -727,7 +727,7 @@
       <div id="blkAdmin" class="blk">
         <div class="field">
           <label>Mã BGH / Quản trị</label>
-          <input id="a_code" placeholder="vd: BGH2026@"/>
+          <input id="a_code" placeholder="vd: BGH2026..."/>
         </div>
         <div class="hint">🏫 BGH/Quản trị chỉ nhập 1 lần tại đây. (Không hỏi lại ở trang admin nữa.)</div>
       </div>
@@ -1234,7 +1234,10 @@
         token: String(s0.token || resp.token || resp.sessionToken || token || ""),
         sessionId: String(s0.sessionId || resp.sessionId || token || ""),
         role: String(currentRole || user.role || "").toUpperCase(),
-        classId: resp.classId || user.classId || "",
+        classId: s0.classId || resp.classId || user.classId || "",
+        studentId: s0.studentId || resp.studentId || user.studentId || "",
+        displayName: s0.displayName || resp.displayName || user.displayName || user.name || "",
+        parentName: s0.parentName || resp.parentName || user.parentName || "",
         at: Date.now()
       };
 

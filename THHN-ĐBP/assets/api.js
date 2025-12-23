@@ -1,7 +1,7 @@
 // assets/api.js — HEDU SSOT ULTRA (POST first, JSONP fallback, auto-session, auto-kill-session)
 (function () {
   "use strict";
-
+  
   /*********************
    * CONFIG
    *********************/
@@ -40,6 +40,13 @@
 
   function getToken_() {
     try {
+      // Ưu tiên SSOT từ core.js (có fallback khi localStorage bị chặn)
+      if (typeof window.getSession === "function") {
+        const ss = window.getSession();
+        if (ss && (ss.token || ss.sessionId || ss.sid)) {
+          return String(ss.token || ss.sessionId || ss.sid || "");
+        }
+      }
       const s = _rawSession_();
       if (!s) return "";
       return String(s.token || s.sessionId || s.sid || "");
@@ -60,6 +67,12 @@
         delete raw.sessionId;
       }
       _setRawSession_(raw);
+      // Đồng bộ sang core.js để giữ session khi localStorage bị chặn
+      try {
+        if (typeof window.saveSession === "function") {
+          window.saveSession(raw);
+        }
+      } catch (_) {}
     } catch (_) {}
   }
 
@@ -173,7 +186,9 @@
     );
   }
 
-  function shouldAutoLogout_(action) {
+  function shouldAutoLogout_(action, hadToken) {
+    // Nếu request không có token (do storage bị chặn/đang init) thì KHÔNG auto logout.
+    if (!hadToken) return false;
     // các action login/public không nên auto logout
     const a = String(action || "");
     if (!a) return true;
@@ -250,10 +265,27 @@
     return u.toString();
   }
 
+  // Robust JSONP:
+  // - Defines a *real global function* (function declaration) so the callback name
+  //   always exists when the remote script executes (fix intermittent: "cb is not defined").
+  // - Uses a shared router map to resolve Promises.
   function jsonp_(action, payload = {}) {
     return new Promise((resolve) => {
       const SCRIPT_URL = getScriptUrl_();
       const cb = "__HEDU_JSONP_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+
+      // One-time router
+      if (!window.__HEDU_JSONP_MAP) window.__HEDU_JSONP_MAP = Object.create(null);
+      if (typeof window.__HEDU_JSONP_ROUTE !== "function") {
+        window.__HEDU_JSONP_ROUTE = function (name, data) {
+          const item = window.__HEDU_JSONP_MAP && window.__HEDU_JSONP_MAP[name];
+          if (!item || item.done) return;
+          item.done = true;
+          try { item.cleanup && item.cleanup(); } catch (_) {}
+          item.resolve && item.resolve(data);
+        };
+      }
+
       const url = buildUrl_(SCRIPT_URL, {
         action,
         payload: JSON.stringify({ action, ...payload }),
@@ -261,47 +293,94 @@
       });
 
       let done = false;
+      let keepCb = false;
+      // Apps Script đôi lúc "cold start" nên giữ timeout dài hơn để tránh timeout giả.
       const timer = setTimeout(() => {
         if (done) return;
         done = true;
+        // Nếu timeout nhưng script về sau mới tải xong và gọi callback,
+        // việc xoá callback ngay lập tức sẽ gây lỗi "... is not a function".
+        // Ta giữ lại callback dạng no-op trong một khoảng ngắn.
+        keepCb = true;
+        try{ window[cb] = function(){ /* ignore late response */ }; }catch(_){ }
         cleanup();
         resolve({ ok: false, error: "JSONP load timeout" });
-      }, 12000);
+      }, 25000);
+
+      let declScript = null;
+      let remoteScript = null;
 
       function cleanup() {
-        try { delete window[cb]; } catch (_) { window[cb] = undefined; }
-        if (script && script.parentNode) script.parentNode.removeChild(script);
+        try { delete window.__HEDU_JSONP_MAP[cb]; } catch (_) {}
+        try { if (declScript && declScript.parentNode) declScript.parentNode.removeChild(declScript); } catch (_) {}
+        try { if (remoteScript && remoteScript.parentNode) remoteScript.parentNode.removeChild(remoteScript); } catch (_) {}
+        // Try to remove the binding as well.
+        // Nếu đã timeout, giữ no-op callback thêm 5s để tránh console error
+        // khi response về muộn và vẫn gọi callback.
+        if (keepCb) {
+          try { setTimeout(() => { try{ delete window[cb]; }catch(_){ window[cb]=undefined; } }, 5000); } catch (_) {}
+        } else {
+          try { delete window[cb]; } catch (_) { window[cb] = undefined; }
+        }
         clearTimeout(timer);
       }
 
-      window[cb] = (data) => {
-        if (done) return;
-        done = true;
-        cleanup();
-        resolve(data);
-      };
+      // Register in map
+      window.__HEDU_JSONP_MAP[cb] = { resolve, cleanup, done: false };
 
-      const script = document.createElement("script");
-      script.src = url;
-      script.async = true;
-      script.onerror = () => {
+      // Create a *function declaration* for callback name.
+      // This ensures the identifier exists for the remote script.
+      declScript = document.createElement("script");
+      declScript.text = "function " + cb + "(data){ try{ window.__HEDU_JSONP_ROUTE('" + cb + "', data); }catch(e){} }";
+      document.head.appendChild(declScript);
+
+      remoteScript = document.createElement("script");
+      remoteScript.src = url;
+      remoteScript.async = true;
+      remoteScript.onerror = () => {
         if (done) return;
         done = true;
         cleanup();
         resolve({ ok: false, error: "JSONP load error" });
       };
-      document.head.appendChild(script);
+      document.head.appendChild(remoteScript);
     });
   }
 
   /*********************
    * CORE POST
    *********************/
+  function shouldUseJsonpFirst_(){
+    try{
+      const loc = window.location;
+      const host = String(loc.hostname || "");
+      const proto = String(loc.protocol || "");
+
+      // Chỉ dùng JSONP khi chạy file://.
+      // Localhost/hosted: ưu tiên fetch để tránh lỗi JSONP callback.
+      if (proto === "file:") return true;
+      // ⚠️ KHÔNG dùng JSONP-first cho 127.0.0.1/localhost nữa.
+
+      // ✅ Không ép JSONP theo khác origin nữa.
+      // Apps Script backend của dự án đã bật CORS; JSONP dễ lỗi callback.
+      // Vì vậy chỉ bật JSONP-first khi chạy file://.
+    }catch(_){
+      // ignore
+    }
+    return false;
+  }
+
   async function corePost_(action, payload = {}) {
     const SCRIPT_URL = getScriptUrl_();
     const act = String(action || "");
     const p = normalizePayload_(act, payload);
     const bodyObj = Object.assign({ action: act }, p);
+
+    // ✅ JSONP-first in local dev to avoid CORS noise & blocked responses
+    if (shouldUseJsonpFirst_()) {
+      const j = await jsonp_(act, p);
+      return postProcess_(act, p, j);
+    }
 
     let res, txt;
     try {
@@ -321,7 +400,7 @@
       return postProcess_(act, p, j);
     }
 
-    if (! attachingOk_(res)) {
+    if (!attachingOk_(res)) {
       const dataErr = { ok: false, error: "HTTP " + (res ? res.status : "0"), raw: txt };
       return postProcess_(act, p, dataErr);
     }
@@ -335,6 +414,18 @@
 
   function attachingOk_(res) {
     return !!(res && res.ok);
+  }
+
+  /*********************
+   * ✅ FIX SSOT: AUTO ok:true IF BACKEND DOES NOT RETURN ok
+   *********************/
+  function forceOk_(data) {
+    try {
+      if (data && typeof data === "object" && !Array.isArray(data)) {
+        if (!("ok" in data)) data.ok = true; // ✅ bọc ok=true cho endpoint legacy (adminListYears,...)
+      }
+    } catch (_) {}
+    return data;
   }
 
   /*********************
@@ -355,6 +446,9 @@
   }
 
   function postProcess_(action, payload, data) {
+    // ✅ IMPORTANT: normalize ok before any consumer checks it
+    data = forceOk_(data);
+
     // 1) Auto save session if returned
     try {
       if (data && data.session) {
@@ -370,7 +464,9 @@
 
     // 2) Auto kill session on auth errors (protected actions)
     try {
-      if (data && data.ok === false && shouldAutoLogout_(action)) {
+      // Chỉ auto-logout khi thực sự có token gửi lên (tránh "tự out" do storage bị chặn)
+      const hadToken = !!(payload && (payload.token || payload.sessionId || payload.sid)) || !!getToken_();
+      if (data && data.ok === false && shouldAutoLogout_(action, hadToken)) {
         const msg = String(data.error || data.message || "");
         if (isSessionError_(msg)) {
           clearSession_();
@@ -383,7 +479,6 @@
             role = String(payload?.role || "");
           }
           redirectLogin_(role);
-          // chặn page chạy tiếp (nếu page có try/catch thì vẫn không phá UI)
           throw new Error("SESSION_KILLED_REDIRECT_LOGIN");
         }
       }

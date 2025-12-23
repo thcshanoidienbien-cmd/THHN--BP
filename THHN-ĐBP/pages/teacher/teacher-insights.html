@@ -321,7 +321,7 @@
       studentId.innerHTML = _students.map(s=>`<option value="${esc(s.studentId)}">${esc(s.studentId)} • ${esc(s.name||"")}</option>`).join("")
         || `<option value="">(chưa có học sinh)</option>`;
 
-      sub.textContent = `Lớp ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+      sub.textContent = `Lớp ${r.classId||currentClassId()||"—"} • Năm ${r.year||"—"}`;
       syncMe_();
     }
 

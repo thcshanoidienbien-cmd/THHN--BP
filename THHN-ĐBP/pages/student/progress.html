@@ -3,50 +3,46 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Học sinh • Tiến bộ</title>
+  <title>Học sinh • Tiến bộ</title>
 
   <link rel="stylesheet" href="../../assets/styles.css">
   <script src="../../assets/config.js"></script>
 
   <style>
-    /* ===== Đồng bộ KHUNG DASHBOARD ===== */
+    /* ===== Topbar (SSOT – đồng bộ Dashboard/Do-task) ===== */
     .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
     .topbar .inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
     .brand{display:flex;align-items:center;gap:10px;min-width:0}
-    .logoImg{width:40px;height:40px;border-radius:12px;object-fit:cover}
     .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#2563eb,#60a5fa)}
+    .logoImg{width:40px;height:40px;border-radius:12px;object-fit:cover;display:block}
     .btext{min-width:0}
     .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .bsub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 
     .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pill{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
-      font-weight:900;font-size:13px;text-decoration:none;color:inherit
-    }
+    .pill{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
     .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
-    .btnLogout{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
-      font-weight:900;font-size:13px;text-decoration:none;color:inherit
-    }
+    .btnLogout{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
 
+    /* ===== Page ===== */
     .container{max-width:1180px}
-    .heroHead{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
-    }
+    .heroHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px}
     .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
     .heroSub{margin-top:6px;color:var(--muted)}
     .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-    .chipLite{
-      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
-      border-radius:999px;background:#fff;font-weight:900;font-size:13px
-    }
-    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chipLite{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:13px;white-space:nowrap;box-shadow:0 8px 22px rgba(15,23,42,.04)}
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
 
     .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
-    .hidden{display:none!important}
+
+    /* Mobile */
+    @media(max-width:720px){
+      .heroTitle{font-size:28px}
+      .navMid{gap:8px}
+      .pill,.btnLogout{padding:10px 12px}
+    }
   </style>
 </head>
 
@@ -55,7 +51,9 @@
   <div class="topbar">
     <div class="inner">
       <div class="brand">
-         <div class="btext">
+        <div id="brandLogoBox"><div class="logo">H</div></div>
+        <div class="btext">
+          <!-- dòng 1 = TÊN TRƯỜNG; dòng 2 = TÊN HỌC SINH -->
           <div class="bname" id="brandName">—</div>
           <div class="bsub" id="brandSub">—</div>
         </div>
@@ -79,23 +77,20 @@
       <div class="heroHead">
         <div>
           <h1 class="heroTitle">Tiến bộ học tập</h1>
-          <div class="heroSub">
-            🌱 Mỗi dòng là một tuần học của con. Con nộp bài càng đều — con càng tiến bộ nhé!
-          </div>
+          <div class="heroSub" id="heroSub">🌱 Mỗi dòng là một tuần học của con. Nộp bài đều đặn là con đang tiến bộ đó nha!</div>
         </div>
-
         <div class="heroRight">
-          <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+          <div class="chips">
+            <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+          </div>
           <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
         </div>
       </div>
 
-      <!-- ===== NỘI DUNG ===== -->
+      <!-- ===== CONTENT ===== -->
       <div class="dcard">
         <div style="font-weight:900">📊 Tổng hợp theo tuần</div>
-        <div class="muted" style="margin-top:6px">
-          Dựa trên lịch sử nộp bài và nhận xét của giáo viên.
-        </div>
+        <div class="muted" style="margin-top:6px">Dựa trên lịch sử nộp bài và nhận xét của giáo viên.</div>
 
         <div class="divider"></div>
 
@@ -114,7 +109,7 @@
         </table>
 
         <div class="muted" style="margin-top:10px;font-size:12px;font-weight:800">
-          ℹ️ Hệ thống tự tổng hợp từ lịch sử nộp bài và nhận xét của giáo viên.
+          ℹ️ Mẹo: Con sang mục <b>Làm bài</b> để nộp bài, rồi quay lại đây xem tiến bộ theo từng tuần nhé.
         </div>
       </div>
 
@@ -140,56 +135,66 @@
 
     function fmtTime_(d){
       const p=n=>String(n).padStart(2,"0");
-      return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+      return `${p(d.getHours())}:${p(d.getMinutes())} - ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+    }
+
+    function getGradeFromClassId_(classId){
+      const s = String(classId||"").trim();
+      const m = s.match(/^(\d)/);
+      const g = m ? Number(m[1]) : 0;
+      return (g>=1 && g<=5) ? g : 0;
     }
 
     (async ()=>{
       await studentInit("progress");
       const s = window.__STU__;
-      const cfg = typeof getConfig==="function"?getConfig():{};
-      const token = s.sessionId || s.token || "";
+      if(!s) return;
 
-      // Brand
-      document.getElementById("brandName").textContent = cfg.SCHOOL_NAME || "—";
-      document.getElementById("brandSub").textContent = s.displayName || s.name || "Học sinh";
-      document.getElementById("studentClass").textContent = s.classId || "—";
-      document.getElementById("lastUpdate").textContent =
-        "Cập nhật lần cuối: " + fmtTime_(new Date());
-
-      const logoBox = document.getElementById("brandLogoBox");
-      if(cfg.LOGO_URL){
-        logoBox.innerHTML = `<img class="logoImg" src="../../${cfg.LOGO_URL}">`;
-      }else{
-        logoBox.innerHTML = `<div class="logo">H</div>`;
+      const cfg = (typeof getConfig === "function") ? (getConfig()||{}) : {};
+      // SSOT brand (logo + school + student)
+      try{ if(typeof setBrand_ === "function") setBrand_(cfg, s); }catch(_){
+        document.getElementById("brandName").textContent = cfg.SCHOOL_NAME || "—";
+        document.getElementById("brandSub").textContent = s.displayName || s.name || "Học sinh";
       }
 
-      try{
-        const r = await api("getMyHistory",{token,classId:s.classId,studentId:s.studentId,limit:400});
-        const subs=r.submissions||[], fbs=r.feedbacks||[];
-        const byWeek={};
+      document.getElementById("studentClass").textContent = s.classId || "—";
+      document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
 
+      // Kid copy nhẹ nhàng
+      const g = getGradeFromClassId_(s.classId);
+      if(g>0 && g<=2){
+        document.getElementById("heroSub").textContent = "🌟 Con làm bài đều là giỏi lắm! Mỗi dòng là 1 tuần học của con nha.";
+      }
+
+      const token = s.sessionId || s.token || "";
+
+      try{
+        const r = await api("getMyHistory", { token, classId:s.classId, studentId:s.studentId, limit: 400 });
+        const subs = r.submissions || [];
+        const fbs  = r.feedbacks || [];
+
+        const byWeek = {};
         subs.forEach(x=>{
-          const k=weekKey_(x.createdAt);
-          byWeek[k]=byWeek[k]||{submitted:0,feedback:0};
+          const k = weekKey_(x.createdAt);
+          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
           byWeek[k].submitted++;
         });
         fbs.forEach(x=>{
-          const k=weekKey_(x.createdAt);
-          byWeek[k]=byWeek[k]||{submitted:0,feedback:0};
+          const k = weekKey_(x.createdAt);
+          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
           byWeek[k].feedback++;
         });
 
-        const keys=Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
-        const tb=document.getElementById("rows");
-
+        const keys = Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
+        const tb = document.getElementById("rows");
         if(!keys.length){
-          tb.innerHTML=`<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
+          tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
           return;
         }
 
-        tb.innerHTML=keys.map(k=>{
-          const it=byWeek[k];
-          const note=it.feedback?"Có nhận xét ✅":"Đã nộp, chờ nhận xét ⏳";
+        tb.innerHTML = keys.map(k=>{
+          const it = byWeek[k];
+          const note = it.feedback ? "Có nhận xét ✅" : (it.submitted ? "Đã nộp, chờ nhận xét ⏳" : "—");
           return `<tr>
             <td>${k}</td>
             <td>${it.submitted}</td>
@@ -197,7 +202,10 @@
             <td>${note}</td>
           </tr>`;
         }).join("");
-      }catch(e){}
+
+      }catch(e){
+        // giữ im lặng để không phá UX; bảng giữ trạng thái "Chưa có dữ liệu"
+      }
     })();
   </script>
 </body>

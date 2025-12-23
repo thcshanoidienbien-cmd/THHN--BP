@@ -196,8 +196,8 @@
 
   <!-- scripts -->
   <script src="../../assets/config.js"></script>
-  <script src="../../assets/api.js"></script>
   <script src="../../assets/core.js"></script>
+  <script src="../../assets/api.js"></script>
   <script src="../../assets/teacher.js"></script>
 
   <script>
@@ -290,7 +290,7 @@
         const r = await api("listTasks", { token, classId, status: st, q: qv });
 
         // Việt hoá dòng ngữ cảnh
-        ctx.textContent = `Lớp ${r.system.classId} • Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+        ctx.textContent = `Lớp ${r.classId||classId||"—"} • Năm ${r.year||"—"}`;
 
         const items = r.tasks || [];
         const box = document.getElementById("list");

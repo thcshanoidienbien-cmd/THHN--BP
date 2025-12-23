@@ -324,7 +324,7 @@
 
   <!-- SSOT -->
   <script src="../../assets/config.js"></script>
-  <script src="../../assets/api.js"></script>
+  <script src="../../assets/api.js?v=20260101"></script>
   <script src="../../assets/core.js"></script>
 
   <script>
@@ -376,9 +376,18 @@
     function closeModal(){ el("modal").classList.remove("show"); }
 
     function getAdminSession_(){
-      try{ return (typeof requireRole === "function") ? requireRole("ADMIN") : null; }
-      catch(e){ return null; }
-    }
+  try{
+    const s = JSON.parse(localStorage.getItem("hedu_session") || "null");
+    if(!s) return null;
+    const role = String(s.role || "").toUpperCase();
+    if(role !== "ADMIN") return null;
+    // chuẩn hoá token
+    if(!s.token && s.sessionId) s.token = s.sessionId;
+    return s;
+  }catch(e){
+    return null;
+  }
+}
 
     async function doAdminLogin(){
       const code = String(el("adminCode").value||"").trim();
@@ -388,9 +397,15 @@
       el("btnLogin").textContent = "Đang đăng nhập…";
 
       try{
-        const r = await apiPost("authAdminLogin", { adminCode: code });
+        const r = await apiPost("authAdminLogin", { adminCode: code, token:"", sessionId:"" });
         if(!r || r.ok === false) throw new Error((r && (r.error || r.message)) || "Đăng nhập thất bại");
-        localStorage.setItem("hedu_session", JSON.stringify(r.session || null));
+        const sess = r.session || null;
+        if (sess){
+          if (!sess.token) sess.token = sess.sessionId;
+          sess.role = (sess.role || "ADMIN");
+        }
+        localStorage.setItem("hedu_session", JSON.stringify(sess));
+
         closeModal();
         toast("Đăng nhập thành công ✅");
         await loadAll();
@@ -437,7 +452,7 @@
 
     async function loadClasses(year, token){
       const r = await apiPost("adminListClasses", { token, year });
-      if(!r.ok) throw new Error(r.error || "Lỗi tải lớp");
+      if (r && r.ok === false) throw new Error(r.error || "Lỗi tải lớp");
 
       const y = r.year || year || "";
       el("yearForClasses").textContent = "Năm: " + (y || "—");
@@ -454,26 +469,48 @@
       }).join("");
       return { classes: list };
     }
+    function fillYearsUI_(years, active){
+  const selYears = el("selYears");
+  const selImp   = el("selYearImport");
+
+  const arr = Array.isArray(years) ? years.filter(Boolean) : [];
+  const act = String(active || arr[0] || "").trim();
+
+  // luôn có option (tránh select trống nhìn như “không có dữ liệu”)
+  const opt = arr.length
+    ? arr.map(v => `<option value="${String(v)}">${String(v)}</option>`).join("")
+    : `<option value="">— Chưa có năm học —</option>`;
+
+  selYears.innerHTML = opt;
+  selImp.innerHTML   = opt;
+
+  if(act){
+    selYears.value = act;
+    selImp.value   = act;
+  }
+}
 
     async function loadAll(){
       // ✅ guard
       const session = getAdminSession_();
-      if(!session || !session.token){
-        openModal();
-        return;
+      if(!session || !(session.token || session.sessionId)){
+        openModal(); return;
       }
-      const token = session.token || "";
+      const token = String(session.token || session.sessionId || "").trim();
 
       // Years + active
       const y = await apiPost("adminListYears", { token });
-      if(!y.ok) throw new Error(y.error || "Lỗi tải năm học");
-
-      const years = y.years || [];
+        if (y && y.ok === false) throw new Error(y.error || "Lỗi tải năm học");
+      
+      const years  = y.years || [];
       const active = y.activeYear || years[0] || "";
 
       el("badgeActive").textContent = "Active: " + (active || "—");
-      el("activeYearChip").textContent = "Active: " + (active || "—");
 
+      // ✅ đây là dòng quan trọng: đổ dropdown
+      fillYearsUI_(years, active);
+
+      
       // fill dropdowns
       const opt = years.map(v=>`<option value="${v}">${v}</option>`).join("");
       el("selYears").innerHTML = opt || `<option value="">—</option>`;
@@ -505,40 +542,51 @@
 
     // actions
     el("btnSetActive").addEventListener("click", async ()=>{
-      try{
-        const session = getAdminSession_();
-        if(!session) return;
-        const token = session.token || "";
+    try{
+      const session = getAdminSession_();
+      if(!session) return;
+      const token = session.token || session.sessionId || "";
 
-        const year = el("selYears").value;
-        const r = await apiPost("adminSetActiveYear", { token, year });
-        if(!r.ok) throw new Error(r.error || "Không đặt được active");
-        toast("Đã đặt năm học active: " + r.activeYear);
-        await loadAll();
-      }catch(err){ toast(String(err.message||err)); }
-    });
+      const year = (el("selYears").value || "").trim();
+      if(!year) return toast("Chọn năm học trước đã.");
+
+      const r = await apiPost("adminSetActiveYear", { token, year }); // ✅ đúng
+      if (r && r.ok === false) throw new Error(r.error || "Không đặt được active");
+
+      toast("Đã đặt năm học active: " + (r.activeYear || year));
+      await loadAll();
+    }catch(err){ toast(String(err.message||err)); }
+  });
+
 
     el("btnAddYear").addEventListener("click", async ()=>{
-      try{
-        const session = getAdminSession_();
-        if(!session) return;
-        const token = session.token || "";
+    try{
+      const session = getAdminSession_();
+      if(!session) return;
+      const token = session.token || session.sessionId || "";
 
-        const year = el("txtNewYear").value.trim();
-        if(!year) return toast("Vui lòng nhập năm học (VD: 2025-2026)");
-        const r = await apiPost("adminSetActiveYear", { token, year });
-        if(!r.ok) throw new Error(r.error || "Không tạo/đặt được active");
-        toast("Đã tạo & đặt active: " + r.activeYear);
-        el("txtNewYear").value = "";
-        await loadAll();
-      }catch(err){ toast(String(err.message||err)); }
-    });
+      const year = (el("txtNewYear").value || "").trim();
+      if(!year) return toast("Vui lòng nhập năm học (VD: 2025-2026)");
+
+      // ✅ 2 bước cho chắc
+      const a = await apiPost("adminAddYear", { token, year });
+      if (a && a.ok === false) throw new Error(a.error || "Không tạo được năm học");
+
+      const r = await apiPost("adminSetActiveYear", { token, year });
+      if (r && r.ok === false) throw new Error(r.error || "Không đặt được active");
+
+      toast("Đã tạo & đặt active: " + (r.activeYear || year));
+      el("txtNewYear").value = "";
+      await loadAll();
+    }catch(err){ toast(String(err.message||err)); }
+  });
+
 
     el("btnCreateClass").addEventListener("click", async ()=>{
       try{
         const session = getAdminSession_();
         if(!session) return;
-        const token = session.token || "";
+        const token = session.token || session.sessionId || "";
 
         const year = el("selYears").value;
         const grade = el("selGrade").value;
@@ -547,7 +595,7 @@
         if(!classId) return toast("Vui lòng nhập mã lớp.");
 
         const r = await apiPost("adminCreateClass", { token, year, grade, classId });
-        if(!r.ok) throw new Error(r.error || "Không tạo được lớp");
+        if (r && r.ok === false) throw new Error(r.error || "Không tạo được lớp");
         toast("Đã tạo/cập nhật lớp: " + r.classId);
         await loadAll();
       }catch(err){ toast(String(err.message||err)); }
@@ -557,7 +605,7 @@
       try{
         const session = getAdminSession_();
         if(!session) return;
-        const token = session.token || "";
+        const token = session.token || session.sessionId || "";
 
         const year = el("selYearImport").value;
         if(!year) return toast("Vui lòng chọn năm học để import.");
@@ -565,7 +613,7 @@
         if(!students.length) return toast("Dữ liệu import chưa đúng định dạng.");
 
         const r = await apiPost("adminImportStudents", { token, year, students });
-        if(!r.ok) throw new Error(r.error || "Import thất bại");
+        if (r && r.ok === false) throw new Error(r.error || "Import thất bại");
 
         toast(`Import xong: thêm ${r.added||0}, cập nhật ${r.updated||0}`);
         await loadAll();
@@ -585,7 +633,7 @@
       try{
         initBrand_();
         const s = getAdminSession_();
-        if(s && s.token){
+        if(s && (s.token || s.sessionId)){
           await loadAll();
         }else{
           openModal();

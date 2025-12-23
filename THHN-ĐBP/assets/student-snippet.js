@@ -9,7 +9,7 @@
     catch(_){ return {}; }
   }
 
-  function setBrand_(){
+  function setBrand_(stu){
   const cfg = (typeof getConfig === "function") ? getConfig() : {};
   const bn = $("brandName");
   const bs = $("brandSub");
@@ -35,8 +35,9 @@
   }
 
   /* 3️⃣ Dòng phụ: TÊN HỌC SINH */
-  if (bs && window.__STU__) {
-    bs.textContent = window.__STU__.studentName || window.__STU__.studentId || "Học sinh";
+  const s = stu || window.__STU__ || null;
+  if (bs && s) {
+    bs.textContent = s.studentName || s.displayName || s.studentId || "Học sinh";
   }
 }
 
@@ -76,6 +77,9 @@
     const s = (typeof requireRole === "function") ? requireRole(["STUDENT"]) : null;
     if (!s) return;
 
+    // Expose global sớm để setBrand_ có dữ liệu
+    window.__STU__ = s;
+
     // ✅ set brand theo yêu cầu (trường + tên HS)
     setBrand_(s);
 
@@ -83,8 +87,7 @@
     const who = $("who");
     if (who) who.textContent = `${(s.displayName||s.name||s.studentId||"Học sinh")} • ${s.classId||""}`;
 
-    // Expose global
-    window.__STU__ = s;
+    // window.__STU__ đã set ở trên
   }
 
   window.studentInit = studentInit;
