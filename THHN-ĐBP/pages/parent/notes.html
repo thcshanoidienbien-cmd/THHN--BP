@@ -46,9 +46,8 @@
 
         <div class="heroRight">
           <div class="chips">
-            <span class="chipLite">👨‍👩‍👧 Phụ huynh</span>
             <span class="chipLite">🧒 <strong id="studentName">—</strong></span>
-            <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+            <span class="chipLite">🏷️ Lớp:<strong id="studentClass">—</strong></span>
           </div>
           <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
         </div>
@@ -83,8 +82,6 @@
   <!-- ✅ ĐÚNG THỨ TỰ SSOT -->
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-
-  <!-- ✅ File chung Parent Topbar -->
   <script src="../../assets/parent-ui.js"></script>
 
   <script>
@@ -104,6 +101,7 @@
       try{ return new Date(dt).toLocaleString('vi-VN'); }
       catch(e){ return dt || "—"; }
     }
+
     function fmtTime_(d){
       const pad=n=>String(n).padStart(2,"0");
       return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
@@ -115,7 +113,7 @@
           const s = getSession();
           if(s) return s;
         }
-      }catch(_){}
+      }catch(_){ }
       try{
         const raw = localStorage.getItem("hedu_session");
         if(!raw) return null;
@@ -123,20 +121,47 @@
       }catch(_){ return null; }
     }
 
-    // an toàn: nếu core.js có stripMd thì dùng, không có thì fallback nhẹ
     function stripMdSafe_(s){
-      try{ if(typeof stripMd === "function") return stripMd(s); }catch(_){}
+      try{ if(typeof stripMd === "function") return stripMd(s); }catch(_){ }
       return String(s||"").replace(/[*_`>#-]/g,"").trim();
+    }
+
+    // ✅ FIX: lấy tên HS từ session (nhiều key), fallback displayName "PH <Tên>"
+    function pickStudentNameLocal_(s){
+      const name =
+        s?.studentName ||
+        s?.studentFullName ||
+        s?.student_name ||
+        s?.student_display_name ||
+        s?.childName ||
+        s?.fullName ||
+        s?.name ||
+        (s?.student && (s.student.name || s.student.fullName)) ||
+        (s?.profile && (s.profile.studentName || s.profile.studentFullName)) ||
+        (typeof s?.displayName === "string" && /^PH\s+/i.test(s.displayName) ? s.displayName.replace(/^PH\s+/i,"").trim() : "") ||
+        "";
+      return String(name||"").trim();
+    }
+
+    // ✅ FIX: lấy tên HS từ server response (nếu backend có kèm)
+    function pickStudentNameFromServer_(r){
+      const n =
+        r?.studentName ||
+        r?.studentFullName ||
+        r?.student_name ||
+        r?.student_display_name ||
+        (r?.student && (r.student.name || r.student.fullName)) ||
+        (r?.profile && (r.profile.studentName || r.profile.studentFullName)) ||
+        "";
+      return String(n||"").trim();
     }
 
     (async ()=>{
       // ✅ render topbar trước để không “mất menu/logo”
-      try{ window.renderParentTopbar && window.renderParentTopbar("notes"); }catch(_){}
+      try{ window.renderParentTopbar && window.renderParentTopbar("notes"); }catch(_){ }
 
       const s = readSession_();
       const role = String(s?.role || s?.userRole || "").toUpperCase();
-
-      // ✅ Không redirect cứng – chỉ báo nhẹ
       if(role !== "PARENT"){
         toast("Vui lòng đăng nhập Phụ huynh để xem nhận xét.");
         return;
@@ -146,27 +171,48 @@
       const classId = s.classId || "";
       const studentId = s.studentId || "";
 
-      $("studentName").textContent = s.studentName || studentId || "—";
-      $("studentClass").textContent = classId || "—";
+      // ✅ set header từ session trước (đỡ bị “—” lúc chờ API)
+      const localName = pickStudentNameLocal_(s);
+      $("studentName").textContent = localName ? localName : "—";
+      $("studentClass").textContent = String(classId||"").trim() || "—";
       $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
 
-      // ✅ BỎ KHỐI CẢNH BÁO (khung đỏ). Nếu thiếu info -> chỉ toast và giữ bảng trống.
       if(!token || !classId || !studentId){
         toast("Thiếu thông tin (lớp / mã HS). Vui lòng đăng nhập lại nếu cần.");
         return;
       }
 
       try{
-        const r = await apiPost("getParentHistory", {
-          token,
-          classId,
-          studentId,
-          limit: 500
-        });
+        const r = await apiPost("getParentHistory", { token, classId, studentId, limit: 500 });
 
+        // ✅ nếu session không có tên → lấy từ server
+        if(!localName){
+          const serverName = pickStudentNameFromServer_(r);
+          if(serverName) $("studentName").textContent = serverName;
+        }
+
+        // ✅ chỉ lấy nhận xét cho PH
         const fbs = (r.feedbacks || [])
-          .filter(x => String(x.feedbackPH||"").trim())
+          .filter(x => String(x.feedbackPH||x.feedbackParent||"").trim())
           .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+
+        // ✅ sync sig + badge (không tự giảm ở tab khác)
+        try{
+          window.heduParentInbox?.syncFromFeedbacks?.(classId, studentId, fbs);
+          const n = window.heduParentInbox?.countUnread?.(classId, studentId, fbs) || 0;
+          window.heduParentInbox?.setNavBadges?.(n);
+        }catch(_){ }
+
+        // ✅ vào trang "Nhận xét" => xem như đã đọc hết
+        try{
+          window.heduParentInbox?.markAllRead?.(classId, studentId, fbs);
+          window.heduParentInbox?.setNavBadges?.(0);
+        }catch(_){ }
+
+        // lastUpdate: theo feedback mới nhất
+        if(fbs[0]?.createdAt){
+          $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date(fbs[0].createdAt));
+        }
 
         const tb = $("rows");
         if(!fbs.length){
@@ -177,7 +223,7 @@
         tb.innerHTML = fbs.slice(0,200).map(x=>`
           <tr>
             <td>${fmt(x.createdAt)}</td>
-            <td style="white-space:pre-wrap;line-height:1.6">${stripMdSafe_(x.feedbackPH||"")}</td>
+            <td style="white-space:pre-wrap;line-height:1.6">${stripMdSafe_(x.feedbackPH||x.feedbackParent||"")}</td>
           </tr>
         `).join("");
 

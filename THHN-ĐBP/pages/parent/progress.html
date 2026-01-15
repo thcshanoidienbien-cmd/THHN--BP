@@ -6,60 +6,271 @@
   <title>Phụ huynh • Tiến bộ</title>
 
   <link rel="stylesheet" href="../../assets/styles.css">
-  <meta name="theme-color" content="#2563eb"/>
+  <script src="../../assets/config.js"></script>
+
+  <style>
+    .container{max-width:1180px}
+
+    .heroHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
+    }
+    .heroTitle{margin:0;font-size:38px;letter-spacing:-.03em}
+    .heroSub{margin-top:8px;color:var(--muted);max-width:720px;line-height:1.5}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chipLite{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;
+      font-weight:900;font-size:13px;white-space:nowrap;
+      box-shadow:0 8px 22px rgba(15,23,42,.04)
+    }
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
+
+    .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
+
+    /* Filter bar */
+    .filters{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between
+    }
+    .seg{
+      display:flex;gap:8px;flex-wrap:wrap;
+      padding:6px;border:1px solid var(--line);border-radius:999px;background:#fff;
+    }
+    .seg button{
+      border:0;background:transparent;cursor:pointer;
+      padding:10px 12px;border-radius:999px;font-weight:900;font-size:13px;
+      color:inherit;
+    }
+    .seg button.active{
+      background:var(--primary);color:#fff;
+      box-shadow:0 10px 26px rgba(37,99,235,.14)
+    }
+    .toggle{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+    .pillBtn{
+      border:1px solid var(--line);background:#fff;border-radius:999px;
+      padding:10px 12px;font-weight:900;font-size:13px;cursor:pointer;
+    }
+    .pillBtn.active{border-color:var(--primary);box-shadow:0 10px 26px rgba(37,99,235,.10)}
+    .actionsR{display:flex;gap:10px;align-items:center}
+
+    /* Trend grid */
+    .trendGrid{
+      display:grid;grid-template-columns: 1.3fr .7fr;gap:12px;margin-top:12px
+    }
+    @media(max-width:980px){.trendGrid{grid-template-columns:1fr}}
+    .trendCard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .trendHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .trendTitle{font-weight:1000}
+    .trendMeta{color:var(--muted);font-size:12px;font-weight:900;margin-top:4px}
+    .sparkWrap{margin-top:10px;border:1px dashed rgba(148,163,184,.55);border-radius:14px;padding:10px}
+    canvas{width:100%;height:90px;display:block}
+
+    /* Insight */
+    .insight{
+      padding:12px;border-radius:16px;
+      border:1px solid rgba(37,99,235,.22);
+      background:rgba(37,99,235,.06);
+      font-weight:900;
+      line-height:1.55;
+    }
+    .insight .muted{color:var(--muted);font-size:12px;font-weight:800;margin-top:6px}
+
+    /* Timeline list */
+    .timeline{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .weekItem{
+      border:1px solid var(--line);border-radius:16px;background:#fff;
+      padding:12px;
+    }
+    .weekTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .wkLeft{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .wkTag{
+      padding:8px 10px;border-radius:999px;border:1px solid var(--line);
+      background:#fff;font-weight:1000
+    }
+    .wkNums{display:flex;gap:10px;flex-wrap:wrap}
+    .miniK{padding:8px 10px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:1000}
+    .badge{
+      padding:6px 10px;border-radius:999px;font-weight:1000;font-size:12px;border:1px solid var(--line);
+      background:#fff;
+    }
+    .badge.ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.08)}
+    .badge.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10)}
+
+    .detail{margin-top:10px;display:none}
+    .detail.show{display:block}
+    .detailBox{
+      padding:10px;border-radius:14px;border:1px dashed rgba(148,163,184,.55);background:#fff;
+      color:var(--muted);font-weight:800;font-size:12px;line-height:1.6
+    }
+    .btnLink{
+      border:1px solid var(--line);background:#fff;border-radius:999px;
+      padding:10px 12px;font-weight:1000;font-size:13px;cursor:pointer;
+    }
+  </style>
 </head>
 
 <body data-active="progress">
-  <!-- ✅ TOPBAR chung -->
   <div id="topbar"></div>
 
-  <div class="shell">
-    <div class="shellTop">
-      <div>
-        <div style="font-weight:900;font-size:18px">Sổ liên lạc điện tử</div>
-        <div style="color:var(--muted);font-size:13px" id="who">—</div>
+  <main class="container">
+    <section class="card" style="padding:18px;margin-top:14px">
+
+      <div class="heroHead">
+        <div>
+          <h1 class="heroTitle">Tiến bộ theo thời gian</h1>
+          <div class="heroSub">
+            Theo dõi xu hướng học tập theo tuần: số bài đã nộp, số nhận xét từ giáo viên và các tuần cần cải thiện. 📈
+          </div>
+        </div>
+
+        <div class="heroRight">
+          <div class="chips">
+            <span class="chipLite">🧒 <strong id="studentName">—</strong></span>
+            <span class="chipLite">🏷️ Lớp: <strong id="studentClass">—</strong></span>
+          </div>
+          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
+        </div>
       </div>
-  </div>
 
-    <div class="card" style="padding:14px">
-      <div style="font-weight:900;font-size:16px">Tiến bộ theo thời gian</div>
-      <div style="color:var(--muted);font-size:12px;margin-top:4px">Tự tính theo tuần.</div>
+      <!-- FILTERS -->
+      <div class="dcard">
+        <div class="filters">
+          <div>
+            <div style="font-weight:1000">🎛️ Bộ lọc</div>
+            <div class="muted" style="font-weight:800;font-size:12px;margin-top:4px">Chọn phạm vi để xem tiến bộ rõ hơn.</div>
+          </div>
 
-      <div class="divider"></div>
+          <div class="actionsR">
+            <div class="seg" id="segRange">
+              <button data-range="4" class="active">4 tuần</button>
+              <button data-range="8">8 tuần</button>
+              <button data-range="12">12 tuần</button>
+              <button data-range="all">Tất cả</button>
+            </div>
+            <button class="btn secondary" id="btnExport" type="button">Xuất báo cáo</button>
+          </div>
+        </div>
 
-      <table class="table">
-        <thead>
-          <tr><th>Tuần</th><th>Hoàn thành</th><th>Nhận xét</th><th>Ghi chú</th></tr>
-        </thead>
-        <tbody id="rows">
-          <tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
-        </tbody>
-      </table>
-    </div>
+        <div class="toggle" style="margin-top:10px">
+          <button class="pillBtn active" data-mode="both" id="mBoth">Hiển thị: Cả hai</button>
+          <button class="pillBtn" data-mode="sub" id="mSub">Chỉ bài nộp</button>
+          <button class="pillBtn" data-mode="fb" id="mFb">Chỉ nhận xét</button>
+        </div>
+
+        <div class="trendGrid">
+          <div class="trendCard">
+            <div class="trendHead">
+              <div>
+                <div class="trendTitle">📊 Biểu đồ xu hướng theo tuần</div>
+                <div class="trendMeta" id="rangeLabel">—</div>
+              </div>
+              <div class="chipLite" style="box-shadow:none">🧾 <span id="kSummary">—</span></div>
+            </div>
+
+            <div class="sparkWrap">
+              <canvas id="spark"></canvas>
+            </div>
+
+            <div class="muted" style="font-weight:800;font-size:12px;margin-top:8px" id="hintSpark">
+              Gợi ý: nhìn “độ dốc” để biết tuần nào con làm đều/giảm nhịp.
+            </div>
+          </div>
+
+          <div class="trendCard">
+            <div style="font-weight:1000">🧠 Nhận xét nhanh</div>
+            <div class="muted" style="font-weight:800;font-size:12px;margin-top:4px">Tự tổng hợp từ dữ liệu.</div>
+
+            <div style="height:10px"></div>
+
+            <div class="insight" id="insight">
+              —
+              <div class="muted">Mẹo: giữ nhịp 3–5 bài/tuần để tiến bộ bền vững.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <!-- TIMELINE LIST -->
+      <div class="dcard">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:1000">🗓️ Dòng thời gian theo tuần</div>
+            <div class="muted" style="font-weight:800;font-size:12px;margin-top:4px">
+              Bấm “Xem chi tiết” để xem bài nộp trong tuần đó.
+            </div>
+          </div>
+          <button class="btn" id="btnReload" type="button">Tải lại</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="timeline" id="timeline">
+          <div style="color:var(--muted);font-weight:800">Chưa có dữ liệu…</div>
+        </div>
+
+        <div class="muted" style="margin-top:10px;font-size:12px;font-weight:800">
+          ℹ️ “Nhận xét” chỉ tính nhận xét dành cho phụ huynh (feedbackPH).
+        </div>
+      </div>
+
+    </section>
 
     <div class="toast" id="toast" hidden></div>
-  </div>
+  </main>
 
-  <!-- ✅ SSOT script order -->
-  <script src="../../assets/config.js"></script>
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-
-  <!-- ✅ UI chung Parent -->
   <script src="../../assets/parent-ui.js"></script>
 
   <script>
+    const $ = (id)=>document.getElementById(id);
+
     function toast(msg){
-      const t=document.getElementById("toast");
+      const t=$("toast");
       if(!t) return;
       t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
       clearTimeout(window.__t);
       window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
     }
 
+    function fmtTime_(d){
+      const pad=n=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+    }
+
+    function parseDateSafe_(v){
+      if(v==null) return null;
+      if(typeof v === "number"){
+        const d = new Date(v);
+        return isNaN(d) ? null : d;
+      }
+      const s = String(v).trim();
+      if(!s) return null;
+      if(/^\d{10,13}$/.test(s)){
+        const d = new Date(Number(s));
+        return isNaN(d) ? null : d;
+      }
+      const d0 = new Date(s);
+      if(!isNaN(d0)) return d0;
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if(m){
+        const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
+        const hh = Number(m[4]||0), mi = Number(m[5]||0), ss = Number(m[6]||0);
+        const d = new Date(yyyy, mm-1, dd, hh, mi, ss);
+        return isNaN(d) ? null : d;
+      }
+      return null;
+    }
+
     function weekKey_(iso){
-      const d = new Date(iso);
-      if (isNaN(d)) return "—";
+      const d = parseDateSafe_(iso);
+      if (!d) return "—";
       const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       const dayNum = date.getUTCDay() || 7;
       date.setUTCDate(date.getUTCDate() + 4 - dayNum);
@@ -68,23 +279,266 @@
       return `${date.getUTCFullYear()}-W${("0"+weekNo).slice(-2)}`;
     }
 
-    (async ()=>{
-      // render topbar
-      try{ renderParentTopbar("progress"); }catch(_){}
+    function minMaxDate_(arr, key){
+      let min=Infinity, max=0;
+      (arr||[]).forEach(x=>{
+        const d = parseDateSafe_(x && x[key]);
+        const t = d ? d.getTime() : 0;
+        if(!t) return;
+        if(t<min) min=t;
+        if(t>max) max=t;
+      });
+      return {
+        min: isFinite(min) ? new Date(min) : null,
+        max: max ? new Date(max) : null
+      };
+    }
 
-      // guard role
+    // ✅ Ưu tiên tên từ session; nếu thiếu sẽ lấy từ server response
+    function pickStudentNameLocal_(s){
+      const name =
+        s?.studentName ||
+        s?.studentFullName ||
+        s?.student_name ||
+        s?.student_display_name ||
+        s?.childName ||
+        (s?.student && (s.student.name || s.student.fullName)) ||
+        (s?.profile && (s.profile.studentName || s.profile.studentFullName)) ||
+        (typeof s?.displayName === "string" && /^PH\s+/i.test(s.displayName) ? s.displayName.replace(/^PH\s+/i,"").trim() : "") ||
+        "";
+      return String(name||"").trim();
+    }
+    function pickStudentNameFromServer_(r){
+      const n =
+        r?.studentName ||
+        r?.studentFullName ||
+        r?.student_name ||
+        (r?.student && (r.student.name || r.student.fullName)) ||
+        "";
+      return String(n||"").trim();
+    }
+
+    // ✅ Sparkline: ép size đúng + vẽ point để thấy khác ngay
+    function drawSpark_(canvas, a, b, mode){
+      const ctx = canvas.getContext("2d");
+      const dpr = (window.devicePixelRatio||1);
+
+      const rect = canvas.getBoundingClientRect();
+      const cw = Math.max(10, rect.width);
+      const ch = Math.max(10, rect.height);
+
+      const w = canvas.width = cw * dpr;
+      const h = canvas.height = ch * dpr;
+
+      ctx.clearRect(0,0,w,h);
+
+      const pad = 10*dpr;
+      const series = (mode==="sub") ? [a] : (mode==="fb") ? [b] : [a,b];
+      const flat = series.flat();
+      const maxV = Math.max(1, ...flat);
+      const minV = 0;
+
+      const color = getComputedStyle(document.body).color;
+
+      // baseline
+      ctx.globalAlpha = 0.12;
+      ctx.beginPath();
+      ctx.moveTo(pad, h-pad);
+      ctx.lineTo(w-pad, h-pad);
+      ctx.lineWidth = 1*dpr;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      function xy(i, v, len){
+        const x = pad + (len===1 ? 0 : (i*(w-2*pad)/(len-1)));
+        const y = (h-pad) - ((v-minV)*(h-2*pad)/(maxV-minV));
+        return {x,y};
+      }
+
+      function plot(data, strong){
+        const len = data.length || 1;
+
+        // line
+        ctx.beginPath();
+        data.forEach((v,i)=>{
+          const p = xy(i, v, len);
+          if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+        });
+        ctx.lineWidth = (strong ? 2.6 : 2.0)*dpr;
+        ctx.globalAlpha = strong ? 0.95 : 0.55;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+
+        // points
+        data.forEach((v,i)=>{
+          const p = xy(i, v, len);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, (strong?2.6:2.2)*dpr, 0, Math.PI*2);
+          ctx.fillStyle = color;
+          ctx.fill();
+        });
+
+        ctx.globalAlpha = 1;
+      }
+
+      if(mode==="both"){
+        plot(a, true);
+        plot(b, false);
+      }else if(mode==="sub"){
+        plot(a, true);
+      }else{
+        plot(b, true);
+      }
+    }
+
+    let UI = { range:"4", mode:"both" };
+    let CACHE = { weeks:[], map:{}, subs:[], fbs:[] };
+
+    function setRangeActive_(val){
+      UI.range = val;
+      [...document.querySelectorAll("#segRange button")].forEach(btn=>{
+        btn.classList.toggle("active", btn.dataset.range===val);
+      });
+      requestAnimationFrame(()=>render_());
+    }
+
+    function setModeActive_(val){
+      UI.mode = val;
+      $("mBoth").classList.toggle("active", val==="both");
+      $("mSub").classList.toggle("active", val==="sub");
+      $("mFb").classList.toggle("active", val==="fb");
+      requestAnimationFrame(()=>render_());
+    }
+
+    function sliceWeeks_(keys){
+      if(UI.range==="all") return keys;
+      const n = Number(UI.range||4);
+      return keys.slice(0, n);
+    }
+
+    function buildTimeline_(keys){
+      const tl = $("timeline");
+      const viewKeys = sliceWeeks_(keys);
+      if(!viewKeys.length){
+        tl.innerHTML = `<div style="color:var(--muted);font-weight:800">Chưa có dữ liệu…</div>`;
+        return;
+      }
+
+      tl.innerHTML = viewKeys.map(k=>{
+        const it = CACHE.map[k] || {submitted:0, feedback:0, subItems:[]};
+        const hasFb = it.feedback > 0;
+        const badge = hasFb ? "ok" : "warn";
+        const label = hasFb ? "Có nhận xét ✅" : "Chờ nhận xét ⏳";
+
+        const subsMini = (it.subItems||[]).slice(0,8).map(x=>{
+          const tid = String(x.taskId||"—");
+          const d = parseDateSafe_(x.createdAt);
+          const time = d ? d.toLocaleString("vi-VN") : (x.createdAt||"—");
+          return `• ${tid} — ${time}`;
+        }).join("<br>");
+
+        return `
+          <div class="weekItem">
+            <div class="weekTop">
+              <div class="wkLeft">
+                <span class="wkTag">${k}</span>
+                <span class="badge ${badge}">${label}</span>
+              </div>
+              <div class="wkNums">
+                <span class="miniK">📨 ${it.submitted} bài</span>
+                <span class="miniK">💬 ${it.feedback} nhận xét</span>
+                <button class="btnLink" data-open="${k}" type="button">Xem chi tiết</button>
+              </div>
+            </div>
+
+            <div class="detail" id="detail_${k}">
+              <div class="detailBox">
+                ${it.submitted ? (subsMini || "Có bài nộp nhưng chưa có chi tiết.") : "Tuần này chưa có bài nộp."}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      tl.querySelectorAll("[data-open]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const k = btn.dataset.open;
+          const box = document.getElementById("detail_"+k);
+          if(!box) return;
+          box.classList.toggle("show");
+          btn.textContent = box.classList.contains("show") ? "Thu gọn" : "Xem chi tiết";
+        };
+      });
+    }
+
+    function buildInsight_(keys){
+      const viewKeys = sliceWeeks_(keys);
+      const totalSub = viewKeys.reduce((s,k)=> s + (CACHE.map[k]?.submitted||0), 0);
+      const totalFb  = viewKeys.reduce((s,k)=> s + (CACHE.map[k]?.feedback||0), 0);
+
+      const rate = totalSub ? Math.round((totalFb/totalSub)*100) : 0;
+      const trendText = (totalSub===0 && totalFb===0)
+        ? "Chưa có dữ liệu trong phạm vi đang chọn."
+        : `Trong phạm vi <b>${UI.range==="all" ? "tất cả" : UI.range + " tuần"}</b>: có <b>${totalSub}</b> bài nộp và <b>${totalFb}</b> nhận xét. Tỷ lệ phản hồi ~ <b>${rate}%</b>.`;
+
+      $("insight").innerHTML = `
+        ${trendText}
+        <div class="muted">Mẹo: nếu 2–3 tuần liên tiếp “Chờ nhận xét”, phụ huynh có thể nhắn nhẹ giáo viên để xin phản hồi cụ thể.</div>
+      `;
+
+      $("kSummary").textContent = `${totalSub} bài • ${totalFb} nhận xét`;
+
+      // ✅ hint thương mại: ít tuần thì cảnh báo nhẹ
+      const hint = $("hintSpark");
+      if(hint){
+        hint.textContent = (viewKeys.length < 3)
+          ? "Gợi ý: Chưa đủ dữ liệu để thấy xu hướng rõ (nên có ≥ 3 tuần)."
+          : "Gợi ý: nhìn “độ dốc” để biết tuần nào con làm đều/giảm nhịp.";
+      }
+    }
+
+    function buildSpark_(keys){
+      const viewKeys = sliceWeeks_(keys).slice().reverse();
+      const subs = viewKeys.map(k=> CACHE.map[k]?.submitted||0);
+      const fbs  = viewKeys.map(k=> CACHE.map[k]?.feedback||0);
+
+      // ✅ ép redraw khi canvas vừa render xong
+      requestAnimationFrame(()=> drawSpark_($("spark"), subs, fbs, UI.mode));
+    }
+
+    function render_(){
+      const keys = CACHE.weeks || [];
+      const viewKeys = sliceWeeks_(keys);
+
+      const allSubs = viewKeys.flatMap(k=> (CACHE.map[k]?.subItems||[]));
+      const mm = minMaxDate_(allSubs, "createdAt");
+      const lbl = (mm.min && mm.max)
+        ? `Phạm vi: ${viewKeys[viewKeys.length-1]||"—"} → ${viewKeys[0]||"—"} • (theo dữ liệu nộp bài)`
+        : `Phạm vi: ${UI.range==="all" ? "Tất cả" : UI.range + " tuần"}`;
+      $("rangeLabel").textContent = lbl;
+
+      buildInsight_(keys);
+      buildSpark_(keys);
+      buildTimeline_(keys);
+    }
+
+    (async ()=>{
+      // topbar SSOT (logo + badge menu)
+      try{ window.renderParentTopbar && window.renderParentTopbar("progress"); }catch(_){}
+
       let s=null;
-      try{ s=(typeof requireRole==="function") ? requireRole(["PARENT"]) : null; }catch(_){}
+      try{ s=(typeof requireRole==="function") ? requireRole(["PARENT"]) : null; }catch(_){ }
       if(!s){
         toast("Vui lòng đăng nhập phụ huynh để xem tiến bộ.");
         return;
       }
 
-      // (Nếu muốn hiện badge lớp ở topbar thì bật)
-      // setParentBadge(s.classId || "");
-
-      document.getElementById("who").textContent =
-        (s.studentName ? `${s.studentName} • ${s.classId||""}` : (s.studentId || "—"));
+      // ✅ show from session first
+      const sessionName = pickStudentNameLocal_(s);
+      $("studentName").textContent = sessionName ? ("HS: " + sessionName) : "HS: —";
+      $("studentClass").textContent = String(s.classId||"").trim() || "—";
+      $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
 
       const token = s.sessionId || s.token || "";
       if(!token || !s.classId || !s.studentId){
@@ -92,53 +546,81 @@
         return;
       }
 
-      try{
-        const r = await apiPost("getParentHistory", {
-          token,
-          classId: s.classId,
-          studentId: s.studentId,
-          limit: 500
-        });
+      async function load_(){
+        try{
+          const r = await apiPost("getParentHistory", {
+            token,
+            classId: s.classId,
+            studentId: s.studentId,
+            limit: 1200
+          });
 
-        const subs = r.submissions || [];
-        const fbs  = r.feedbacks || [];
+          // ✅ nếu session thiếu tên thì lấy tên từ server
+          if(!sessionName){
+            const serverName = pickStudentNameFromServer_(r);
+            if(serverName) $("studentName").textContent = "HS: " + serverName;
+          }
 
-        const byWeek = {};
-        subs.forEach(x=>{
-          const k = weekKey_(x.createdAt);
-          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
-          byWeek[k].submitted++;
-        });
-        fbs.forEach(x=>{
-          const k = weekKey_(x.createdAt);
-          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
-          byWeek[k].feedback++;
-        });
+          const subs = r.submissions || [];
+          const fbs  = (r.feedbacks || []).filter(x => String(x.feedbackPH||x.feedbackParent||"").trim());
 
-        const keys = Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
-        const tb = document.getElementById("rows");
+          // sync badge inbox (KHÔNG mark read ở trang này)
+          try{
+            window.heduParentInbox && heduParentInbox.syncFromFeedbacks(s.classId, s.studentId, fbs);
+            window.heduParentInbox && heduParentInbox.setNavBadges(s.classId, s.studentId, fbs);
+          }catch(_){ }
 
-        if(!keys.length){
-          tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
-          return;
+          const byWeek = {};
+          subs.forEach(x=>{
+            const k = weekKey_(x.createdAt);
+            byWeek[k] = byWeek[k] || { submitted:0, feedback:0, subItems:[] };
+            byWeek[k].submitted++;
+            byWeek[k].subItems.push(x);
+          });
+          fbs.forEach(x=>{
+            const k = weekKey_(x.createdAt);
+            byWeek[k] = byWeek[k] || { submitted:0, feedback:0, subItems:[] };
+            byWeek[k].feedback++;
+          });
+
+          const keys = Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
+
+          CACHE = {
+            weeks: keys,
+            map: byWeek,
+            subs,
+            fbs
+          };
+
+          const maxD = minMaxDate_(subs, "createdAt").max || new Date();
+          $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(maxD);
+
+          render_();
+
+        }catch(e){
+          toast(e.message || "Không tải được tiến bộ.");
         }
-
-        tb.innerHTML = keys.map(k=>{
-          const it = byWeek[k];
-          const note = it.feedback ? "Có nhận xét ✅" : (it.submitted ? "Chờ nhận xét ⏳" : "");
-          return `
-            <tr>
-              <td>${k}</td>
-              <td>${it.submitted}</td>
-              <td>${it.feedback}</td>
-              <td>${note}</td>
-            </tr>
-          `;
-        }).join("");
-
-      }catch(e){
-        toast(e.message || "Không tải được tiến bộ.");
       }
+
+      // filters
+      document.querySelectorAll("#segRange button").forEach(btn=>{
+        btn.onclick = ()=> setRangeActive_(btn.dataset.range);
+      });
+      $("mBoth").onclick = ()=> setModeActive_("both");
+      $("mSub").onclick  = ()=> setModeActive_("sub");
+      $("mFb").onclick   = ()=> setModeActive_("fb");
+
+      $("btnReload").onclick = async ()=>{ $("lastUpdate").textContent="Cập nhật lần cuối: "+fmtTime_(new Date()); await load_(); };
+      $("btnExport").onclick = ()=> toast("Chức năng xuất báo cáo sẽ bật ở bản thương mại ✅");
+
+      // ✅ redraw khi resize để khỏi “trắng”
+      window.addEventListener("resize", ()=>{
+        if(CACHE && CACHE.weeks && CACHE.weeks.length){
+          requestAnimationFrame(()=>render_());
+        }
+      });
+
+      await load_();
     })();
   </script>
 </body>

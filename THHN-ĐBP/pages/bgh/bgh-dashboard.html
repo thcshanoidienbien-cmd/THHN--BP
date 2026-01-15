@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HEDU • BGH • Bảng năng lực theo môn</title>
+
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <script src="../../assets/config.js"></script>
+
+  <style>
+    .container{max-width:1200px;margin:0 auto;padding:14px}
+    .card{background:var(--card,#fff);border:1px solid rgba(148,163,184,.35);border-radius:14px;padding:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .grow{flex:1 1 auto;min-width:240px}
+    .h1{font-size:22px;margin:0}
+    .muted{color:var(--muted,#64748b)}
+    .btn{cursor:pointer}
+    .btn.primary{background:var(--acc,#2563eb);color:#fff;border:none;padding:10px 12px;border-radius:12px}
+    .btn.ghost{background:transparent;border:1px solid rgba(148,163,184,.45);padding:10px 12px;border-radius:12px}
+    .select,.input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(148,163,184,.45);background:transparent}
+    .grid{display:grid;gap:12px}
+    .grid-2{grid-template-columns: 1fr 1fr}
+    @media (max-width: 980px){ .grid-2{grid-template-columns:1fr} }
+    .kpi{display:flex;gap:10px;flex-wrap:wrap}
+    .kpi .box{padding:10px 12px;border-radius:14px;border:1px solid rgba(148,163,184,.35);min-width:150px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(148,163,184,.25);text-align:left}
+    .tag{display:inline-flex;padding:3px 8px;border-radius:999px;border:1px solid rgba(148,163,184,.35);font-size:12px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px;white-space:pre-wrap}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <h1 class="h1">Bảng năng lực theo môn 📊🎓</h1>
+        <div class="muted">Xem phân bố TOP/Giỏi/Khá/Cần hỗ trợ • Top học sinh • Xuất báo cáo CSV</div>
+      </div>
+      <div class="tag" id="status">—</div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="row">
+        <div class="grow">
+          <label class="muted">Năm học</label>
+          <input class="input" id="year" placeholder="VD: 2025-2026"/>
+        </div>
+        <div class="grow">
+          <label class="muted">Khối</label>
+          <input class="input" id="grade" placeholder="VD: 8"/>
+        </div>
+        <div class="grow">
+          <label class="muted">Môn</label>
+          <input class="input" id="subject" placeholder="VD: Ngữ văn"/>
+        </div>
+
+        <button class="btn primary" id="btnLoad">Tải dữ liệu</button>
+        <button class="btn ghost" id="btnExport">Xuất CSV</button>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:12px">
+      <section class="card">
+        <h3 style="margin:0 0 8px">Phân bố năng lực</h3>
+        <div class="kpi" id="dist"></div>
+        <div style="margin-top:10px">
+          <h3 style="margin:0 0 8px">Nhận định (AI)</h3>
+          <div class="mono" id="insight">—</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3 style="margin:0 0 8px">Top 20 theo môn</h3>
+        <div class="muted" style="margin-bottom:8px">Dùng để chọn đội tuyển, bồi dưỡng HSG.</div>
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Mã</th>
+                <th>Họ tên</th>
+                <th>Lớp</th>
+                <th>TB (%)</th>
+              </tr>
+            </thead>
+            <tbody id="top20"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const cfg = (typeof getConfig==="function") ? (getConfig()||{}) : (window.HEDU_CONFIG||{});
+  const SCRIPT_URL = cfg.SCRIPT_URL || window.SCRIPT_URL || "";
+
+  function getSession(){
+    try{ return JSON.parse(localStorage.getItem("hedu_session")||"null"); }catch(_){ return null; }
+  }
+  function token(){
+    const s = getSession();
+    return s && (s.sessionId || s.token) ? (s.sessionId || s.token) : "";
+  }
+  async function apiPost(action, payload){
+    const body = Object.assign({ action }, payload||{});
+    const res = await fetch(SCRIPT_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || "API error");
+    return json;
+  }
+
+  function setStatus(t){ document.getElementById("status").textContent = t; }
+
+  // defaults
+  document.getElementById("year").value = "2025-2026";
+  document.getElementById("grade").value = "8";
+  document.getElementById("subject").value = "Ngữ văn";
+
+  async function load(){
+    try{
+      setStatus("Đang tải…");
+      const tok = token();
+      if(!tok) throw new Error("Chưa đăng nhập BGH/ADMIN.");
+      const year = document.getElementById("year").value.trim();
+      const grade = document.getElementById("grade").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+
+      const r = await apiPost("getBGHDashboard", { token: tok, year, grade, subject });
+
+      const dist = r.distribution || {};
+      document.getElementById("dist").innerHTML = `
+        <div class="box"><b>🏆 TOP</b><div class="muted">${dist.TOP||0} HS</div></div>
+        <div class="box"><b>🌟 GIỎI</b><div class="muted">${dist.GIOI||0} HS</div></div>
+        <div class="box"><b>✅ KHÁ</b><div class="muted">${dist.KHA||0} HS</div></div>
+        <div class="box"><b>🆘 CẦN HT</b><div class="muted">${dist.CAN_HT||0} HS</div></div>
+      `;
+
+      document.getElementById("insight").textContent = r.insight || "—";
+
+      const top = r.top20 || [];
+      document.getElementById("top20").innerHTML = top.map((x,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td><b>${x.studentId||""}</b></td>
+          <td>${x.name||""}</td>
+          <td>${x.classId||""}</td>
+          <td>${(x.scoreAvg!=null)?Number(x.scoreAvg).toFixed(1):""}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="5" class="muted">Chưa có dữ liệu.</td></tr>`;
+
+      setStatus("OK");
+    }catch(err){
+      setStatus("Lỗi");
+      alert(err.message||err);
+    }
+  }
+
+  async function exportCsv(){
+    try{
+      setStatus("Xuất…");
+      const tok = token();
+      const year = document.getElementById("year").value.trim();
+      const grade = document.getElementById("grade").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+
+      const r = await apiPost("exportBGHReport", { token: tok, year, grade, subject });
+      const csv = r.csv || "";
+      const fileName = r.fileName || "report.csv";
+
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      setStatus("OK");
+    }catch(err){
+      setStatus("Lỗi");
+      alert(err.message||err);
+    }
+  }
+
+  document.getElementById("btnLoad").onclick = load;
+  document.getElementById("btnExport").onclick = exportCsv;
+
+  load();
+})();
+</script>
+</body>
+</html>

@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="../../assets/styles.css">
   <meta name="theme-color" content="#2563eb"/>
 
+  <!-- ✅ Đồng bộ: config nên load sớm để teacher.js/core.js có brand & SCRIPT_URL -->
+  <script src="../../assets/config.js"></script>
+
   <style>
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
@@ -100,11 +103,9 @@
     <div class="toast" id="toast" hidden></div>
   </main>
 
-  <!-- ✅ Load đúng thứ tự SSOT -->
-  <script src="../../assets/config.js"></script>
+  <!-- ✅ SSOT: core -> api -> teacher -->
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <!-- ✅ Dùng teacher.js (không dùng teacher-snippet.js theo yêu cầu của anh) -->
   <script src="../../assets/teacher.js"></script>
 
   <script>
@@ -119,18 +120,32 @@
       return u.searchParams.get(name)||"";
     }
 
+    // ✅ Đồng bộ: TEACHER guard theo core.js
     const session = requireRole("TEACHER");
     if(!session) { throw new Error("Đang chuyển về đăng nhập..."); }
 
-    const token = session?.token || "";
+    // ✅ Đồng bộ: token có thể là token/sessionId
+    const token = (session?.token || session?.sessionId || "");
 
+    // ✅ Đồng bộ: classId ưu tiên session -> localStorage -> rỗng (không fallback cứng 5A1)
     function currentClassId(){
-      return getTeacherClassId(session.classId || "5A1");
+      const cid = (session?.classId)
+        || (window.getSession?.()?.classId)
+        || localStorage.getItem("hedu_class")
+        || localStorage.getItem("hedu_teacher_classId")
+        || "";
+      // getTeacherClassId() là helper trong teacher.js (chuẩn hoá)
+      return (typeof getTeacherClassId === "function") ? getTeacherClassId(cid) : String(cid||"").trim().toUpperCase();
     }
 
     // pill hiển thị: Tên GV • Lớp hiện tại
     const meEl = document.getElementById("me");
-    if (meEl) meEl.textContent = `${session.displayName||"Giáo viên"} • ${currentClassId()}`;
+    function renderMe(){
+      const cid = currentClassId() || "—";
+      const name = session.displayName||session.fullName||"Giáo viên";
+      if (meEl) meEl.textContent = `${name} • ${cid}`;
+    }
+    renderMe();
 
     const submissionId = qp("submissionId");
 
@@ -159,14 +174,26 @@
 
     let _ctx = { taskId:"", studentId:"", grade:"", subject:"", textbook:"" };
 
+    function safeSystem_(r){
+      const sys = (r && r.system) ? r.system : {};
+      return {
+        grade: sys.grade || "",
+        subject: sys.subject || "",
+        textbook: sys.textbook || ""
+      };
+    }
+
     async function load(){
       try{
         if(!submissionId) throw new Error("Thiếu mã bài nộp (submissionId).");
 
-        const r = await api("getSubmissionDetail", { token, classId: currentClassId(), submissionId });
+        const cid = currentClassId();
+        if(!cid) throw new Error("Thiếu classId của giáo viên. Vui lòng đăng xuất/đăng nhập lại.");
 
-        // dòng mô tả hệ thống (giữ nguyên logic, Việt hoá nhãn)
-        sub.textContent = `Khối ${r.system.grade} • ${r.system.subject} • ${r.system.textbook}`;
+        const r = await api("getSubmissionDetail", { token, classId: cid, submissionId });
+
+        const sys = safeSystem_(r);
+        sub.textContent = `Khối ${sys.grade||"—"} • ${sys.subject||"—"} • ${sys.textbook||"—"}`;
 
         const s = r.submission || {};
         const t = r.task || {};
@@ -174,11 +201,11 @@
 
         _ctx.taskId = s.taskId || t.taskId || "";
         _ctx.studentId = s.studentId || "";
-        _ctx.grade = t.grade || r.system.grade;
-        _ctx.subject = t.subject || r.system.subject;
-        _ctx.textbook = t.textbook || r.system.textbook;
+        _ctx.grade = t.grade || sys.grade || "";
+        _ctx.subject = t.subject || sys.subject || "";
+        _ctx.textbook = t.textbook || sys.textbook || "";
 
-        meta.textContent = `Học sinh: ${_ctx.studentId} • Bài: ${_ctx.taskId} • Nộp lúc: ${s.createdAt||""}`;
+        meta.textContent = `Học sinh: ${_ctx.studentId||"—"} • Bài: ${_ctx.taskId||"—"} • Nộp lúc: ${s.createdAt||""}`;
         taskBody.value = (t.body || "").trim();
         answer.value = (s.answer || "").trim();
         rubric.value = (t.rubric || "").trim();
@@ -189,43 +216,140 @@
           fbHS.value = fb.feedbackHS || "";
           fbPH.value = fb.feedbackPH || "";
           fbProfile.value = fb.feedbackProfile || "";
-          hint.textContent = "Đã có nhận xét trước đó. Nếu cần, anh có thể chỉnh sửa và lưu lại bản mới.";
+          hint.textContent = "Đã có nhận xét trước đó. Anh có thể chỉnh sửa và lưu lại bản mới.";
         }else{
           hint.textContent = "Chưa có nhận xét. Anh có thể dùng AI để gợi ý rồi chỉnh lại cho chuẩn ✅";
         }
 
-        // luôn hiện đúng lớp (nếu giáo viên đổi lớp ở nơi khác)
-        if (meEl) meEl.textContent = `${session.displayName||"Giáo viên"} • ${currentClassId()}`;
-
+        renderMe();
         toast("Đã tải bài ✅");
       }catch(e){
         toast(e.message||"Không tải được bài nộp.");
       }
     }
 
-    btnAI.onclick = async ()=>{
-      try{
-        if(!rubric.value.trim()) return toast("Bài này chưa có rubric (tiêu chí chấm).");
-        if(!answer.value.trim()) return toast("Bài làm đang trống.");
+    // ✅ Đồng bộ: AI action có thể chưa có trong Code.gs -> fallback nhẹ
+    async function callAiSuggest_(payload){
+      // 1) action chính
+      const r1 = await api("aiSuggestFeedback", payload);
+      if(r1 && r1.ok !== false) return r1;
 
-        const r = await api("aiSuggestFeedback",{
-          token,
-          grade:_ctx.grade,
-          subject:_ctx.subject,
-          textbook:_ctx.textbook,
-          rubric: rubric.value,
-          answer: answer.value
-        });
-
-        const txt = String(r.feedbackText||"").trim();
-        if(!txt) return toast("AI chưa trả nội dung gợi ý.");
-
-        fbHS.value = txt;
-        toast("AI đã gợi ý ✅ (Anh chỉnh lại câu chữ cho đúng lớp/đúng chuẩn)");
-      }catch(e){
-        toast(e.message||"Gọi AI bị lỗi.");
+      const msg = String(r1?.error || r1?.message || "");
+      // 2) fallback (nếu backend dùng action ask/ai/teacherAiFeedback...)
+      if(/unknown action/i.test(msg) || /Unknown action/i.test(msg)){
+        // thử action phổ biến "ask" (nếu Code.gs có)
+        const r2 = await api("ask", Object.assign({ kind:"teacher_feedback" }, payload));
+        return r2;
       }
-    };
+      return r1;
+    }
+
+    btnAI.onclick = async ()=>{
+    try{
+      if(!rubric.value.trim()) return toast("Bài này chưa có rubric (tiêu chí chấm).");
+      if(!answer.value.trim()) return toast("Bài làm đang trống.");
+
+      const r = await api("aiSuggestFeedback",{
+        token,
+        grade:_ctx.grade,
+        subject:_ctx.subject,
+        textbook:_ctx.textbook,
+        rubric: rubric.value,
+        answer: answer.value
+      });
+
+      // ✅ Nếu backend trả sẵn 3 trường riêng thì ưu tiên luôn
+      const hs0 = String(r?.feedbackHS || r?.hs || r?.student || "").trim();
+      const ph0 = String(r?.feedbackPH || r?.ph || r?.parent || "").trim();
+      const pf0 = String(r?.feedbackProfile || r?.profile || r?.record || r?.portfolio || "").trim();
+
+      if (hs0 || ph0 || pf0){
+        if(hs0) fbHS.value = hs0;
+        if(ph0) fbPH.value = ph0;
+        if(pf0) fbProfile.value = pf0;
+        toast("AI đã gợi ý cho 3 ô ✅");
+        return;
+      }
+
+      // ✅ Legacy: backend trả 1 khối text/markdown (đúng trường hợp của ông chủ)
+      const merged = String(r?.feedbackText || r?.hint || r?.text || "").trim();
+      if(!merged) return toast(r?.error || "AI chưa trả nội dung gợi ý.");
+
+      // ===== Splitter: tách theo heading markdown "## Nhận xét cho HỌC SINH" ... (không cần dấu :)
+      function split3BoxesByMarkdown_(txt){
+        const lines = String(txt||"").replace(/\r/g,"").split("\n");
+
+        const isHS = (s)=>/(nhận\s*xét.*học\s*sinh|\bhọc\s*sinh\b)/i.test(s);
+        const isPH = (s)=>/(nhận\s*xét.*phụ\s*huynh|\bphụ\s*huynh\b)/i.test(s);
+        const isPF = (s)=>/(nhận\s*xét.*hồ\s*sơ|\bhồ\s*sơ\b|lưu\s*hồ\s*sơ|profile)/i.test(s);
+
+        const idx = { hs:-1, ph:-1, pf:-1 };
+
+        for(let i=0;i<lines.length;i++){
+          const raw = lines[i].trim();
+          // bắt heading: "#", "##", "###", hoặc line mở đầu rõ nghĩa
+          const head = raw.replace(/^#{1,6}\s*/,"").trim();
+          if(idx.hs<0 && (raw.startsWith("#") && isHS(head))) idx.hs=i;
+          if(idx.ph<0 && (raw.startsWith("#") && isPH(head))) idx.ph=i;
+          if(idx.pf<0 && (raw.startsWith("#") && isPF(head))) idx.pf=i;
+        }
+
+        // Nếu thiếu heading, vẫn thử bắt bằng cụm từ không có #
+        if(idx.hs<0 || idx.ph<0 || idx.pf<0){
+          for(let i=0;i<lines.length;i++){
+            const raw = lines[i].trim();
+            if(idx.hs<0 && isHS(raw)) idx.hs=i;
+            if(idx.ph<0 && isPH(raw)) idx.ph=i;
+            if(idx.pf<0 && isPF(raw)) idx.pf=i;
+          }
+        }
+
+        if(idx.hs<0 && idx.ph<0 && idx.pf<0) return null;
+
+        // sắp xếp theo vị trí xuất hiện
+        const arr = [
+          {k:"hs", i: idx.hs},
+          {k:"ph", i: idx.ph},
+          {k:"pf", i: idx.pf},
+        ].filter(x=>x.i>=0).sort((a,b)=>a.i-b.i);
+
+        function sliceBlock(from, to){
+          const block = lines.slice(from, to).join("\n").trim();
+          // bỏ dòng heading đầu block (nếu có)
+          return block.replace(/^#{1,6}\s*.*$/m, "").trim().replace(/^\s*[-–—]{3,}\s*$/gm,"").trim();
+        }
+
+        const out = { hs:"", ph:"", pf:"" };
+        for(let j=0;j<arr.length;j++){
+          const cur = arr[j];
+          const next = arr[j+1];
+          const a = cur.i;
+          const b = next ? next.i : lines.length;
+          out[cur.k] = sliceBlock(a, b);
+        }
+
+        return out;
+      }
+
+      const sp = split3BoxesByMarkdown_(merged);
+
+      if(sp && (sp.hs || sp.ph || sp.pf)){
+        if(sp.hs) fbHS.value = sp.hs;
+        if(sp.ph) fbPH.value = sp.ph;
+        if(sp.pf) fbProfile.value = sp.pf;
+        toast("AI đã tách và điền đúng 3 ô ✅");
+        return;
+      }
+
+      // Fallback cuối: nếu không tách được thì vẫn đổ vào HS để không mất nội dung
+      fbHS.value = merged;
+      toast("AI trả 1 khối nội dung — tạm đưa vào ô Học sinh (chưa tách được) ⚠️");
+
+    }catch(e){
+      toast(e.message||"Gọi AI bị lỗi.");
+    }
+  };
+
 
     btnSaveQuickHS.onclick = async ()=>{
       try{
@@ -288,8 +412,8 @@
     };
 
     (async ()=>{
-      // ✅ topbar chuẩn (logo + menu + đăng xuất) do teacher.js dựng
-      renderTeacherTopbar("grading");
+      // ✅ topbar chuẩn do teacher.js dựng (đồng bộ các trang GV)
+      if (typeof renderTeacherTopbar === "function") renderTeacherTopbar("grading");
       await load();
     })();
   </script>

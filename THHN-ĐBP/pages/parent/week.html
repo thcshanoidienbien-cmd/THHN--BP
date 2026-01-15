@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HEDU • Phụ huynh • Tuần này</title>
+  <title>Phụ huynh • Tuần này</title>
 
   <link rel="stylesheet" href="../../assets/styles.css">
   <script src="../../assets/config.js"></script>
@@ -11,12 +11,11 @@
   <style>
     .container{max-width:1100px}
 
-    /* HERO giống Admin/Teacher */
     .heroHead{
       display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
       padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
     }
-    .heroTitle{margin:0;font-size:32px;letter-spacing:-.02em}
+    .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
     .heroSub{margin-top:6px;color:var(--muted)}
     .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
     .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -31,39 +30,42 @@
 
     .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
 
-    /* KPI gọn đẹp */
-    .kpis{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:12px;
-      margin-top:12px;
-    }
-    @media(max-width:820px){ .kpis{grid-template-columns:1fr} }
-    .kpiBox{
-      padding:14px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:center;
-    }
-    .kpiBox .t{color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
-    .kpiBox .v{font-size:22px;font-weight:1000;margin-top:6px}
+    .gridKpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+    @media(max-width:980px){.gridKpi{grid-template-columns:1fr}}
+    .kpiCard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .kpiCard .t{color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .kpiCard .v{font-size:22px;font-weight:1000;margin-top:6px}
 
-    /* cảnh báo nhỏ gọn (không “đỏ chói”) */
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .mutedSmall{color:var(--muted);font-size:12px;font-weight:800}
+
     .miniAlert{
-      display:none;
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(245,158,11,.35);
-      background:rgba(245,158,11,.12);
-      color:#92400e;
-      font-weight:900;
-      font-size:13px;
+      display:none;margin-top:12px;padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.12);color:#92400e;
+      font-weight:900;font-size:13px;
     }
     .miniAlert.show{display:block}
     .miniAlert .muted{font-weight:800;font-size:12px;margin-top:4px;color:#92400e}
+
+    /* === AI box addon (nhẹ, không ảnh hưởng layout cũ) === */
+    .hidden{display:none !important}
+    .aiHint{color:var(--muted);font-weight:800;font-size:12px}
+    .aiBox{
+      border:1px solid rgba(37,99,235,.22);
+      background:rgba(37,99,235,.06);
+      border-radius:18px;
+      padding:14px;
+    }
+    .aiText{
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-weight:900;
+    }
   </style>
 </head>
 
 <body data-active="week">
-  <!-- TOPBAR chung -->
+  <!-- ✅ SSOT TOPBAR: GIỮ LOGO + CHIP MENU + BADGE -->
   <div id="topbar"></div>
 
   <main class="container">
@@ -71,24 +73,17 @@
 
       <div class="heroHead">
         <div>
-          <h1 class="heroTitle">Sổ liên lạc điện tử • 7 ngày gần nhất</h1>
-          <div class="heroSub">Tự tổng hợp từ lịch sử nộp bài và nhận xét để phụ huynh theo dõi nhanh.</div>
+          <h1 class="heroTitle">Báo cáo tuần này</h1>
+          <div class="heroSub" id="who">—</div>
         </div>
 
         <div class="heroRight">
           <div class="chips">
-            <span class="chipLite">👨‍👩‍👧 Phụ huynh</span>
             <span class="chipLite">🧒 <strong id="studentName">—</strong></span>
-            <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+            <span class="chipLite">🏷️ Lớp: <strong id="studentClass">—</strong></span>
           </div>
           <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
         </div>
-      </div>
-
-      <div class="kpis">
-        <div class="kpiBox"><div class="t">Khoảng thời gian</div><div class="v" id="k_week">—</div></div>
-        <div class="kpiBox"><div class="t">Bài đã nộp</div><div class="v" id="k_sub">—</div></div>
-        <div class="kpiBox"><div class="t">Nhận xét</div><div class="v" id="k_notes">—</div></div>
       </div>
 
       <div class="miniAlert" id="miniAlert">
@@ -96,158 +91,440 @@
         <div class="muted">Vui lòng đăng nhập lại từ Trang chủ để xem dữ liệu.</div>
       </div>
 
-      <div class="dcard" style="margin-top:14px">
-        <div style="font-weight:1000;font-size:16px">📝 Nhận xét gần nhất (PH)</div>
+      <div class="dcard">
+        <div style="font-weight:1000">📌 Tổng quan 7 ngày gần nhất</div>
+        <div class="mutedSmall" style="margin-top:6px" id="weekLabel">—</div>
+
+        <div class="gridKpi">
+          <div class="kpiCard">
+            <div class="t">📨 Bài đã nộp</div>
+            <div class="v" id="k_submitted">—</div>
+          </div>
+          <div class="kpiCard">
+            <div class="t">💬 Nhận xét</div>
+            <div class="v" id="k_notes">—</div>
+          </div>
+          <div class="kpiCard">
+            <div class="t">🔔 Tin nhắn mới</div>
+            <div class="v" id="k_unread">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ ADD-ON AI (GIỮ NGUYÊN MỌI THỨ, CHỈ THÊM KHỐI NÀY) -->
+      <div style="height:12px"></div>
+      <div class="dcard" id="aiWeekWrap">
+        <div class="row" style="flex-wrap:wrap">
+          <div>
+            <div style="font-weight:1000">🤖 AI Tóm tắt tuần</div>
+            <div class="aiHint" style="margin-top:4px">
+              Tạo 4 gạch đầu dòng gợi ý cho phụ huynh (cache theo tuần để tiết kiệm token).
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn secondary" id="btnAiWeek" type="button">Tạo tóm tắt</button>
+            <button class="btn secondary" id="btnAiClear" type="button">Xoá cache</button>
+          </div>
+        </div>
 
         <div class="divider"></div>
 
-        <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
-          <div style="white-space:pre-wrap;line-height:1.6" id="teacherNote">—</div>
+        <div class="aiBox hidden" id="aiBox">
+          <div class="aiText" id="aiText">—</div>
+          <div class="aiHint" id="aiMeta" style="margin-top:8px">—</div>
         </div>
+      </div>
+      <!-- ✅ END AI -->
 
-        <div style="height:12px"></div>
+      <div style="height:12px"></div>
 
-        <div style="font-weight:1000;font-size:16px">📌 Bài nộp trong 7 ngày</div>
-        <div class="muted" style="margin-top:6px;font-weight:800;font-size:12px">
-          Trạng thái “Đã nhận xét/Chờ nhận xét” được suy ra từ dữ liệu phản hồi.
+      <div class="dcard">
+        <div class="row">
+          <div>
+            <div style="font-weight:1000">🧾 Danh sách bài trong tuần</div>
+            <div class="mutedSmall" style="margin-top:4px">Các bài nộp trong 7 ngày gần nhất.</div>
+          </div>
+          <button class="btn" id="btnReload" type="button">Tải lại</button>
         </div>
 
         <div class="divider"></div>
 
         <table class="table">
           <thead>
-            <tr><th>Bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
+            <tr><th>Mã bài</th><th>Trạng thái</th><th>Ghi chú</th></tr>
           </thead>
           <tbody id="rows">
             <tr><td colspan="3" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
           </tbody>
         </table>
 
-        <div style="height:12px"></div>
+        <div class="divider"></div>
 
-        <div class="actions">
-          <button class="btn secondary" id="btnConfirm" type="button">Tôi đã đọc</button>
+        <div style="font-weight:1000">💌 Nhận xét mới nhất từ giáo viên</div>
+        <div class="mutedSmall" style="margin-top:6px;white-space:pre-wrap;line-height:1.6" id="teacherNote">—</div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div>
+            <div style="font-weight:1000">✅ Phụ huynh xác nhận đã đọc</div>
+            <div class="mutedSmall" style="margin-top:4px">Bấm xác nhận để giáo viên biết phụ huynh đã nắm thông tin tuần này.</div>
+          </div>
+          <button class="btn" id="btnAck" type="button">Tôi đã đọc ✅</button>
         </div>
-        <div class="footerNote">Nút “Tôi đã đọc” giúp giáo viên biết phụ huynh đã xem thông tin.</div>
       </div>
     </section>
 
     <div class="toast" id="toast" hidden></div>
   </main>
 
-  <!-- ✅ SSOT scripts -->
+  <!-- ✅ ĐÚNG THỨ TỰ SSOT (GIỐNG notes.html) -->
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
   <script src="../../assets/parent-ui.js"></script>
 
   <script>
+    const $ = (id)=>document.getElementById(id);
+
     function toast(msg){
-      const t=document.getElementById("toast");
+      const t=$("toast");
       if(!t) return;
       t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
       clearTimeout(window.__t);
       window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
     }
-    function fmt(dt){ try{return new Date(dt).toLocaleString('vi-VN');}catch(e){return dt||"—";} }
+
+    function fmtTime_(d){
+      const pad=n=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+    }
 
     function stripMdSafe_(s){
       try{ if(typeof stripMd==="function") return stripMd(s); }catch(_){}
       return String(s||"").replace(/[*_`>#-]/g,"").trim();
     }
 
-    (async ()=>{
-      // Guard đúng role
-      let s = null;
-      try{ s = requireRole(["PARENT"]); }catch(_){}
-      if(!s){
-        document.getElementById("miniAlert").classList.add("show");
-        toast("Vui lòng đăng nhập lại.");
+    function parseDateSafe_(v){
+      if(v==null) return null;
+      if(typeof v === "number"){
+        const d = new Date(v);
+        return isNaN(d) ? null : d;
+      }
+      const s = String(v).trim();
+      if(!s) return null;
+
+      if(/^\d{11,}$/.test(s)){
+        const d = new Date(Number(s));
+        return isNaN(d) ? null : d;
+      }
+
+      const d1 = new Date(s);
+      if(!isNaN(d1)) return d1;
+
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+      if(m){
+        const dd = Number(m[1]), mm = Number(m[2]) - 1, yy = Number(m[3]);
+        const hh = Number(m[4]||0), mi = Number(m[5]||0), ss = Number(m[6]||0);
+        const d2 = new Date(yy, mm, dd, hh, mi, ss);
+        return isNaN(d2) ? null : d2;
+      }
+      return null;
+    }
+
+    function readSession_(){
+      try{
+        if(typeof getSession==="function"){
+          const s = getSession();
+          if(s) return s;
+        }
+      }catch(_){}
+      try{
+        const raw = localStorage.getItem("hedu_session");
+        if(!raw) return null;
+        return JSON.parse(raw);
+      }catch(_){ return null; }
+    }
+
+    // ✅ ưu tiên tên thật, fallback mã HS nếu bất khả kháng
+    function pickStudentName_(s){
+      const name =
+        s?.studentName ||
+        s?.studentFullName ||
+        s?.studentDisplayName ||
+        s?.childName ||
+        s?.student_name ||
+        s?.student_display_name ||
+        (s?.student && (s.student.name || s.student.fullName)) ||
+        (s?.profile && (s.profile.studentName || s.profile.studentFullName)) ||
+        "";
+
+      let n = String(name||"").trim();
+      if(!n){
+        const dn = String(s?.displayName||"").trim();
+        if(/^PH\s+/i.test(dn)) n = dn.replace(/^PH\s+/i,"").trim();
+      }
+      return n;
+    }
+
+    function renderHeader_(s){
+      const classId = String(s?.classId||s?.className||"").trim();
+      const studentId = String(s?.studentId||"").trim();
+      const name = pickStudentName_(s);
+
+      $("studentName").textContent = (name ? "HS: " + name : (studentId ? "HS: " + studentId : "—"));
+      $("studentClass").textContent = classId || "—";
+      $("who").style.display = "none";
+      $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
+    }
+
+    function renderItems_(subs7, feedbacksPH){
+      const tb = $("rows");
+      const subs = Array.isArray(subs7) ? subs7 : [];
+      if(!subs.length){
+        tb.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">7 ngày gần nhất chưa có bài nộp…</td></tr>`;
         return;
       }
 
-      // Topbar chuẩn
-      renderParentTopbar("week");
-      window.__PAR__ = s;
+      const byTaskHasFeedbackPH = new Set(
+        (feedbacksPH||[]).map(x => String(x.taskId||"").trim()).filter(Boolean)
+      );
 
-      document.getElementById("studentName").textContent = s.studentName || s.studentId || "—";
-      document.getElementById("studentClass").textContent = s.classId || "—";
-      document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTimeHedu(new Date());
+      tb.innerHTML = subs
+        .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))
+        .slice(0, 30)
+        .map(x=>{
+          const tid = String(x.taskId||"").trim();
+          const hasFb = byTaskHasFeedbackPH.has(tid);
+          const badge = hasFb ? "ok" : "warn";
+          const label = hasFb ? "Đã nhận xét" : "Chờ nhận xét";
+          const created = parseDateSafe_(x.createdAt);
+          const note = created ? created.toLocaleString("vi-VN") : (x.createdAt || "—");
+          return `<tr>
+            <td><b>${tid || "—"}</b></td>
+            <td><span class="badge ${badge}">${label}</span></td>
+            <td class="mutedSmall">${note}</td>
+          </tr>`;
+        }).join("");
+    }
 
+    async function loadData_(s){
       const token = s.sessionId || s.token || "";
-      if(!token || !s.classId || !s.studentId){
-        document.getElementById("miniAlert").classList.add("show");
+      const classId = s.classId || "";
+      const studentId = s.studentId || "";
+
+      if(!token || !classId || !studentId){
+        $("miniAlert").classList.add("show");
+        toast("Thiếu thông tin (lớp/mã HS). Vui lòng đăng nhập lại.");
         return;
       }
 
       try{
-        const rHist = await apiPost("getParentHistory", {
-          token,
-          classId: s.classId,
-          studentId: s.studentId,
-          limit: 400
-        });
+        const r = await apiPost("getParentHistory", { token, classId, studentId, limit: 400 });
 
-        const subs = rHist.submissions || [];
-        const fbs  = rHist.feedbacks || [];
+        // ✅ set lại tên theo server nếu có (đảm bảo đúng tên thật)
+        const serverName = String(r?.studentName || r?.studentFullName || "").trim();
+        if(serverName){
+          $("studentName").textContent = serverName;
+          $("who").textContent = `Phụ huynh của: ${serverName}${classId ? " • Lớp " + classId : ""}`;
+        }
+
+        const subs = r.submissions || [];
+        const fbsAll = r.feedbacks || [];
+
+        // ✅ nhận xét PH: feedbackPH hoặc feedbackParent
+        const fbsPH = fbsAll
+          .filter(x => String(x.feedbackPH||x.feedbackParent||"").trim())
+          .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+
+        // ✅ badge menu: sync theo feedbacks (đúng SSOT như notes.html)
+        try{
+          window.heduParentInbox?.syncFromFeedbacks?.(classId, studentId, fbsPH);
+          const unread = window.heduParentInbox?.countUnread?.(classId, studentId, fbsPH) || 0;
+          window.heduParentInbox?.setNavBadges?.(classId, studentId, fbsPH);
+          $("k_unread").textContent = unread;
+        }catch(_){
+          $("k_unread").textContent = 0;
+        }
 
         const now = new Date();
         const since = new Date(now.getTime() - 7*24*3600*1000);
 
         const subs7 = subs.filter(x=>{
-          const d = new Date(x.createdAt);
-          return !isNaN(d) && d >= since;
+          const d = parseDateSafe_(x && x.createdAt);
+          return d && d >= since;
+        });
+        const fbs7 = fbsPH.filter(x=>{
+          const d = parseDateSafe_(x && x.createdAt);
+          return d && d >= since;
         });
 
-        const fbs7 = fbs.filter(x=>{
-          const d = new Date(x.createdAt);
-          return !isNaN(d) && d >= since;
-        });
+        // week label
+        const sinceStr = `${since.getDate()}/${since.getMonth()+1}/${since.getFullYear()}`;
+        const nowStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+        $("weekLabel").textContent = `Từ ${sinceStr} đến ${nowStr}`;
 
-        document.getElementById("k_week").textContent = "7 ngày";
-        document.getElementById("k_sub").textContent = subs7.length;
-        document.getElementById("k_notes").textContent = fbs7.length;
+        // KPI
+        $("k_submitted").textContent = subs7.length;
+        $("k_notes").textContent = fbs7.length;
 
-        // latest PH feedback
-        const latestPH = [...fbs]
-          .filter(x => String(x.feedbackPH||"").trim())
-          .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0];
+        // teacher note = nhận xét mới nhất (PH)
+        const latest = fbsPH[0];
+        $("teacherNote").textContent = stripMdSafe_(latest ? (latest.feedbackPH || latest.feedbackParent) : "Chưa có ghi chú dành cho phụ huynh.");
 
-        document.getElementById("teacherNote").textContent =
-          stripMdSafe_(latestPH ? latestPH.feedbackPH : "Chưa có nhận xét dành cho phụ huynh.");
-
-        // Table 7 ngày + trạng thái theo feedback
-        const byTaskHasFeedback = new Set(
-          fbs.map(x => String(x.taskId||"").trim()).filter(Boolean)
-        );
-
-        const tb = document.getElementById("rows");
-        if(!subs7.length){
-          tb.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">7 ngày gần nhất chưa có bài nộp…</td></tr>`;
+        // last update
+        if(latest?.createdAt){
+          $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date(latest.createdAt));
         }else{
-          tb.innerHTML = subs7
-            .sort((a,b)=> String(b.createdAt||"").localeCompare(String(a.createdAt||"")))
-            .slice(0, 30)
-            .map(x=>{
-              const tid = String(x.taskId||"").trim();
-              const hasFb = byTaskHasFeedback.has(tid);
-              const badge = hasFb ? "ok" : "warn";
-              const label = hasFb ? "Đã nhận xét" : "Chờ nhận xét";
-              return `<tr>
-                <td>${tid || "—"}</td>
-                <td><span class="badge ${badge}">${label}</span></td>
-                <td>${fmt(x.createdAt)}</td>
-              </tr>`;
-            }).join("");
+          $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
         }
 
-      }catch(e){
-        toast(e.message || "Không tải được báo cáo tuần.");
-      }
-    })();
+        // table
+        renderItems_(subs7, fbsPH);
 
-    document.getElementById("btnConfirm").onclick = async ()=>{
+        // ✅ update AI meta cache key (để AI dùng đúng số liệu hiện tại)
+        window.__WEEK_AI_CTX__ = {
+          classId, studentId,
+          studentName: serverName || pickStudentName_(s) || "",
+          rangeLabel: $("weekLabel").textContent || "",
+          submitted: subs7.length,
+          feedback: fbs7.length,
+          latestFeedback: stripMdSafe_(latest ? (latest.feedbackPH || latest.feedbackParent) : ""),
+        };
+
+      }catch(e){
+        $("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
+        toast(e?.message || "Không tải được báo cáo tuần.");
+      }
+    }
+
+    async function doAck_(){
+      try{
+        const s = readSession_();
+        const token = s && (s.token || s.sessionId);
+        if(token) await api("parentConfirmRead",{ token, ts: Date.now() });
+      }catch(_){}
       toast("Đã ghi nhận ✅");
-    };
+    }
+
+    /* ============================
+       ✅ AI ADD-ON (LOW TOKEN)
+       - cache theo tuần + HS
+       - không đụng Code.gs
+    ============================ */
+
+    function aiCacheKey_(ctx){
+      // key theo HS + rangeLabel (7 ngày)
+      const w = String(ctx?.rangeLabel||"7ngay").replace(/\s+/g,"_");
+      return `hedu_ai_week_${ctx.classId}_${ctx.studentId}_${w}`;
+    }
+
+    function aiPrompt_(ctx){
+      // prompt ngắn, giới hạn output -> tiết kiệm token
+      return `
+Bạn là trợ lý giáo dục cho PHỤ HUYNH.
+Tóm tắt 7 ngày gần nhất bằng đúng 4 gạch đầu dòng, không quá 90 từ.
+
+Dữ liệu:
+- HS: ${ctx.studentName || "—"}
+- ${ctx.rangeLabel || "7 ngày"}
+- Bài đã nộp: ${ctx.submitted}
+- Nhận xét: ${ctx.feedback}
+- Nhận xét mới nhất: ${ctx.latestFeedback || "Không có"}
+
+Định dạng:
+📌 Tuần này:
+• Điểm tốt:
+• Cần cải thiện:
+• Gợi ý cho phụ huynh:
+• Tin nhắn mẫu cho giáo viên:
+`.trim();
+    }
+
+    async function callAiLocalMock_(prompt){
+      // ✅ mặc định MOCK để không tốn token (anh thay bằng endpoint thật sau)
+      return `📌 Tuần này:
+• Điểm tốt: Con đã hoàn thành bài và có nhịp học tương đối ổn.
+• Cần cải thiện: Một số bài còn chờ nhận xét, cần theo sát hơn.
+• Gợi ý cho phụ huynh: Mỗi tối 10 phút hỏi con “hôm nay học gì, khó chỗ nào”.
+• Tin nhắn mẫu cho giáo viên: “Cô cho em xin nhận xét thêm để gia đình hỗ trợ con tốt hơn ạ.”`;
+    }
+
+    async function runAiWeek_(){
+      const box = $("aiBox");
+      const txt = $("aiText");
+      const meta = $("aiMeta");
+      const s = readSession_();
+      const role = String(s?.role || s?.userRole || "").toUpperCase();
+      if(role !== "PARENT") return toast("Vui lòng đăng nhập phụ huynh.");
+
+      const ctx = window.__WEEK_AI_CTX__ || {
+        classId: s.classId, studentId: s.studentId,
+        studentName: pickStudentName_(s) || "",
+        rangeLabel: $("weekLabel").textContent || "7 ngày",
+        submitted: Number($("k_submitted")?.textContent||0),
+        feedback: Number($("k_notes")?.textContent||0),
+        latestFeedback: stripMdSafe_($("teacherNote")?.textContent||"")
+      };
+
+      const key = aiCacheKey_(ctx);
+      const cached = localStorage.getItem(key);
+      if(cached){
+        txt.textContent = cached;
+        meta.textContent = "✅ Đã dùng cache (không tốn token).";
+        box.classList.remove("hidden");
+        return;
+      }
+
+      box.classList.remove("hidden");
+      txt.textContent = "🤖 Đang tạo tóm tắt…";
+      meta.textContent = "⏳ Đang xử lý";
+
+      const prompt = aiPrompt_(ctx);
+
+      // ✅ đang mock (không token). Khi nối AI thật: thay callAiLocalMock_ bằng fetch endpoint.
+      const out = await callAiLocalMock_(prompt);
+
+      txt.textContent = out;
+      meta.textContent = "✅ Đã lưu cache theo tuần để tiết kiệm token.";
+      localStorage.setItem(key, out);
+    }
+
+    function clearAiCache_(){
+      try{
+        const s = readSession_();
+        const ctx = window.__WEEK_AI_CTX__ || { classId:s?.classId, studentId:s?.studentId, rangeLabel:$("weekLabel")?.textContent||"7ngay" };
+        const key = aiCacheKey_(ctx);
+        localStorage.removeItem(key);
+        toast("Đã xoá cache AI ✅");
+        $("aiBox").classList.add("hidden");
+      }catch(_){
+        toast("Không xoá được cache.");
+      }
+    }
+
+    (async ()=>{
+      // ✅ render topbar trước (GIỐNG notes.html) => giữ logo + badge chip menu
+      try{ window.renderParentTopbar && window.renderParentTopbar("week"); }catch(_){}
+
+      const s = readSession_();
+      const role = String(s?.role || s?.userRole || "").toUpperCase();
+      if(role !== "PARENT"){
+        $("miniAlert").classList.add("show");
+        toast("Vui lòng đăng nhập Phụ huynh để xem báo cáo tuần.");
+        return;
+      }
+
+      renderHeader_(s);
+
+      $("btnReload").onclick = async ()=>{ renderHeader_(s); await loadData_(s); };
+      $("btnAck").onclick = doAck_;
+
+      // ✅ AI buttons (addon)
+      $("btnAiWeek").onclick = runAiWeek_;
+      $("btnAiClear").onclick = clearAiCache_;
+
+      await loadData_(s);
+    })();
   </script>
 </body>
 </html>

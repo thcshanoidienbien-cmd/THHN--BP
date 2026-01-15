@@ -20,10 +20,20 @@
 
     .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pill{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
+    .pill{position:relative;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
     .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
     .rightActions{display:flex;align-items:center;gap:10px}
     .btnLogout{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
+
+    /* Badge kiểu Zalo/Facebook (số chưa đọc) */
+    .heduBadge{
+      position:absolute;top:-6px;right:-6px;
+      min-width:18px;height:18px;padding:0 5px;border-radius:999px;
+      background:#ef4444;color:#fff;font-size:11px;font-weight:900;
+      display:flex;align-items:center;justify-content:center;
+      border:2px solid #fff;box-shadow:0 10px 26px rgba(239,68,68,.18);
+      line-height:1;
+    }
 
     .container{max-width:1180px}
     .heroHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px}
@@ -43,7 +53,7 @@
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
 
-    /* Kid mode */
+    /* Chế độ học sinh nhỏ (lớp 1–2) */
     body.kid .heroTitle{font-size:30px}
     body.kid .pill, body.kid .btnLogout{font-size:14px;padding:12px 16px}
     body.kid .chipLite{font-size:14px;padding:10px 14px}
@@ -76,9 +86,9 @@
 
       <div class="navMid">
         <div class="pills">
-          <a class="pill" href="dashboard.html">Bảng điều khiển</a>
-          <a class="pill" href="do-task.html">Làm bài</a>
-          <a class="pill" href="progress.html">Tiến bộ</a>
+          <a class="pill active" href="dashboard.html" id="tabDashboard">Bảng điều khiển</a>
+          <a class="pill" href="do-task.html" id="tabDoTask">Làm bài</a>
+          <a class="pill" href="progress.html" id="tabProgress">Tiến bộ</a>
         </div>
         <div class="rightActions">
           <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
@@ -158,12 +168,27 @@
     <div class="toast" id="toast" hidden></div>
   </main>
 
-  <script src="../../assets/app.js"></script>
-  <script src="../../assets/core.js"></script>
-  <script src="../../assets/api.js"></script>
-  <script src="../../assets/student-snippet.js"></script>
+<script src="../../assets/core.js"></script>
+<script src="../../assets/api.js"></script>
+<script src="../../assets/student-snippet.js"></script>
 
   <script>
+    // ===== Việt hoá "Mảng" (domain) =====
+    const DOMAIN_VI = {
+      READING: "Đọc hiểu",
+      WRITING: "Viết",
+      LISTENING: "Nghe",
+      SPEAKING: "Nói",
+      VOCAB: "Từ vựng",
+      GRAMMAR: "Ngữ pháp",
+      MATH: "Toán",
+      SCIENCE: "Khoa học"
+    };
+    function domainVi_(domain){
+      const k = String(domain||"").trim().toUpperCase();
+      return DOMAIN_VI[k] || (domain || "—");
+    }
+
     function toast(msg){
       const t=document.getElementById("toast");
       t.hidden=false;t.textContent=msg||"—";t.classList.add("show");
@@ -217,7 +242,7 @@
         <tr>
           <td>${t.taskId||"—"}</td>
           <td>${t.topic||t.unit||"—"}</td>
-          <td>${t.domain||"—"}</td>
+          <td>${domainVi_(t.domain)}</td>
           <td><a class="smallLink" href="do-task.html?taskId=${encodeURIComponent(t.taskId)}">Làm bài</a></td>
         </tr>
       `).join("");
@@ -239,13 +264,13 @@
       }
       wrap.innerHTML = need.map(t=>{
         const topic = (t.topic||t.unit||"Bài tập");
-        const domain = (t.domain||"");
+        const domain = domainVi_(t.domain);
         return `
           <div class="taskCard">
             <div class="left">
               <div class="title">📘 ${topic}</div>
               <div class="meta">
-                Mã bài: <b>${t.taskId||"—"}</b>${domain ? `<br/>Mảng: <b>${domain}</b>` : ""}
+                Mã bài: <b>${t.taskId||"—"}</b>${domain && domain!=="—" ? `<br/>Mảng: <b>${domain}</b>` : ""}
               </div>
             </div>
             <a class="go" href="do-task.html?taskId=${encodeURIComponent(t.taskId)}">Làm bài</a>
@@ -254,12 +279,21 @@
       }).join("");
     }
 
+    function safeStr_(v){ return String(v??"").trim(); }
+    function fbText_(fb){ return safeStr_(fb.feedbackHS || fb.feedbackStudent || fb.feedback || fb.comment || ""); }
+    function ts_(fb){ return Date.parse(fb?.updatedAt || fb?.createdAt || "") || 0; }
+
     async function loadData_(){
       const s = window.__STU__;
       if(!s) return;
 
+      // Hiển thị người dùng (nếu có)
       const who = document.getElementById("who");
-      if(who) who.textContent = "";
+      if(who){
+        const name = s.displayName || s.fullName || s.name || "";
+        const cls  = s.classId ? (" • " + s.classId) : "";
+        who.textContent = name ? (name + cls) : (cls ? cls.slice(3) : "—");
+      }
 
       document.getElementById("studentClass").textContent = (s.classId||"—");
 
@@ -281,12 +315,26 @@
         const fbs = rHist.feedbacks || [];
         const subs = rHist.submissions || [];
 
+        // ✅ SSOT unread badge + compact latest feedback by task
+        let compactFbs = fbs;
+        if(window.heduInbox){
+          heduInbox.syncFromFeedbacks(s.classId, s.studentId, fbs);
+          compactFbs = heduInbox.compactFeedbacks(fbs);
+          const unread = heduInbox.countUnread(s.classId, s.studentId, fbs);
+          heduInbox.setTabBadges(unread);
+        }
+
         const submittedSet = new Set(subs.map(x=> String(x.taskId||"").trim()).filter(Boolean));
         const need = tasks.filter(t => !submittedSet.has(String(t.taskId||"").trim()));
 
+        // ✅ Fix lỗi KPI "Lời nhận xét":
+        // - chỉ đếm theo taskId (unique)
+        // - chỉ tính khi có nội dung nhận xét (tránh bản ghi rỗng)
+        const fbCount = compactFbs.filter(fb => safeStr_(fb.taskId) && fbText_(fb)).length;
+
         document.getElementById("k_tasks").textContent = tasks.length;
         document.getElementById("k_submitted").textContent = submittedSet.size;
-        document.getElementById("k_feedback").textContent = fbs.length;
+        document.getElementById("k_feedback").textContent = fbCount;
 
         const kidLine = document.getElementById("kidLine");
         if(isKid){
@@ -307,6 +355,22 @@
     (async ()=>{
       await studentInit("dashboard");
       document.getElementById("btnReload").onclick = loadData_;
+
+      // Logout theo SSOT core.js (nếu student-snippet đã gắn thì bỏ qua cũng được)
+      const btnLogout = document.getElementById("btnLogout");
+      if(btnLogout){
+        btnLogout.onclick = async (ev)=>{
+          ev.preventDefault();
+          try{
+            const s = window.getSession ? window.getSession() : null;
+            const token = s?.token || s?.sessionId || "";
+            if(window.api) await api("authLogout", { token });
+          }catch(_){}
+          if(window.clearSession) window.clearSession();
+          location.href = "../../index.html";
+        };
+      }
+
       await loadData_();
     })();
   </script>

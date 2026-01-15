@@ -9,55 +9,191 @@
   <script src="../../assets/config.js"></script>
 
   <style>
-    /* ===== Topbar (SSOT – giống dashboard) ===== */
+    /* ===== Topbar ===== */
     .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
-    .topbar .inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+    .topbar .inner{max-width:1180px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:12px}
     .brand{display:flex;align-items:center;gap:10px;min-width:0}
-    .logoImg{width:40px;height:40px;border-radius:12px;object-fit:cover;display:block}
-    .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#2563eb,#60a5fa)}
     .btext{min-width:0}
-    .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
     .bsub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-
     .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pill{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
-      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
-    }
+    .pills{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{position:relative;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit;display:inline-flex;gap:8px;align-items:center}
     .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
-    .btnLogout{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
-      font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit
+    .btnLogout{padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
+
+    /* Badge kiểu Zalo/Facebook (số chưa đọc) */
+    .heduBadge{
+      position:absolute; top:-6px; right:-6px;
+      min-width:18px; height:18px; padding:0 5px;
+      border-radius:999px;
+      background:#ef4444; color:#fff;
+      font-size:11px; font-weight:900; line-height:1;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:2px solid #fff;
+      box-shadow:0 10px 24px rgba(239,68,68,.22);
+      pointer-events:none;
     }
 
-    /* ===== Page ===== */
     .container{max-width:1180px}
-    .heroHead{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-      padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px
-    }
-    .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
-    .heroSub{margin-top:6px}
-    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-    .chipLite{
-      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
-      border-radius:999px;background:#fff;font-weight:900;font-size:13px;
-    }
+
+    /* ===== Scroll ổn định ===== */
+    .pageWrap{height: calc(100vh - 86px); overflow:auto;}
+    @media(max-width:980px){ .pageWrap{height:auto;overflow:visible} }
+
+    .heroHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 0 10px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:10px}
+    .heroTitle{margin:0;font-size:28px;letter-spacing:-.02em}
+    .heroSub{margin-top:4px;font-size:13px}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .chipLite{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:13px}
     .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;white-space:nowrap}
 
-    /* Kid mode */
-    body.kid .heroTitle{font-size:30px}
-    body.kid .pill, body.kid .btnLogout{font-size:14px;padding:12px 16px}
+    .pageCard{padding:12px; display:flex; flex-direction:column; gap:10px;}
+    .field{margin-top:4px}
+    label{font-size:13px}
+    .mutedMini{color:var(--muted);font-size:12px;font-weight:800}
+
+    .split2{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start;}
+    @media(max-width:980px){
+      .split2{grid-template-columns:1fr}
+      .content,.content.small,textarea#answer{height:auto;max-height:none}
+    }
+
+    .box{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:#fff;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:220px;
+    }
+    .boxHead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(148,163,184,.35);}
+    .boxTitle{font-weight:900; font-size:15px; display:flex; align-items:center; gap:8px;}
+    .boxSub{color:var(--muted); font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+    .content{
+      flex:1;
+      min-height:140px;
+      overflow:auto;
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-size:14px;
+      padding-right:8px;
+      color:#0f172a;
+    }
+    .content.small{min-height:110px; overflow:auto; white-space:pre-wrap; line-height:1.6; font-size:14px; padding-right:8px;}
+    textarea#answer{
+      flex:1;
+      min-height:140px;
+      font-size:14px;
+      line-height:1.55;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.55);
+      padding:12px;
+      outline:none;
+      resize:none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    textarea#answer:focus{border-color: rgba(37,99,235,.7); box-shadow:0 0 0 4px rgba(37,99,235,.12);}
+
+    .boxActions{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid rgba(148,163,184,.25);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .boxActions.between{justify-content:space-between}
+
+    .boxActions .btn{
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-width:140px;
+    }
+    .boxActions .btn.secondary{
+      background:#fff;
+      border:1px solid rgba(148,163,184,.6);
+    }
+    .boxActions .btn.ghost{
+      background:rgba(15,23,42,.04);
+      border:1px dashed rgba(148,163,184,.7);
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;
+      font-weight:900;box-shadow:0 18px 40px rgba(0,0,0,.25);z-index:9999;
+      opacity:0;pointer-events:none;transition:opacity .15s ease;
+    }
+    .toast.show{opacity:1}
+
+    /* ✅ Fix nút "Kiểm tra" bị mất chữ bởi styles.css */
+    #btnPrecheck{
+      display:inline-flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:8px !important;
+      min-width:170px !important;
+      padding:10px 14px !important;
+      border-radius:999px !important;
+      font-weight:900 !important;
+      font-size:14px !important;
+      line-height:1 !important;
+      color:#0f172a !important;
+      background:#fff !important;
+      border:1px solid rgba(148,163,184,.6) !important;
+      white-space:nowrap !important;
+    }
+    #btnPrecheck *{ font-size:inherit !important; }
+
+    /* ===== Chips summary (✅/⚠️/❌) ===== */
+    .chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.55);
+      background:#fff;
+      font-weight:900;
+      font-size:13px;
+      line-height:1;
+      user-select:none;
+    }
+    .chip .dot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(148,163,184,.7);
+      flex:0 0 auto;
+    }
+    .chip.ok .dot{ background:rgba(34,197,94,.85); }     /* ✅ */
+    .chip.warn .dot{ background:rgba(245,158,11,.85); }  /* ⚠️ */
+    .chip.bad .dot{ background:rgba(239,68,68,.85); }    /* ❌ */
+    .chip .n{opacity:.85;font-weight:900}
   </style>
 </head>
 
 <body>
-<!-- ===== TOPBAR ===== -->
 <div class="topbar">
   <div class="inner">
     <div class="brand">
-        <div class="btext">
+      <div class="btext">
         <div class="bname" id="brandName">—</div>
         <div class="bsub" id="brandSub">—</div>
       </div>
@@ -65,128 +201,696 @@
 
     <div class="navMid">
       <div class="pills">
-        <a class="pill" href="dashboard.html">Bảng điều khiển</a>
-        <a class="pill active" href="do-task.html">Làm bài</a>
-        <a class="pill" href="progress.html">Tiến bộ</a>
+        <a class="pill" href="dashboard.html" id="tabDashboard">Bảng điều khiển</a>
+        <a class="pill active" href="do-task.html" id="tabDoTask">Làm bài</a>
+        <a class="pill" href="progress.html" id="tabProgress">Tiến bộ</a>
       </div>
       <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
     </div>
   </div>
 </div>
 
-<main class="container">
-<section class="card" style="padding:18px;margin-top:14px">
-
-  <!-- ===== HERO ===== -->
-  <div class="heroHead">
-    <div>
-      <h1 class="heroTitle" id="pageTitle">Làm bài</h1>
-      <div class="muted heroSub" id="who"></div>
-    </div>
-    <div class="heroRight">
-      <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
-      <div class="lastUpdate" id="lastUpdate">—</div>
-    </div>
-  </div>
-
-  <!-- ===== NỘI DUNG ===== -->
-  <div class="card" style="padding:16px">
-    <div class="field">
-      <label>📘 Chọn bài</label>
-      <select id="taskSel"><option value="">— Chọn bài —</option></select>
+<main class="container pageWrap">
+  <section class="card" style="padding:14px;margin-top:10px;overflow:hidden">
+    <div class="heroHead">
+      <div>
+        <h1 class="heroTitle" id="pageTitle">Làm bài</h1>
+        <div class="muted heroSub" id="who">—</div>
+      </div>
+      <div class="heroRight">
+        <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+        <div class="lastUpdate" id="lastUpdate">—</div>
+      </div>
     </div>
 
-    <div class="card" style="padding:12px;background:#f8fafc;border-color:#e2e8f0">
-      <div style="font-weight:900" id="taskTitle">—</div>
-      <div class="muted" style="margin:6px 0">Nội dung</div>
-      <div style="white-space:pre-wrap;line-height:1.6" id="taskBody">—</div>
-    </div>
+    <div class="card pageCard">
+      <div class="field">
+        <label>📘 Chọn bài</label>
+        <select id="taskSel"><option value="">— Chọn bài —</option></select>
+        <div class="mutedMini" style="margin-top:6px" id="taskMeta">Chọn bài để xem nội dung.</div>
+      </div>
 
-    <div class="field" style="margin-top:12px">
-      <label>✍️ Bài làm của em</label>
-      <textarea id="answer" rows="8" placeholder="Nhập câu trả lời ở đây…"></textarea>
-    </div>
+      <div class="split2">
+        <!-- Nội dung -->
+        <div class="box">
+          <div class="boxHead">
+            <div class="boxTitle" id="taskTitle">📘 Nội dung bài</div>
+            <div class="boxSub" id="taskDomain">—</div>
+          </div>
+          <div class="content" id="taskBody">—</div>
+        </div>
 
-    <div class="actions">
-      <button class="btn" id="btnSubmit">Nộp bài</button>
-      <button class="btn secondary" id="btnLoadFeedback" type="button">Xem nhận xét</button>
-    </div>
+        <!-- Bài làm + Nộp bài -->
+        <div class="box">
+          <div class="boxHead">
+            <div class="boxTitle">✍️ Bài làm của em</div>
+            <div class="boxSub">Nhập xong bấm “Nộp bài”.</div>
+          </div>
+          <textarea id="answer" placeholder="Nhập câu trả lời ở đây…"></textarea>
 
-    <div class="card" style="margin-top:12px">
-      <div style="font-weight:900">💬 Nhận xét</div>
-      <div id="feedback" style="white-space:pre-wrap;margin-top:6px">—</div>
-    </div>
-  </div>
+          <div class="boxActions between">
+            <span class="mutedMini" id="submitState" style="margin-left:2px">—</span>
+            <button class="btn" id="btnSubmit" type="button">✅ Nộp bài</button>
+          </div>
+        </div>
 
-</section>
+        <!-- Gợi ý AI -->
+        <div class="box">
+          <div class="boxHead">
+            <div class="boxTitle">✨ Gợi ý AI</div>
+            <div class="boxSub">Chỉ gợi ý cách làm</div>
+          </div>
+          <div class="content small" id="aiHint">Bấm “Gợi ý AI” để nhận hướng dẫn cách làm.</div>
+
+          <div class="boxActions">
+            <button class="btn ghost" id="btnAiHint" type="button">✨ Gợi ý AI</button>
+          </div>
+        </div>
+
+        <!-- ✅ AI Pre-check -->
+        <div class="box" id="precheckBox">
+          <div class="boxHead">
+            <div class="boxTitle" id="precheckTitle">🤖 AI kiểm tra trước khi nộp</div>
+            <div class="boxSub" id="precheckState">Chưa kiểm tra</div>
+          </div>
+
+          <!-- Mặc định 1 câu ngắn -->
+          <div class="content small" id="precheckSummary">
+            Bấm “Kiểm tra” để AI góp ý bài làm (không đưa đáp án).
+          </div>
+
+          <!-- ✅ Chips (ẩn khi chưa kiểm tra) -->
+          <div class="chips" id="precheckChips" style="display:none"></div>
+
+          <!-- Kết quả: ẩn cho đến khi bấm -->
+          <div class="content small" id="precheckList"
+               style="display:none;margin-top:8px;border-top:1px solid rgba(148,163,184,.2);padding-top:10px;">
+          </div>
+
+          <div class="boxActions between">
+            <span class="mutedMini" id="precheckHint"></span>
+            <button class="btn secondary" id="btnPrecheck" type="button">🔎 Kiểm tra</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" hidden></div>
 </main>
 
-<!-- app.js (index flow) không cần cho trang làm bài, tránh side-effect -->
 <script src="../../assets/core.js"></script>
 <script src="../../assets/api.js"></script>
 <script src="../../assets/student-snippet.js"></script>
 
 <script>
+  function toast(msg){
+    const t=document.getElementById("toast");
+    t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
+    clearTimeout(window.__t);
+    window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
+  }
   function fmtTime_(d){
     const p=n=>String(n).padStart(2,"0");
     return `${p(d.getHours())}:${p(d.getMinutes())} - ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
   }
-
   function getGrade_(cid){
     const m=String(cid||"").match(/^(\d)/);
     return m?Number(m[1]):0;
   }
+  function getParam_(n){ return new URL(location.href).searchParams.get(n); }
+
+  const DOMAIN_VI={READING:"Đọc hiểu",WRITING:"Viết",MATH:"Toán",SCIENCE:"Khoa học",GENERAL:"Tổng hợp"};
+  function domainVi_(v){ const k=String(v||"").trim().toUpperCase(); return DOMAIN_VI[k] || (v||"—"); }
+
+  const elSel=document.getElementById("taskSel");
+  const elMeta=document.getElementById("taskMeta");
+  const elTitle=document.getElementById("taskTitle");
+  const elDomain=document.getElementById("taskDomain");
+  const elBody=document.getElementById("taskBody");
+  const elAnswer=document.getElementById("answer");
+  const elAi=document.getElementById("aiHint");
+
+  const btnSubmit=document.getElementById("btnSubmit");
+  const btnAiHint=document.getElementById("btnAiHint");
+  const elSubmitState=document.getElementById("submitState");
+
+  // ===== PRECHECK UI refs =====
+  const elPreTitle = document.getElementById("precheckTitle");
+  const elPreState = document.getElementById("precheckState");
+  const elPreSummary = document.getElementById("precheckSummary");
+  const elPreList = document.getElementById("precheckList");
+  const elPreChips = document.getElementById("precheckChips");
+  const btnPrecheck = document.getElementById("btnPrecheck");
+  const elPreHint = document.getElementById("precheckHint");
+
+  let tasks=[], allTasks=[], submittedSet=new Set();
+
+  function pickTaskText_(t){
+    return (t && (t.body||t.taskText||t.content||t.text||"")) ? (t.body||t.taskText||t.content||t.text) : "";
+  }
+  function taskLabel_(t){
+    const topic=(t.topic||t.unit||"").trim();
+    const id=t.taskId||"";
+    return topic ? `${id} • ${topic}` : `${id}`;
+  }
+  function renderSelect_(list){
+    elSel.innerHTML = `<option value="">— Chọn bài —</option>` + list.map(t=>`<option value="${String(t.taskId||"")}">${taskLabel_(t)}</option>`).join("");
+  }
+  function getSelectedTask_(){
+    const id=String(elSel.value||"").trim();
+    if(!id) return null;
+    return allTasks.find(x=>String(x.taskId||"").trim()===id) || null;
+  }
+
+  // ===== PRECHECK RULES (SSOT – không lộ đáp án) =====
+  const PRECHECK_RULES = {
+    TOAN: {
+      title: "🤖 AI kiểm tra trước khi nộp • Toán",
+      checks: [
+        { id:"relevance", label:"Trả lời đúng yêu cầu đề" },
+        { id:"steps", label:"Có bước làm (không chỉ ghi kết quả)" },
+        { id:"unit", label:"Có ghi đơn vị (nếu cần)" },
+        { id:"conclusion", label:"Có câu kết luận/đáp số rõ ràng" }
+      ]
+    },
+    TIENGVIET: {
+      title: "🤖 AI kiểm tra trước khi nộp • Tiếng Việt",
+      checks: [
+        { id:"relevance", label:"Đúng trọng tâm câu hỏi" },
+        { id:"evidence", label:"Có dẫn chứng ngắn (nếu đề yêu cầu)" },
+        { id:"copy", label:"Không chép nguyên văn dài" },
+        { id:"clarity", label:"Diễn đạt rõ ràng, đủ ý" },
+        { id:"spelling", label:"Chính tả & dấu câu cơ bản" }
+      ]
+    },
+    KHOAHOC: {
+      title: "🤖 AI kiểm tra trước khi nộp • Khoa học",
+      checks: [
+        { id:"idea", label:"Nêu đúng ý chính" },
+        { id:"explain", label:"Có giải thích ngắn (vì sao/như thế nào) nếu cần" },
+        { id:"example", label:"Có ví dụ/hiện tượng minh hoạ (nếu đề yêu cầu)" },
+        { id:"clarity", label:"Trình bày rõ ràng, dễ hiểu" }
+      ]
+    },
+    DAODUC: {
+      title: "🤖 AI kiểm tra trước khi nộp • Đạo đức",
+      checks: [
+        { id:"situation", label:"Hiểu đúng tình huống" },
+        { id:"behavior", label:"Nêu cách ứng xử phù hợp" },
+        { id:"reason", label:"Có nêu lý do/ý nghĩa tích cực" },
+        { id:"tone", label:"Câu chữ lễ phép, phù hợp" }
+      ]
+    },
+    TIN: {
+      title: "🤖 AI kiểm tra trước khi nộp • Tin học",
+      checks: [
+        { id:"process", label:"Nêu đúng quy trình/thao tác" },
+        { id:"order", label:"Thứ tự các bước hợp lý (1–2–3)" },
+        { id:"term", label:"Dùng từ/ký hiệu cơ bản đúng" }
+      ]
+    },
+    TIENGANH: {
+      title: "🤖 AI kiểm tra trước khi nộp • Tiếng Anh",
+      checks: [
+        { id:"sentence", label:"Câu đủ ý (chủ ngữ – động từ)" },
+        { id:"grammar", label:"Ngữ pháp cơ bản" },
+        { id:"spelling", label:"Chính tả từ vựng" },
+        { id:"punct", label:"Viết hoa & dấu câu" }
+      ]
+    },
+    LSDl: {
+      title: "🤖 AI kiểm tra trước khi nộp • LS-ĐL",
+      checks: [
+        { id:"content", label:"Đúng nội dung câu hỏi" },
+        { id:"enough", label:"Đủ ý chính theo yêu cầu" },
+        { id:"timeplace", label:"Có mốc thời gian/địa điểm nếu đề yêu cầu" },
+        { id:"clarity", label:"Ngắn gọn, không lan man" }
+      ]
+    },
+    GENERAL: {
+      title: "🤖 AI kiểm tra trước khi nộp",
+      checks: [
+        { id:"relevance", label:"Đúng trọng tâm" },
+        { id:"enough", label:"Đủ ý" },
+        { id:"clarity", label:"Rõ ràng, dễ đọc" }
+      ]
+    }
+  };
+
+  // ===== SAMPLE OUTPUT (fallback) =====
+  // Lưu ý: sample chỉ dùng khi backend chưa bật action aiPrecheckStudent.
+  const SAMPLE_PRECHECK_BY_SUBJECT = {
+    TOAN: {
+      ok: true,
+      summary: "Bài làm có hướng giải, cần bổ sung đơn vị và kết luận/đáp số rõ.",
+      checks: [
+        { id:"relevance", label:"Trả lời đúng yêu cầu đề", status:"ok", note:"Con đã bám câu hỏi." },
+        { id:"steps", label:"Có bước làm (không chỉ ghi kết quả)", status:"warn", note:"Có bước nhưng còn thiếu 1 bước trung gian." },
+        { id:"unit", label:"Có ghi đơn vị (nếu cần)", status:"bad", note:"Chưa thấy đơn vị ở kết quả." },
+        { id:"conclusion", label:"Có câu kết luận/đáp số rõ ràng", status:"warn", note:"Nên thêm 1 dòng đáp số." }
+      ],
+      nextFix: ["Thêm đơn vị cho kết quả.", "Viết đáp số/kết luận 1 dòng.", "Soát lại bước cuối xem đã khớp dữ kiện chưa."]
+    },
+    TIENGVIET: {
+      ok: true,
+      summary: "Con trả lời đúng hướng, nên thêm 1 dẫn chứng ngắn và tách ý rõ hơn.",
+      checks: [
+        { id:"relevance", label:"Đúng trọng tâm câu hỏi", status:"ok", note:"Đã trả lời đúng ý hỏi." },
+        { id:"evidence", label:"Có dẫn chứng ngắn (nếu đề yêu cầu)", status:"warn", note:"Nếu đề yêu cầu, trích 1 cụm từ ngắn làm bằng chứng." },
+        { id:"copy", label:"Không chép nguyên văn dài", status:"ok", note:"Không thấy chép dài." },
+        { id:"clarity", label:"Diễn đạt rõ ràng, đủ ý", status:"warn", note:"Nên tách câu dài thành 2 câu." }
+      ],
+      nextFix: ["Thêm 1 dẫn chứng rất ngắn (1 cụm từ) nếu cần.", "Tách 1 câu dài thành 2 câu ngắn."]
+    },
+    KHOAHOC: {
+      ok: true,
+      summary: "Đã nêu ý chính, nên thêm 1 câu giải thích vì sao.",
+      checks: [
+        { id:"idea", label:"Nêu đúng ý chính", status:"ok", note:"Đúng hướng." },
+        { id:"explain", label:"Có giải thích ngắn (vì sao/như thế nào) nếu cần", status:"bad", note:"Thiếu câu giải thích." },
+        { id:"clarity", label:"Trình bày rõ ràng, dễ hiểu", status:"ok", note:"Dễ hiểu." }
+      ],
+      nextFix: ["Thêm 1 câu bắt đầu bằng “Vì…” hoặc “Do…”.", "Nếu đề yêu cầu ví dụ, thêm 1 ví dụ đơn giản."]
+    },
+    DAODUC: {
+      ok: true,
+      summary: "Con có nêu cách ứng xử, nên bổ sung lý do tích cực.",
+      checks: [
+        { id:"situation", label:"Hiểu đúng tình huống", status:"ok", note:"Con hiểu tình huống." },
+        { id:"behavior", label:"Nêu cách ứng xử phù hợp", status:"ok", note:"Cách xử lý hợp lý." },
+        { id:"reason", label:"Có nêu lý do/ý nghĩa tích cực", status:"warn", note:"Nên thêm 1 lý do vì sao làm vậy." }
+      ],
+      nextFix: ["Thêm 1 câu lý do ngắn gọn.", "Nếu phù hợp, thêm câu thể hiện lịch sự/biết ơn."]
+    },
+    TIN: {
+      ok: true,
+      summary: "Có ý đúng, cần viết đủ bước theo thứ tự.",
+      checks: [
+        { id:"process", label:"Nêu đúng quy trình/thao tác", status:"warn", note:"Thiếu 1 bước." },
+        { id:"order", label:"Thứ tự các bước hợp lý (1–2–3)", status:"warn", note:"Nên đánh số bước." },
+        { id:"term", label:"Dùng từ/ký hiệu cơ bản đúng", status:"ok", note:"Thuật ngữ ổn." }
+      ],
+      nextFix: ["Đánh số bước 1–2–3.", "Bổ sung bước còn thiếu theo đề."]
+    },
+    TIENGANH: {
+      ok: true,
+      summary: "Câu có đủ ý, cần kiểm tra ngữ pháp và dấu câu.",
+      checks: [
+        { id:"sentence", label:"Câu đủ ý (chủ ngữ – động từ)", status:"ok", note:"Cơ bản đủ." },
+        { id:"grammar", label:"Ngữ pháp cơ bản", status:"warn", note:"Cần xem lại chia động từ." },
+        { id:"spelling", label:"Chính tả từ vựng", status:"ok", note:"Từ vựng ổn." }
+      ],
+      nextFix: ["Kiểm tra chia động từ (he/she/it...).", "Soát viết hoa và dấu chấm."]
+    },
+    LSDl: {
+      ok: true,
+      summary: "Nêu đúng nội dung, nên bổ sung thêm 1 ý nhỏ theo câu hỏi.",
+      checks: [
+        { id:"content", label:"Đúng nội dung câu hỏi", status:"ok", note:"Đúng hướng." },
+        { id:"enough", label:"Đủ ý chính theo yêu cầu", status:"warn", note:"Thiếu 1 ý nhỏ." },
+        { id:"clarity", label:"Ngắn gọn, không lan man", status:"ok", note:"Ổn." }
+      ],
+      nextFix: ["Bổ sung thêm 1 ý nhỏ theo yêu cầu đề.", "Tách ý bằng gạch đầu dòng nếu cần."]
+    },
+    GENERAL: {
+      ok: true,
+      summary: "Bài làm tạm ổn, nên đọc lại để đủ ý và rõ câu.",
+      checks: [
+        { id:"relevance", label:"Đúng trọng tâm", status:"warn", note:"Nên rà lại từ khóa đề." },
+        { id:"enough", label:"Đủ ý", status:"warn", note:"Có thể thiếu 1 ý nhỏ." },
+        { id:"clarity", label:"Rõ ràng, dễ đọc", status:"ok", note:"Dễ đọc." }
+      ],
+      nextFix: ["Đọc lại đề và đối chiếu từng yêu cầu.", "Tách ý bằng 2–3 gạch đầu dòng."]
+    }
+  };
+
+  function normalizeSubject_(s){
+    return String(s||"").trim().toUpperCase().replace(/\s+/g," ");
+  }
+
+  function subjectKeyFromTask_(t){
+    // Ưu tiên task.subject / task.subjectKey nếu có
+    const raw = normalizeSubject_(t?.subjectKey || t?.subject || "");
+    if(raw){
+      if(raw.includes("TOAN") || raw.includes("TOÁN")) return "TOAN";
+      if(raw.includes("TIENG VIET") || raw.includes("TIẾNG VIỆT") || raw.includes("NGU VAN") || raw.includes("NGỮ VĂN")) return "TIENGVIET";
+      if(raw.includes("KHOA HOC") || raw.includes("KHOA HỌC")) return "KHOAHOC";
+      if(raw.includes("DAO DUC") || raw.includes("ĐẠO ĐỨC")) return "DAODUC";
+      if(raw.includes("TIN")) return "TIN";
+      if(raw.includes("ANH")) return "TIENGANH";
+      if(raw.includes("LS") || raw.includes("DL") || raw.includes("DIA LY") || raw.includes("ĐỊA LÝ") || raw.includes("LICH SU") || raw.includes("LỊCH SỬ")) return "LSDl";
+      return "GENERAL";
+    }
+
+    // Fallback theo domain
+    const d = normalizeSubject_(t?.domain || "");
+    if(d==="MATH") return "TOAN";
+    if(d==="READING" || d==="WRITING") return "TIENGVIET";
+    if(d==="SCIENCE") return "KHOAHOC";
+    return "GENERAL";
+  }
+
+  function statusBadge_(st){
+    const s = String(st||"").toLowerCase();
+    if(s==="ok") return "✅";
+    if(s==="warn") return "⚠️";
+    if(s==="bad") return "❌";
+    return "•";
+  }
+
+  function resetPrecheckUI_(){
+    if(elPreTitle) elPreTitle.textContent = "🤖 AI kiểm tra trước khi nộp";
+    if(elPreState) elPreState.textContent = "Chưa kiểm tra";
+    if(elPreSummary) elPreSummary.textContent = "Bấm “Kiểm tra” để AI góp ý bài làm (không đưa đáp án).";
+
+    if(elPreList){
+      elPreList.style.display = "none";
+      elPreList.textContent = "";
+    }
+    if(elPreChips){
+      elPreChips.style.display = "none";
+      elPreChips.innerHTML = "";
+    }
+    if(elPreHint) elPreHint.textContent = "";
+  }
+
+  function renderPrecheckChips_(checks){
+    const arr = Array.isArray(checks) ? checks : [];
+    let ok=0, warn=0, bad=0;
+
+    for(const c of arr){
+      const st = String(c?.status||"").toLowerCase();
+      if(st==="ok" || st==="pass" || st==="good") ok++;
+      else if(st==="warn" || st==="warning" || st==="maybe") warn++;
+      else if(st==="bad" || st==="fail" || st==="missing") bad++;
+    }
+
+    if(!elPreChips) return;
+    if(arr.length===0){
+      elPreChips.style.display="none";
+      elPreChips.innerHTML="";
+      return;
+    }
+
+    if(elPreState){
+      elPreState.textContent = `Đã kiểm tra • ✅${ok} ⚠️${warn} ❌${bad}`;
+    }
+
+    elPreChips.innerHTML = `
+      <span class="chip ok"><span class="dot"></span>✅ <span class="n">${ok}</span> Mạnh</span>
+      <span class="chip warn"><span class="dot"></span>⚠️ <span class="n">${warn}</span> Cần rà</span>
+      <span class="chip bad"><span class="dot"></span>❌ <span class="n">${bad}</span> Thiếu</span>
+    `;
+    elPreChips.style.display="flex";
+  }
+
+  function renderPrecheck_(result, t){
+    if(elPreTitle) elPreTitle.textContent = "🤖 AI kiểm tra trước khi nộp";
+    if(elPreState) elPreState.textContent = (result?.ok ? "Đã kiểm tra" : "Chưa kiểm tra");
+    if(elPreSummary) elPreSummary.textContent = String(result?.summary || "—");
+
+    const checks = Array.isArray(result?.checks) ? result.checks : [];
+    renderPrecheckChips_(checks);
+
+    const nextFix = Array.isArray(result?.nextFix) ? result.nextFix : [];
+
+    const lines = [];
+    if(checks.length){
+      for(const c of checks){
+        lines.push(`${statusBadge_(c.status)} ${c.label}${c.note ? ` — ${c.note}` : ""}`);
+      }
+    }
+    if(nextFix.length){
+      lines.push("");
+      lines.push("Gợi ý sửa nhanh:");
+      for(const x of nextFix) lines.push(`- ${x}`);
+    }
+
+    if(elPreList){
+      elPreList.textContent = lines.join("\n") || "—";
+      elPreList.style.display = "block";
+    }
+  }
+
+  async function runPrecheck_(){
+    const s=window.__STU__, token=s.sessionId||s.token||"";
+    const t=getSelectedTask_();
+    if(!t) return toast("Chọn bài trước nhé 😊");
+
+    const answerText = String(elAnswer.value||"").trim();
+    if(!answerText) return toast("Con nhập bài làm trước rồi hãy kiểm tra nhé.");
+
+    const subjectKey = subjectKeyFromTask_(t);
+
+    btnPrecheck.disabled = true;
+    const old = btnPrecheck.textContent;
+    btnPrecheck.textContent = "Đang kiểm tra…";
+    if(elPreState) elPreState.textContent = "Đang kiểm tra…";
+
+    try{
+      // ✅ Nếu backend đã có action aiPrecheckStudent: dùng ngay
+      let out = null;
+      try{
+        out = await api("aiPrecheckStudent", {
+          token,
+          classId: s.classId,
+          studentId: s.studentId,
+          taskId: t.taskId,
+          subjectKey,
+          domain: t.domain,
+          topic: (t.topic||t.unit||""),
+          taskText: pickTaskText_(t),
+          answer: answerText
+        });
+      }catch(e){
+        out = { ok:false, error: e?.message || String(e||"") };
+      }
+
+      if(out && out.ok){
+        renderPrecheck_(out, t);
+        toast("AI đã góp ý trước khi nộp ✅");
+      } else {
+        // fallback mẫu theo môn (không lộ đáp án)
+        const sample = SAMPLE_PRECHECK_BY_SUBJECT[subjectKey] || SAMPLE_PRECHECK_BY_SUBJECT.GENERAL;
+        renderPrecheck_(sample, t);
+
+        const msg = String(out?.error||out?.message||"");
+        if(/unknown action/i.test(msg)){
+          toast("Chưa bật AI precheck — đang dùng kiểm tra mẫu ✅");
+        } else {
+          toast("Đã có checklist kiểm tra ✅");
+        }
+      }
+    } finally {
+      btnPrecheck.disabled = false;
+      btnPrecheck.textContent = old;
+    }
+  }
+
+  function renderTask_(t){
+    if(!t){
+      elTitle.textContent="📘 Nội dung bài";
+      elDomain.textContent="—";
+      elBody.textContent="—";
+      elMeta.textContent="Chọn bài để xem nội dung.";
+      elAi.textContent="Bấm “Gợi ý AI” để nhận hướng dẫn cách làm.";
+      if(elSubmitState) elSubmitState.textContent="—";
+      resetPrecheckUI_();
+      return;
+    }
+
+    const topic=t.topic||t.unit||t.taskId||"Bài tập";
+    elTitle.textContent=`📘 ${topic}`;
+    elDomain.textContent=domainVi_(t.domain);
+    elBody.textContent=pickTaskText_(t)||"—";
+
+    const due=t.dueAt?new Date(t.dueAt):null;
+    const dueText=(due && !isNaN(due))?` • Hạn nộp: ${fmtTime_(due)}`:"";
+    elMeta.textContent=`Mã bài: ${t.taskId||"—"}${dueText}`;
+
+    elAi.textContent="Bấm “Gợi ý AI” để nhận hướng dẫn cách làm.";
+    if(elSubmitState) elSubmitState.textContent="Nhắc: đọc lại 1 lượt trước khi nộp ✅";
+
+    // reset precheck khi đổi bài
+    resetPrecheckUI_();
+
+    // set title theo môn (không cần “Đọc hiểu/Viết” cứng)
+    const sk = subjectKeyFromTask_(t);
+    const rule = PRECHECK_RULES[sk] || PRECHECK_RULES.GENERAL;
+    if(elPreTitle) elPreTitle.textContent = rule.title || "🤖 AI kiểm tra trước khi nộp";
+  }
+
+  async function loadTasks_(){
+    const s=window.__STU__, token=s.sessionId||s.token||"";
+
+    const rTasks=await api("listTasksForStudent",{token,classId:s.classId,studentId:s.studentId});
+    allTasks=rTasks.tasks||[];
+
+    const rHist=await api("getMyHistory",{token,classId:s.classId,studentId:s.studentId,limit:300});
+    const subs=rHist.submissions||[];
+
+    // ✅ Badge số chưa đọc (dedupe theo taskId ở heduInbox)
+    try{
+      const fbs = rHist.feedbacks || [];
+      if(window.heduInbox){
+        heduInbox.syncFromFeedbacks(s.classId, s.studentId, fbs);
+        const unread = heduInbox.countUnread(s.classId, s.studentId, fbs);
+        heduInbox.setTabBadges(unread);
+      }
+    }catch(_){}
+
+    submittedSet=new Set(subs.map(x=>String(x.taskId||"").trim()).filter(Boolean));
+
+    tasks=allTasks.filter(t=>!submittedSet.has(String(t.taskId||"").trim()));
+    renderSelect_(tasks);
+
+    const q=String(getParam_("taskId")||"").trim();
+    if(q && tasks.some(t=>String(t.taskId||"").trim()===q)) elSel.value=q;
+    else if(tasks.length) elSel.value=String(tasks[0].taskId||"");
+    else elSel.value="";
+
+    renderTask_(getSelectedTask_());
+    if(!tasks.length) toast("Không còn bài cần làm 🎉");
+  }
 
   async function init_(){
     await studentInit("do-task");
-    const s=window.__STU__;
-    const cfg=getConfig();
-    setBrand_(cfg,s);
+    const s=window.__STU__, cfg=getConfig();
+    if(typeof setBrand_==="function") setBrand_(cfg,s);
 
-    document.getElementById("who").textContent="";
+    const name=s.displayName||s.fullName||s.name||"";
+    document.getElementById("who").textContent=name?`${name} • ${s.classId||"—"}`:`${s.classId||"—"}`;
     document.getElementById("studentClass").textContent=s.classId||"—";
     document.getElementById("lastUpdate").textContent="Cập nhật: "+fmtTime_(new Date());
 
     const g=getGrade_(s.classId);
     document.body.classList.toggle("kid", g>0 && g<=2);
+
+    document.getElementById("btnLogout").onclick=async(ev)=>{
+      ev.preventDefault();
+      try{
+        const ss=window.getSession?window.getSession():null;
+        const token=ss?.token||ss?.sessionId||"";
+        if(window.api) await api("authLogout",{token});
+      }catch(_){}
+      if(window.clearSession) window.clearSession();
+      location.href="../../index.html";
+    };
   }
 
-  /* ===== logic làm bài giữ nguyên ===== */
-  let tasks=[];
-  function getParam(n){return new URL(location.href).searchParams.get(n);}
+  // đổi bài
+  elSel.addEventListener("change", ()=>renderTask_(getSelectedTask_()));
 
-  async function loadTasks_(){
-    const s=window.__STU__, token=s.sessionId||s.token||"";
-    const r=await api("listTasksForStudent",{token,classId:s.classId,studentId:s.studentId});
-    tasks=r.tasks||[];
-    const sel=document.getElementById("taskSel");
-    sel.innerHTML='<option value="">— Chọn bài —</option>'+tasks.map(t=>`<option value="${t.taskId}">${t.taskId} • ${t.topic||""}</option>`).join("");
-    const q=getParam("taskId"); if(q) sel.value=q;
-    sel.dispatchEvent(new Event("change"));
-  }
-
-  document.getElementById("taskSel").onchange=()=>{
-    const t=tasks.find(x=>String(x.taskId)===String(taskSel.value));
-    taskTitle.textContent=t?.topic||t?.taskId||"—";
-    taskBody.textContent=t?.body||"—";
-    feedback.textContent="—";
-  };
-
+  // Nộp bài
   btnSubmit.onclick=async()=>{
     const s=window.__STU__, token=s.sessionId||s.token||"";
-    if(!taskSel.value||!answer.value.trim()) return toast("Chưa đủ thông tin");
-    await api("submitAnswer",{token,classId:s.classId,studentId:s.studentId,taskId:taskSel.value,answer:answer.value.trim()});
-    toast("Đã nộp bài ✅");
+    const t=getSelectedTask_();
+    const ans=String(elAnswer.value||"").trim();
+    if(!t) return toast("Chọn bài trước nhé 😊");
+    if(!ans) return toast("Con chưa nhập câu trả lời.");
+
+    btnSubmit.disabled=true; btnSubmit.textContent="Đang nộp…";
+    try{
+      await api("submitAnswer",{token,classId:s.classId,studentId:s.studentId,taskId:t.taskId,answer:ans});
+      toast("Đã nộp bài ✅");
+
+      submittedSet.add(String(t.taskId||"").trim());
+      tasks=tasks.filter(x=>String(x.taskId||"").trim()!==String(t.taskId||"").trim());
+      renderSelect_(tasks);
+
+      elAnswer.value="";
+      elAi.textContent="Bấm “Gợi ý AI” để nhận hướng dẫn cách làm.";
+      resetPrecheckUI_();
+
+      if(tasks.length){ elSel.value=String(tasks[0].taskId||""); renderTask_(getSelectedTask_()); }
+      else { elSel.value=""; renderTask_(null); }
+    }catch(e){
+      toast(e.message||"Nộp bài bị lỗi.");
+    }finally{
+      btnSubmit.disabled=false; btnSubmit.textContent="✅ Nộp bài";
+    }
   };
 
-  btnLoadFeedback.onclick=async()=>{
+  // Gợi ý AI (không lộ đáp án) — giữ logic ông chủ
+  function localSuggest_(t, draft){
+    const domain = String(t?.domain||"GENERAL").toUpperCase();
+    const topic = String(t?.topic||t?.unit||t?.taskId||"Bài tập");
+    const hasDraft = !!(draft && draft.trim().length>20);
+
+    if(domain==="READING"){
+      return [
+        `${topic} (Đọc hiểu)`,
+        `1) Gạch chân từ khóa (ai/việc gì/ở đâu/khi nào/ý chính...).`,
+        `2) Tóm tắt 1–2 câu (không chép nguyên).`,
+        `3) Trả lời theo mẫu: Dẫn chứng ngắn → Kết luận.`,
+        hasDraft ? `4) Soát lại: đúng trọng tâm chưa, có dẫn chứng chưa, câu văn rõ chưa.` : `4) Viết 2–4 câu, ngắn gọn, đúng trọng tâm.`,
+        `✅ Mẹo: tránh chép cả đoạn; chỉ trích 1 cụm ngắn làm bằng chứng.`
+      ].join("\n");
+    }
+    if(domain==="WRITING"){
+      return [
+        `${topic} (Viết)`,
+        `1) Lập dàn ý: Mở – Thân – Kết.`,
+        `2) Mỗi ý 1 đoạn, có ví dụ/chi tiết.`,
+        `3) Dùng từ nối: “Trước hết…”, “Tiếp theo…”, “Cuối cùng…”.`,
+        `4) Soát chính tả, dấu câu, lặp từ.`,
+        `✅ Mẹo: câu ngắn, rõ; tránh từ quá “người lớn”.`
+      ].join("\n");
+    }
+    return [
+      `${topic}`,
+      `1) Xác định yêu cầu bài: cần nêu cái gì và bao nhiêu ý.`,
+      `2) Viết theo cấu trúc: Nêu ý → Giải thích → Ví dụ.`,
+      `3) Kiểm tra lại đúng đề và đủ ý.`,
+      `✅ Nếu con gửi bản nháp, AI sẽ góp ý cách cải thiện (không đưa đáp án).`
+    ].join("\n");
+  }
+  function renderAiHint_(text){ elAi.textContent = String(text||""); }
+
+  btnAiHint.onclick = async () => {
     const s=window.__STU__, token=s.sessionId||s.token||"";
-    const r=await api("getMyHistory",{token,classId:s.classId,studentId:s.studentId,limit:200});
-    const fb=(r.feedbacks||[]).find(x=>String(x.taskId)===String(taskSel.value));
-    feedback.textContent=fb?.feedbackHS||"Chưa có nhận xét";
+    const t=getSelectedTask_();
+    if(!t) return toast("Chọn bài trước nhé 😊");
+
+    btnAiHint.disabled = true;
+    const old = btnAiHint.textContent;
+    btnAiHint.textContent = "✨ Đang gợi ý...";
+
+    try{
+      const draft = (elAnswer?.value || "").trim();
+      let out = null;
+      try{
+        out = await api("aiStudentHint",{
+          token,
+          classId:s.classId, studentId:s.studentId,
+          taskId:t.taskId,
+          domain:t.domain, topic:(t.topic||t.unit||""),
+          taskText: pickTaskText_(t),
+          draft,
+          useProgress:true
+        });
+      }catch(e){
+        out = { ok:false, error: e?.message || String(e||"") };
+      }
+
+      if(out && out.ok && (out.hint || out.suggestion || out.text)){
+        renderAiHint_(out.hint || out.suggestion || out.text);
+        toast("Đã có gợi ý ✨");
+      }else{
+        renderAiHint_(localSuggest_(t, draft));
+        toast("Gợi ý đã sẵn sàng ✅");
+      }
+    }finally{
+      btnAiHint.disabled = false;
+      btnAiHint.textContent = old;
+    }
   };
 
-  (async()=>{await init_(); await loadTasks_();})();
+  // Precheck bind
+  if(btnPrecheck) btnPrecheck.onclick = runPrecheck_;
+
+  (async()=>{ await init_(); await loadTasks_(); })();
 </script>
 </body>
 </html>

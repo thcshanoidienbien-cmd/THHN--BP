@@ -9,203 +9,497 @@
   <script src="../../assets/config.js"></script>
 
   <style>
-    /* ===== Topbar (SSOT – đồng bộ Dashboard/Do-task) ===== */
+    /* ===== Topbar (đồng bộ do-task) ===== */
     .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
-    .topbar .inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+    .topbar .inner{max-width:1180px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:12px}
     .brand{display:flex;align-items:center;gap:10px;min-width:0}
-    .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#2563eb,#60a5fa)}
-    .logoImg{width:40px;height:40px;border-radius:12px;object-fit:cover;display:block}
     .btext{min-width:0}
-    .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
     .bsub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-
     .navMid{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pill{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
+    .pills{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{position:relative;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
     .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
-    .btnLogout{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
+    .btnLogout{padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:13px;white-space:nowrap;text-decoration:none;color:inherit}
 
-    /* ===== Page ===== */
-    .container{max-width:1180px}
-    .heroHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 0 12px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:12px}
-    .heroTitle{margin:0;font-size:34px;letter-spacing:-.02em}
-    .heroSub{margin-top:6px;color:var(--muted)}
-    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .chipLite{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:13px;white-space:nowrap;box-shadow:0 8px 22px rgba(15,23,42,.04)}
-    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;text-align:right;white-space:nowrap}
-
-    .dcard{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}
-
-    /* Mobile */
-    @media(max-width:720px){
-      .heroTitle{font-size:28px}
-      .navMid{gap:8px}
-      .pill,.btnLogout{padding:10px 12px}
+    /* Badge kiểu Zalo/Facebook (số chưa đọc) */
+    .heduBadge{
+      position:absolute;top:-6px;right:-6px;
+      min-width:18px;height:18px;padding:0 5px;border-radius:999px;
+      background:#ef4444;color:#fff;font-size:11px;font-weight:900;
+      display:flex;align-items:center;justify-content:center;
+      border:2px solid #fff;box-shadow:0 10px 26px rgba(239,68,68,.22);
     }
+
+    .container{max-width:1180px}
+    .heroHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 0 10px;border-bottom:1px dashed rgba(148,163,184,.6);margin-bottom:10px}
+    .heroTitle{margin:0;font-size:28px;letter-spacing:-.02em}
+    .heroSub{margin-top:4px;font-size:13px}
+    .heroRight{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .chipLite{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:13px}
+    .lastUpdate{font-size:12px;color:var(--muted);font-weight:800;white-space:nowrap}
+
+    /* Inbox table */
+    .table{width:100%;border-collapse:separate;border-spacing:0}
+    .table th,.table td{padding:12px 10px;border-bottom:1px solid rgba(148,163,184,.25);vertical-align:top}
+    .table th{color:#0f172a;font-weight:900;background:rgba(148,163,184,.10)}
+    .badgeMini{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.35);background:#fff;font-weight:900;font-size:12px;white-space:nowrap}
+    .badgeMini.ok{border-color:rgba(34,197,94,.45)}
+    .badgeMini.wait{border-color:rgba(245,158,11,.45)}
+    .star{font-size:14px}
+    .btnPill{border-radius:999px;padding:9px 12px;font-weight:900}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center}
+    .modal[hidden]{display:none}
+    .modal-backdrop{position:absolute;inset:0;background:rgba(2,6,23,.45)}
+    .modal-card{
+      position:relative;max-width:820px;width:calc(100% - 24px);
+      background:#fff;border:1px solid rgba(148,163,184,.35);
+      border-radius:18px;padding:14px;box-shadow:0 18px 60px rgba(2,6,23,.25)
+    }
+    pre{white-space:pre-wrap;line-height:1.6;margin:0}
+
+    /* Toast */
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;
+      font-weight:900;box-shadow:0 18px 40px rgba(0,0,0,.25);z-index:9999;
+      opacity:0;pointer-events:none;transition:opacity .15s ease;
+    }
+    .toast.show{opacity:1}
   </style>
 </head>
 
 <body>
-  <!-- ===== TOPBAR ===== -->
-  <div class="topbar">
-    <div class="inner">
-      <div class="brand">
-         <div class="btext">
-          <!-- dòng 1 = TÊN TRƯỜNG; dòng 2 = TÊN HỌC SINH -->
-          <div class="bname" id="brandName">—</div>
-          <div class="bsub" id="brandSub">—</div>
-        </div>
-      </div>
-
-      <div class="navMid">
-        <div class="pills">
-          <a class="pill" href="dashboard.html">Bảng điều khiển</a>
-          <a class="pill" href="do-task.html">Làm bài</a>
-          <a class="pill active" href="progress.html">Tiến bộ</a>
-        </div>
-        <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
+<div class="topbar">
+  <div class="inner">
+    <div class="brand">
+      <div class="btext">
+        <div class="bname" id="brandName">—</div>
+        <div class="bsub" id="brandSub">—</div>
       </div>
     </div>
-  </div>
 
-  <main class="container">
-    <section class="card" style="padding:18px;margin-top:14px">
-
-      <!-- ===== HERO ===== -->
-      <div class="heroHead">
-        <div>
-          <h1 class="heroTitle">Tiến bộ học tập</h1>
-          <div class="heroSub" id="heroSub">🌱 Mỗi dòng là một tuần học của con. Nộp bài đều đặn là con đang tiến bộ đó nha!</div>
-        </div>
-        <div class="heroRight">
-          <div class="chips">
-            <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
-          </div>
-          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
-        </div>
+    <div class="navMid">
+      <div class="pills">
+        <a class="pill" href="dashboard.html" id="tabDashboard">Bảng điều khiển</a>
+        <a class="pill" href="do-task.html" id="tabDoTask">Làm bài</a>
+        <a class="pill active" href="progress.html" id="tabProgress">Tiến bộ</a>
       </div>
+      <a class="btnLogout" href="#" id="btnLogout">Đăng xuất</a>
+    </div>
+  </div>
+</div>
 
-      <!-- ===== CONTENT ===== -->
-      <div class="dcard">
-        <div style="font-weight:900">📊 Tổng hợp theo tuần</div>
-        <div class="muted" style="margin-top:6px">Dựa trên lịch sử nộp bài và nhận xét của giáo viên.</div>
+<main class="container">
+  <section class="card" style="padding:14px;margin-top:10px">
+    <div class="heroHead">
+      <div>
+        <h1 class="heroTitle">Tiến bộ học tập</h1>
+        <div class="muted heroSub" id="who">—</div>
+      </div>
+      <div class="heroRight">
+        <span class="chipLite">🏷️ <strong id="studentClass">—</strong></span>
+        <div class="lastUpdate" id="lastUpdate">—</div>
+      </div>
+    </div>
 
-        <div class="divider"></div>
+    <!-- ✅ Tổng hợp theo tuần (giữ tối giản, không đụng backend) -->
+    <div class="card" style="padding:12px">
+      <div style="font-weight:900;font-size:16px">📚 Tổng hợp theo tuần</div>
+      <div class="muted" style="font-size:13px;margin-top:4px">Dựa trên lịch sử nộp bài và nhận xét của giáo viên.</div>
 
+      <div style="overflow:auto;margin-top:10px">
         <table class="table">
           <thead>
             <tr>
-              <th>Tuần</th>
-              <th>Đã nộp</th>
-              <th>Nhận xét</th>
-              <th>Ghi chú</th>
+              <th style="min-width:110px">Tuần</th>
+              <th style="min-width:110px">Đã nộp</th>
+              <th style="min-width:110px">Nhận xét</th>
+              <th style="min-width:160px">Ghi chú</th>
             </tr>
           </thead>
-          <tbody id="rows">
-            <tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>
+          <tbody id="weekBody">
+            <tr><td colspan="4" class="muted">Đang tải…</td></tr>
           </tbody>
         </table>
+      </div>
 
-        <div class="muted" style="margin-top:10px;font-size:12px;font-weight:800">
-          ℹ️ Mẹo: Con sang mục <b>Làm bài</b> để nộp bài, rồi quay lại đây xem tiến bộ theo từng tuần nhé.
+      <div class="muted" style="margin-top:10px;font-weight:800">
+        ℹ️ Mẹo: Con nộp bài xong, hãy xem mục “Hộp thư nhận xét theo bài” bên dưới nhé ✅
+      </div>
+    </div>
+
+    <!-- ✅ Inbox feedback -->
+    <section class="card" style="padding:12px;margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <div style="font-weight:900;font-size:16px">📩 Hộp thư nhận xét theo bài</div>
+          <div class="muted" style="font-size:13px">Bấm “Xem” để đọc nhận xét từng bài. Bài chưa đọc sẽ có ⭐</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="badgeMini" id="unreadBadge">⭐ Chưa đọc: —</span>
+          <button class="btn ghost btnPill" id="btnReloadInbox" type="button">↻ Tải lại</button>
         </div>
       </div>
 
+      <div style="overflow:auto;margin-top:10px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="min-width:150px">Mã bài</th>
+              <th>Chủ đề</th>
+              <th style="min-width:150px">Trạng thái</th>
+              <th style="min-width:120px">Điểm</th>
+              <th style="min-width:120px"></th>
+            </tr>
+          </thead>
+          <tbody id="inboxBody">
+            <tr><td colspan="5" class="muted">Đang tải…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
-  </main>
 
-  <script src="../../assets/app.js"></script>
-  <script src="../../assets/core.js"></script>
-  <script src="../../assets/api.js"></script>
-  <script src="../../assets/student-snippet.js"></script>
+  </section>
 
-  <script>
-    function weekKey_(iso){
-      const d = new Date(iso);
-      if (isNaN(d)) return "—";
-      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-      const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
-      return `${date.getUTCFullYear()}-W${("0"+weekNo).slice(-2)}`;
-    }
+  <div class="toast" id="toast" hidden></div>
 
-    function fmtTime_(d){
-      const p=n=>String(n).padStart(2,"0");
-      return `${p(d.getHours())}:${p(d.getMinutes())} - ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
-    }
+  <!-- Modal xem nhận xét -->
+  <div class="modal" id="fbModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+        <div style="font-weight:900" id="fbModalTitle">Nhận xét</div>
+        <button class="btn ghost btnPill" data-close type="button">✕</button>
+      </div>
+      <div class="muted" id="fbModalMeta" style="margin-top:6px">—</div>
+      <div style="margin-top:12px">
+        <pre id="fbModalText"></pre>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px">
+        <button class="btn btnPill" id="btnMarkRead" type="button">✅ Đánh dấu đã đọc</button>
+      </div>
+    </div>
+  </div>
+</main>
 
-    function getGradeFromClassId_(classId){
-      const s = String(classId||"").trim();
-      const m = s.match(/^(\d)/);
-      const g = m ? Number(m[1]) : 0;
-      return (g>=1 && g<=5) ? g : 0;
-    }
+<script src="../../assets/core.js"></script>
+<script src="../../assets/api.js"></script>
+<script src="../../assets/student-snippet.js"></script>
 
-    (async ()=>{
-      await studentInit("progress");
-      const s = window.__STU__;
-      if(!s) return;
+<script>
+  function toast(msg){
+    const t=document.getElementById("toast");
+    t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
+    clearTimeout(window.__t);
+    window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
+  }
+  function fmtTime_(d){
+    const p=n=>String(n).padStart(2,"0");
+    return `${p(d.getHours())}:${p(d.getMinutes())} - ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+  }
+  function safeStr(v){ return String(v ?? "").trim(); }
+  function uniq(arr){ return Array.from(new Set(arr)); }
 
-      const cfg = (typeof getConfig === "function") ? (getConfig()||{}) : {};
-      // SSOT brand (logo + school + student)
-      try{ if(typeof setBrand_ === "function") setBrand_(cfg, s); }catch(_){
-        document.getElementById("brandName").textContent = cfg.SCHOOL_NAME || "—";
-        document.getElementById("brandSub").textContent = s.displayName || s.name || "Học sinh";
-      }
+  // ⭐ unread (local fallback – vẫn giữ)
+  function readKey_(taskId){ return "hedu_fb_read_" + safeStr(taskId); }
+  function isRead_(taskId){ return localStorage.getItem(readKey_(taskId)) === "1"; }
+  function markRead_(taskId){ localStorage.setItem(readKey_(taskId), "1"); }
 
-      document.getElementById("studentClass").textContent = s.classId || "—";
-      document.getElementById("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date());
+  // pick feedback text (HS ưu tiên)
+  function pickFbText_(fb){
+    return safeStr(fb.feedbackHS || fb.feedbackStudent || fb.feedback || fb.comment || "");
+  }
+  function pickScore_(fb, sub){
+    // ưu tiên điểm từ feedback (GV) — bắt nhiều tên field để tránh lệch schema
+    const fbScore = safeStr(
+      fb?.score ?? fb?.scoreHS ?? fb?.scoreStudent ?? fb?.score_value ??
+      fb?.points ?? fb?.point ?? fb?.mark ?? fb?.grade ?? fb?.resultScore ?? ""
+    );
+    const fbMax = safeStr(
+      fb?.scoreMax ?? fb?.maxScore ?? fb?.max ?? fb?.total ?? fb?.totalScore ?? fb?.resultMax ?? ""
+    );
+    if(fbScore) return fbMax ? `${fbScore}/${fbMax}` : fbScore;
 
-      // Kid copy nhẹ nhàng
-      const g = getGradeFromClassId_(s.classId);
-      if(g>0 && g<=2){
-        document.getElementById("heroSub").textContent = "🌟 Con làm bài đều là giỏi lắm! Mỗi dòng là 1 tuần học của con nha.";
-      }
+    // fallback: điểm từ submission (nếu backend lưu ở đây)
+    const subScore = safeStr(
+      sub?.score ?? sub?.scoreHS ?? sub?.scoreStudent ??
+      sub?.points ?? sub?.point ?? sub?.mark ?? sub?.grade ?? sub?.resultScore ?? ""
+    );
+    const subMax = safeStr(
+      sub?.scoreMax ?? sub?.maxScore ?? sub?.max ?? sub?.total ?? sub?.totalScore ?? sub?.resultMax ?? ""
+    );
+    if(subScore) return subMax ? `${subScore}/${subMax}` : subScore;
 
-      const token = s.sessionId || s.token || "";
+    // fallback cuối: vài backend trả thẳng chuỗi điểm
+    const t = safeStr(fb?.scoreText || sub?.scoreText || "");
+    return t || "—";
+  }
 
+  // week (ISO week)
+  function isoWeek_(dateStr){
+    const d = new Date(dateStr);
+    if(isNaN(d)) return "—";
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    const yy = date.getUTCFullYear();
+    return `${yy}-W${String(weekNo).padStart(2,"0")}`;
+  }
+
+  // UI refs
+  const weekBody = document.getElementById("weekBody");
+  const inboxBody = document.getElementById("inboxBody");
+  const btnReloadInbox = document.getElementById("btnReloadInbox");
+  const unreadBadge = document.getElementById("unreadBadge");
+
+  const fbModal = document.getElementById("fbModal");
+  const fbModalTitle = document.getElementById("fbModalTitle");
+  const fbModalMeta = document.getElementById("fbModalMeta");
+  const fbModalText = document.getElementById("fbModalText");
+  const btnMarkRead = document.getElementById("btnMarkRead");
+
+  let _lastViewedTaskId = "";
+
+  function openModal_(title, meta, text, taskId){
+    fbModalTitle.textContent = title || "Nhận xét";
+    fbModalMeta.textContent = meta || "—";
+    fbModalText.textContent = text || "Chưa có nhận xét.";
+    _lastViewedTaskId = taskId || "";
+    fbModal.hidden = false;
+  }
+  function closeModal_(){ fbModal.hidden = true; }
+
+  fbModal.addEventListener("click", (e)=>{
+    if(e.target?.dataset?.close != null) closeModal_();
+  });
+  btnMarkRead.addEventListener("click", ()=>{
+    if(_lastViewedTaskId){
+      // ✅ ưu tiên theo SSOT heduInbox (đúng key theo classId + studentId)
       try{
-        const r = await api("getMyHistory", { token, classId:s.classId, studentId:s.studentId, limit: 400 });
-        const subs = r.submissions || [];
-        const fbs  = r.feedbacks || [];
+        const s = window.__STU__ || {};
+        if(window.heduInbox) heduInbox.markRead(s.classId, s.studentId, _lastViewedTaskId);
+      }catch(_){}
+      // fallback cũ (không ảnh hưởng)
+      markRead_(_lastViewedTaskId);
 
-        const byWeek = {};
-        subs.forEach(x=>{
-          const k = weekKey_(x.createdAt);
-          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
-          byWeek[k].submitted++;
-        });
-        fbs.forEach(x=>{
-          const k = weekKey_(x.createdAt);
-          byWeek[k] = byWeek[k] || { submitted:0, feedback:0 };
-          byWeek[k].feedback++;
-        });
+      toast("Đã đánh dấu đã đọc ✅");
+      closeModal_();
+      loadInbox_();
+    }
+  });
 
-        const keys = Object.keys(byWeek).filter(k=>k!=="—").sort().reverse();
-        const tb = document.getElementById("rows");
-        if(!keys.length){
-          tb.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Chưa có dữ liệu…</td></tr>`;
-          return;
+  async function init_(){
+    await studentInit("progress");
+    const s=window.__STU__, cfg=getConfig();
+    if(typeof setBrand_==="function") setBrand_(cfg,s);
+
+    const name=s.displayName||s.fullName||s.name||"";
+    document.getElementById("who").textContent=name?`${name} • ${s.classId||"—"}`:`${s.classId||"—"}`;
+    document.getElementById("studentClass").textContent=s.classId||"—";
+    document.getElementById("lastUpdate").textContent="Cập nhật lần cuối: "+fmtTime_(new Date());
+
+    document.getElementById("btnLogout").onclick=async(ev)=>{
+      ev.preventDefault();
+      try{
+        const ss=window.getSession?window.getSession():null;
+        const token=ss?.token||ss?.sessionId||"";
+        if(window.api) await api("authLogout",{token});
+      }catch(_){}
+      if(window.clearSession) window.clearSession();
+      location.href="../../index.html";
+    };
+  }
+
+  async function loadWeekly_(){
+    try{
+      const s=window.__STU__, token=s.sessionId||s.token||"";
+      const rHist=await api("getMyHistory",{token,classId:s.classId,studentId:s.studentId,limit:800});
+      const subs=rHist.submissions||[];
+      const fbs=rHist.feedbacks||[];
+
+      if(!subs.length){
+        weekBody.innerHTML = `<tr><td colspan="4" class="muted">Chưa có dữ liệu nộp bài.</td></tr>`;
+        return;
+      }
+
+      // group by iso week
+      const byWeek = Object.create(null);
+      subs.forEach(x=>{
+        const wk = isoWeek_(x.createdAt || x.submittedAt || x.time || "");
+        if(!byWeek[wk]) byWeek[wk] = { wk, sub:0, fbTask:new Set() };
+        byWeek[wk].sub++;
+      });
+
+      // feedback count by taskId (unique) -> gán về tuần của bài nộp tương ứng nếu tìm được
+      const subWeekByTask = Object.create(null);
+      subs.forEach(x=>{
+        const tid = safeStr(x.taskId);
+        if(!tid) return;
+        subWeekByTask[tid] = isoWeek_(x.createdAt || x.submittedAt || "");
+      });
+
+      fbs.forEach(f=>{
+        const tid = safeStr(f.taskId);
+        if(!tid) return;
+        const wk = subWeekByTask[tid] || "—";
+        if(!byWeek[wk]) byWeek[wk] = { wk, sub:0, fbTask:new Set() };
+        if(pickFbText_(f)) byWeek[wk].fbTask.add(tid);
+      });
+
+      const weeks = Object.values(byWeek)
+        .filter(x=>x.wk && x.wk !== "—")
+        .sort((a,b)=> String(b.wk).localeCompare(String(a.wk)));
+
+      weekBody.innerHTML = weeks.map(w=>{
+        const fbCount = w.fbTask.size;
+        const note = fbCount>0 ? `Có nhận xét ✅` : `Chưa có nhận xét`;
+        return `
+          <tr>
+            <td style="font-weight:900">${w.wk}</td>
+            <td>${w.sub}</td>
+            <td>${fbCount}</td>
+            <td>${note}</td>
+          </tr>
+        `;
+      }).join("") || `<tr><td colspan="4" class="muted">Chưa có dữ liệu.</td></tr>`;
+    }catch(e){
+      weekBody.innerHTML = `<tr><td colspan="4" class="muted">Lỗi tải tổng hợp theo tuần.</td></tr>`;
+      toast(e.message||"Lỗi tải tổng hợp theo tuần");
+    }
+  }
+
+  async function loadInbox_(){
+    try{
+      const s=window.__STU__, token=s.sessionId||s.token||"";
+      const classId = s.classId, studentId = s.studentId;
+
+      const rTasks = await api("listTasksForStudent", { token, classId, studentId });
+      const allTasks = rTasks.tasks || [];
+      const taskMap = Object.create(null);
+      allTasks.forEach(t => { taskMap[safeStr(t.taskId)] = t; });
+
+      const rHist = await api("getMyHistory", { token, classId, studentId, limit: 800 });
+      const subs = rHist.submissions || [];
+      const fbs  = rHist.feedbacks || [];
+
+      // latest submission by taskId (để lấy điểm nếu feedback chưa có score)
+      const subByTask = Object.create(null);
+      subs.forEach(x=>{
+        const tid = safeStr(x.taskId);
+        if(!tid) return;
+        const cur = subByTask[tid];
+        const a = Date.parse(cur?.updatedAt || cur?.createdAt || cur?.submittedAt || "") || 0;
+        const b = Date.parse(x?.updatedAt || x?.createdAt || x?.submittedAt || "") || 0;
+        subByTask[tid] = (!cur || b >= a) ? x : cur;
+      });
+
+      // ✅ SSOT: sync unread theo feedback mới nhất
+      if(window.heduInbox){
+        heduInbox.syncFromFeedbacks(classId, studentId, fbs);
+      }
+
+      // feedback by task (latest)
+      const fbByTask = Object.create(null);
+      fbs.forEach(f=>{
+        const k = safeStr(f.taskId);
+        if(!k) return;
+        const cur = fbByTask[k];
+        const a = Date.parse(cur?.updatedAt || cur?.createdAt || "") || 0;
+        const b = Date.parse(f?.updatedAt || f?.createdAt || "") || 0;
+        fbByTask[k] = (!cur || b >= a) ? f : cur;
+      });
+
+      // submitted task ids
+      const submittedIds = uniq(subs.map(x => safeStr(x.taskId)).filter(Boolean));
+      if(!submittedIds.length){
+        inboxBody.innerHTML = `<tr><td colspan="5" class="muted">Chưa có bài đã nộp.</td></tr>`;
+        unreadBadge.textContent = "⭐ Chưa đọc: 0";
+        if(window.heduInbox) heduInbox.setTabBadges(0);
+        return;
+      }
+
+      // rows (ưu tiên bài có nhận xét lên đầu)
+      const rows = submittedIds.map(id=>{
+        const t = taskMap[id] || {};
+        const fb = fbByTask[id] || null;
+
+        const topic = safeStr(t.topic || t.unit || "");
+        const hasFb = fb && pickFbText_(fb);
+
+        // ✅ ưu tiên SSOT unread theo classId+studentId; fallback theo key cũ
+        let read = true;
+        if(hasFb){
+          if(window.heduInbox) read = !heduInbox.isUnread(classId, studentId, id);
+          else read = isRead_(id);
         }
 
-        tb.innerHTML = keys.map(k=>{
-          const it = byWeek[k];
-          const note = it.feedback ? "Có nhận xét ✅" : (it.submitted ? "Đã nộp, chờ nhận xét ⏳" : "—");
-          return `<tr>
-            <td>${k}</td>
-            <td>${it.submitted}</td>
-            <td>${it.feedback}</td>
-            <td>${note}</td>
-          </tr>`;
-        }).join("");
+        const status = hasFb
+          ? `<span class="badgeMini ok">${read ? "✅ Đã đọc" : "⭐ Chưa đọc"}</span>`
+          : `<span class="badgeMini wait">⏳ Chưa có</span>`;
 
-      }catch(e){
-        // giữ im lặng để không phá UX; bảng giữ trạng thái "Chưa có dữ liệu"
-      }
-    })();
-  </script>
+        const score = (hasFb || subByTask[id]) ? pickScore_(fb, subByTask[id]) : "—";
+        return { id, topic, hasFb, read, status, score, fb };
+      }).sort((a,b)=>{
+        const A = a.hasFb ? 1 : 0;
+        const B = b.hasFb ? 1 : 0;
+        if(B !== A) return B - A;
+        // unread first
+        const uA = (a.hasFb && !a.read) ? 1 : 0;
+        const uB = (b.hasFb && !b.read) ? 1 : 0;
+        return uB - uA;
+      });
+
+      const unreadCount = rows.filter(r => r.hasFb && !r.read).length;
+      unreadBadge.textContent = `⭐ Chưa đọc: ${unreadCount}`;
+
+      // ✅ badge số trên 3 tab
+      if(window.heduInbox) heduInbox.setTabBadges(unreadCount);
+
+      inboxBody.innerHTML = rows.map(r=>`
+        <tr>
+          <td style="font-weight:900">${r.id}</td>
+          <td>${r.topic || '<span class="muted">—</span>'}</td>
+          <td>${r.status}</td>
+          <td>${r.score}</td>
+          <td style="text-align:right">
+            <button class="btn ghost btnPill" data-view="${r.id}" ${r.hasFb ? "" : "disabled"}>Xem</button>
+          </td>
+        </tr>
+      `).join("");
+
+      inboxBody.querySelectorAll("button[data-view]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-view");
+          const fb = fbByTask[id] || null;
+          const text = fb ? pickFbText_(fb) : "";
+          const score = pickScore_(fb, subByTask[id]);
+          const meta = `Điểm: ${score}`;
+          openModal_(`Nhận xét bài ${id}`, meta, text || "Chưa có nhận xét.", id);
+
+          // ✅ mở modal xong vẫn CHƯA auto mark read
+          // chỉ mark read khi bấm nút “Đánh dấu đã đọc”
+        });
+      });
+
+    }catch(e){
+      inboxBody.innerHTML = `<tr><td colspan="5" class="muted">Lỗi tải hộp thư nhận xét.</td></tr>`;
+      unreadBadge.textContent = "⭐ Chưa đọc: —";
+      toast(e.message||"Lỗi tải hộp thư nhận xét");
+    }
+  }
+
+  btnReloadInbox?.addEventListener("click", loadInbox_);
+
+  (async()=>{
+    await init_();
+    await loadWeekly_();
+    await loadInbox_();
+  })();
+</script>
 </body>
 </html>
