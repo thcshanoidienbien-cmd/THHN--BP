@@ -4,81 +4,309 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ngân hàng bài & Giao bài</title>
-
   <link rel="stylesheet" href="../../assets/styles.css">
-  <meta name="theme-color" content="#2563eb"/>
+  <script src="../../assets/config.js"></script>
 
-  <style>
-    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
-    .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
-    .tiny{font-size:12px;color:var(--muted);font-weight:800}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+<style>
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px}
+  .dcard{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .tiny{font-size:12px;color:var(--muted);font-weight:800}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  .split{display:grid;grid-template-columns: 1.15fr .85fr;gap:14px;align-items:start}
+  @media(max-width:1100px){.split{grid-template-columns:1fr}}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+  textarea{min-height:140px}
+  .stack{display:grid;gap:12px}
 
-    .split{display:grid;grid-template-columns: 1.15fr .85fr;gap:14px;align-items:start}
-    @media(max-width:1100px){.split{grid-template-columns:1fr}}
+  /* Card feel enterprise */
+  .dcard{
+    padding:14px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 10px 28px rgba(15,23,42,.06);
+  }
 
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+  .targetBox{
+    padding:12px;
+    border:1px solid rgba(37,99,235,.22);
+    border-radius:16px;
+    background:rgba(37,99,235,.04);
+    box-shadow:0 10px 28px rgba(37,99,235,.06);
+  }
 
-    textarea{min-height:140px}
+  .seg{display:flex;gap:8px;flex-wrap:wrap;padding:6px;border:1px solid var(--line);border-radius:999px;background:#fff}
+  .seg button{
+    border:0;background:transparent;cursor:pointer;
+    padding:10px 12px;border-radius:999px;
+    font-weight:1000;font-size:13px;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .seg button:active{transform:scale(.98)}
+  .seg button.active{background:var(--primary);color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.14)}
 
-    /* right column stack */
-    .stack{display:grid;gap:12px}
+  .miniHelp{margin-top:8px;font-size:12px;color:var(--muted);font-weight:800;line-height:1.5}
+  .list{display:grid;gap:10px}
 
-    /* target box */
-    .targetBox{
-      padding:12px;border:1px solid rgba(37,99,235,.22);border-radius:16px;
-      background:rgba(37,99,235,.04)
-    }
-    .seg{
-      display:flex;gap:8px;flex-wrap:wrap;
-      padding:6px;border:1px solid var(--line);border-radius:999px;background:#fff
-    }
-    .seg button{
-      border:0;background:transparent;cursor:pointer;
-      padding:10px 12px;border-radius:999px;font-weight:900;font-size:13px
-    }
-    .seg button.active{
-      background:var(--primary);color:#fff;
-      box-shadow:0 10px 26px rgba(37,99,235,.14)
-    }
-    .miniHelp{margin-top:8px;font-size:12px;color:var(--muted);font-weight:800;line-height:1.5}
+  .receipt{
+    margin-top:10px;border:1px solid rgba(34,197,94,.35);
+    background:rgba(34,197,94,.05);
+    border-radius:14px;padding:10px
+  }
+  .receipt h3{margin:0 0 6px;font-size:13px}
+  .receipt .line{font-size:13px;color:#0f172a;font-weight:800;margin:2px 0}
+  .receipt .mut{font-size:12px;color:var(--muted);font-weight:800}
+  .btnline{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .btn.sm{padding:8px 10px;border-radius:12px;font-weight:1000;font-size:13px}
 
-    .chipRow{display:flex;gap:8px;flex-wrap:wrap}
-    .chipLite{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border:1px solid var(--line);
-      border-radius:999px;background:#fff;
-      font-weight:900;font-size:13px;white-space:nowrap;
-      box-shadow:0 8px 22px rgba(15,23,42,.04)
-    }
+  /* =========================
+     MultiSelect dropdown (SSOT)
+     ========================= */
+  .ms{position:relative}
 
-    .list{display:grid;gap:10px}
+  .msBtn{
+    width:100%;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 12px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#fff;
+    cursor:pointer;
+    font-weight:1000;
+    box-shadow:0 8px 22px rgba(15,23,42,.05);
+    transition:border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+  }
+  .msBtn:hover{
+    border-color:rgba(37,99,235,.35);
+    box-shadow:0 12px 28px rgba(37,99,235,.08);
+  }
+  .msBtn:active{transform:scale(.99)}
+  .msBtn .ph{color:var(--muted);font-weight:900}
 
-    /* NEW: guided steps */
-    .steps{display:grid;gap:8px}
-    .step{
-      display:flex;gap:10px;align-items:flex-start;
-      padding:10px;border:1px dashed rgba(37,99,235,.28);border-radius:14px;background:rgba(37,99,235,.04)
-    }
-    .badge{
-      width:26px;height:26px;border-radius:10px;
-      display:flex;align-items:center;justify-content:center;
-      background:var(--primary);color:#fff;font-weight:1000;font-size:13px;flex:0 0 auto
-    }
-    .step b{display:block;margin-bottom:2px}
-    .okdot{display:inline-flex;align-items:center;gap:6px}
-    .dot{width:8px;height:8px;border-radius:999px;background:#10b981;display:inline-block}
-    .dot.err{background:#ef4444}
-    .previewBox{
-      padding:10px;border:1px solid var(--line);border-radius:14px;background:#fff
-    }
-    .previewTitle{font-weight:1000;margin-bottom:6px}
-    .previewList{font-size:12px;color:var(--muted);font-weight:800;line-height:1.5;max-height:110px;overflow:auto}
-    .btnFull{width:100%}
-    .muted2{color:var(--muted)}
-  </style>
+  .msMenu{
+    position:absolute;
+    left:0;right:0;
+    top:calc(100% + 8px);
+    background:#fff;
+    border:1px solid rgba(15,23,42,.12);
+    border-radius:16px;
+    box-shadow:0 22px 55px rgba(15,23,42,.14);
+    max-height:420px;
+    overflow:auto;
+    z-index:9999;
+    padding:10px;
+    display:none;
+  }
+  .msMenu.show{display:block}
+
+  .msSearch{
+    width:100%;
+    padding:11px 12px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    margin:0 0 10px;
+    font-weight:900;
+    position:sticky;
+    top:0;
+    background:#fff;
+    z-index:2;
+    box-shadow:0 10px 22px rgba(15,23,42,.06);
+  }
+  .msEmpty{padding:10px 12px;color:var(--muted);font-weight:900}
+
+  .msItem{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 10px;
+    border-radius:14px;
+    cursor:pointer;
+    transition:background .12s ease, transform .08s ease;
+    user-select:none;
+  }
+  .msItem:hover{background:rgba(37,99,235,.06)}
+  .msItem:active{transform:scale(.995)}
+  .msItem input{width:18px;height:18px}
+  .msName{font-weight:1100}
+  .msSub{font-size:12px;color:var(--muted);font-weight:850}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 10px;border:1px solid var(--line);
+    border-radius:999px;background:#fff;
+    font-weight:900;font-size:13px;
+    box-shadow:0 8px 18px rgba(15,23,42,.05);
+  }
+  .chip button{border:0;background:transparent;cursor:pointer;font-weight:1100}
+
+  /* =========================
+     Modal
+     ========================= */
+  .modalBackdrop{
+    position:fixed;inset:0;
+    background:rgba(15,23,42,.42);
+    display:none;
+    align-items:center;justify-content:center;
+    z-index:50;
+    padding:16px;
+  }
+  .modalBackdrop.show{display:flex}
+
+  /* ✅ IMPORTANT: để dropdown không bị cắt bởi container */
+  .modal{
+    width:min(1100px,98vw);
+    background:#fff;
+    border-radius:20px;
+    border:1px solid var(--line);
+    box-shadow:0 30px 80px rgba(15,23,42,.25);
+    overflow:visible; /* ✅ FIX: không cắt dropdown */
+    max-height:92vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .modalHead{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+    padding:14px 16px;border-bottom:1px solid var(--line);
+    background:#fff;
+  }
+  .modalTitle{font-weight:1100}
+  .modalBody{
+    padding:14px 16px;
+    overflow:auto;
+  }
+  .tabs{display:flex;gap:10px;flex-wrap:wrap}
+  .tabBtn{
+    border:1px solid var(--line);
+    background:#fff;
+    padding:10px 12px;
+    border-radius:999px;
+    font-weight:1100;
+    cursor:pointer;
+    transition:background .12s ease, box-shadow .12s ease, transform .12s ease;
+  }
+  .tabBtn:hover{box-shadow:0 10px 22px rgba(15,23,42,.06)}
+  .tabBtn:active{transform:scale(.99)}
+  .tabBtn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  .hr{height:1px;background:var(--line);margin:12px 0}
+  .hintBox{
+    margin-top:10px;padding:10px;border-radius:14px;
+    border:1px dashed rgba(148,163,184,.7);
+    background:#fff;
+  }
+  .warn{color:#b45309;font-weight:900}
+  .ok{color:#16a34a;font-weight:1000}
+
+  /* =========================
+     Cá nhân: đồng bộ input & dropdown
+     ========================= */
+  #oneArea input,
+  #oneArea .msBtn{
+    height:44px;
+    padding:0 14px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:900;
+    line-height:44px;
+    box-shadow:none;
+  }
+  #oneArea .msBtn{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  #oneArea .msBtn .ph{ font-weight:900; color:var(--muted);}
+  #oneArea .msBtn span:last-child{ font-size:14px; opacity:.75;}
+  #oneArea .msSearch{ display:none !important; }
+
+  /* Ẩn nút “Danh sách đã giao” ở card ngân hàng bài */
+  #btnAssignedList{ display:none !important; }
+
+  /* =========================
+     GROUP MODAL — chốt theo yêu cầu
+     ========================= */
+  .gmModal{ width:min(720px, 96vw); }
+  .gmBody{ padding:12px 14px; }
+
+  .gmScroll{
+    max-height:calc(92vh - 68px - 74px);
+    overflow:auto;
+    padding-bottom:84px;
+  }
+
+  .gmTabs{ margin-bottom:12px; }
+
+  .gmCard{
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:#fff;
+    padding:12px;
+    box-shadow:0 10px 28px rgba(15,23,42,.05);
+  }
+
+  .gmGrid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:720px){ .gmGrid2{ grid-template-columns:1fr; } }
+
+  .gmSection{
+    margin-top:12px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:#fff;
+    overflow:visible; /* ✅ FIX: không cắt dropdown */
+    box-shadow:0 10px 28px rgba(15,23,42,.05);
+  }
+  .gmSectionHead{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px;
+    background:rgba(2,6,23,.02);
+    border-bottom:1px solid rgba(15,23,42,.08);
+  }
+  .gmSectionTitle{ font-weight:1100; }
+  .gmSectionBody{ padding:12px; overflow:visible; }
+
+  #groupModal .msBtn{
+    height:44px;
+    padding:0 14px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:1000;
+    box-shadow:none;
+  }
+
+  /* dropdown menu ẩn mặc định, bấm mới xổ */
+  #groupModal .msMenu{
+    display:none;
+    position:absolute;
+    left:0; right:0;
+    top:calc(100% + 8px);
+    background:#fff;
+    border:1px solid rgba(15,23,42,.12);
+    border-radius:16px;
+    box-shadow:0 22px 55px rgba(15,23,42,.14);
+    max-height:320px;
+    overflow:auto;
+    z-index:9999;
+    padding:10px;
+  }
+  #groupModal .msMenu.show{ display:block; }
+
+  /* Theo ảnh: dropdown không có ô search */
+  #groupModal .msSearch{ display:none !important; margin:0 !important; }
+
+  /* không dùng chips trong modal nhóm (tuỳ ông chủ bật lại) */
+  #groupModal #gmChips{ display:none !important; }
+
+  .gmFoot{
+    position:sticky;
+    bottom:0;
+    background:#fff;
+    border-top:1px solid rgba(15,23,42,.10);
+    padding:12px 14px;
+    box-shadow:0 -16px 30px rgba(15,23,42,.06);
+  }
+  .gmFootRight{
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+  }
+</style>
 </head>
 
 <body data-active="tasks">
@@ -89,24 +317,23 @@
       <div class="row">
         <div>
           <h1 style="margin:0">Ngân hàng bài & Giao bài 📚</h1>
-          <div class="muted" style="margin-top:4px">Soạn bài • Lưu nháp • Xuất bản • Giao bài • AI hỗ trợ (tiết kiệm token)</div>
+          <div class="muted" style="margin-top:4px"></div>
         </div>
         <div class="pill" id="me">—</div>
       </div>
 
       <div class="split mt">
-        <!-- LEFT: editor -->
         <div class="dcard">
           <div class="row" style="margin-bottom:8px">
-            <div style="font-weight:1000">🧩 Soạn bài / Chỉnh sửa</div>
+            <div style="font-weight:1100">🧩 Soạn bài / Chỉnh sửa</div>
             <div class="tiny" id="ctx">—</div>
           </div>
 
           <div class="grid2">
             <div>
-              <label>Lớp (SSOT)</label>
+              <label>Lớp</label>
               <select id="classId"></select>
-              <div class="tiny mt">*Danh sách lớp lấy từ Code.gs (teacherTargets).</div>
+              <div class="tiny mt"></div>
             </div>
             <div>
               <label>Mã bài (ID)</label>
@@ -162,7 +389,6 @@
             <div>
               <label>Hạn nộp (tuỳ chọn)</label>
               <input id="dueAt" type="datetime-local">
-              <div class="tiny mt">*Hạn nộp dùng khi bấm “📨 Giao bài ngay”.</div>
             </div>
             <div>
               <label>Trạng thái</label>
@@ -171,6 +397,7 @@
                 <option value="PUBLISHED">Đã xuất bản</option>
                 <option value="ARCHIVED">Lưu trữ</option>
               </select>
+              <div class="tiny mt"></div>
             </div>
           </div>
 
@@ -184,7 +411,7 @@
             <div>
               <label>Gợi ý cho AI</label>
               <input id="constraints" placeholder="Ví dụ: ngắn gọn, phù hợp lớp 3, có đáp án...">
-              <div class="tiny mt">*Tự động gắn đối tượng giao: @assign_to=... và mức nhóm: @group_level=...</div>
+              <div class="tiny mt"></div>
             </div>
             <div>
               <label>Sách giáo khoa</label>
@@ -195,7 +422,7 @@
           <div class="actions mt">
             <button class="btn ghost" id="btnNew" type="button">➕ Tạo bài mới</button>
             <button class="btn" id="btnSave" type="button">💾 Lưu nháp</button>
-            <button class="btn ghost" id="btnPublish" type="button">🚀 Xuất bản</button>
+            <button class="btn" id="btnAssign" type="button">🚀 Giao bài</button>
           </div>
 
           <div class="divider"></div>
@@ -205,55 +432,27 @@
           </div>
 
           <div class="muted mt" id="hint">—</div>
+
+          <div class="receipt" id="receipt" hidden>
+            <h3>✅ Biên nhận giao bài</h3>
+            <div class="line" id="rc_task">—</div>
+            <div class="line" id="rc_target">—</div>
+            <div class="line" id="rc_due">—</div>
+            <div class="btnline">
+              <button class="btn sm ghost" id="btnHideReceipt" type="button">Ẩn</button>
+            </div>
+            <div class="mut mt" id="rc_more">—</div>
+          </div>
         </div>
 
-        <!-- RIGHT: target + groups + dashboard + library -->
         <div class="stack">
-          <!-- Guided steps -->
-          <div class="dcard">
-            <div style="font-weight:1000">✅ Cách giao bài (nhìn là làm được)</div>
-            <div class="steps mt">
-              <div class="step">
-                <div class="badge">1</div>
-                <div>
-                  <b>Chọn lớp (SSOT)</b>
-                  <div class="tiny">Danh sách lớp lấy từ Sheet qua Code.gs.</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="badge">2</div>
-                <div>
-                  <b>Chọn đối tượng giao</b>
-                  <div class="tiny">Cả lớp / Nhóm / Cá nhân (danh sách nhóm & học sinh lấy SSOT).</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="badge">3</div>
-                <div>
-                  <b>Chọn bài</b>
-                  <div class="tiny">Soạn mới hoặc mở từ “Ngân hàng bài”.</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="badge">4</div>
-                <div>
-                  <b>Bấm “📨 Giao bài ngay”</b>
-                  <div class="tiny">Hệ thống tạo Assignment trong Sheet để theo dõi nộp bài.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Target -->
           <div class="dcard targetBox">
             <div class="row">
               <div>
-                <div style="font-weight:1000">🎯 Đối tượng giao (SSOT)</div>
-                <div class="tiny mt">Chọn cách giao để cá nhân hoá theo trình độ.</div>
+                <div style="font-weight:1100">🎯 Đối tượng giao</div>
+                <div class="tiny mt"></div>
               </div>
-              <div class="pill" id="ssotState">
-                <span class="okdot"><span class="dot err"></span><span>SSOT: —</span></span>
-              </div>
+              <div class="tiny"><span id="ssotBadge" class="ok"></span></div>
             </div>
 
             <div class="seg mt" id="segTarget">
@@ -262,81 +461,64 @@
               <button data-t="one">Cá nhân</button>
             </div>
 
-            <!-- CLASS -->
             <div class="miniHelp" id="targetHelp">Giao cho toàn bộ lớp đang chọn.</div>
 
-            <!-- GROUP -->
-            <div id="groupArea" style="display:none;margin-top:10px">
-              <div class="grid2">
-                <div>
-                  <label>Chọn nhóm (SSOT)</label>
-                  <select id="groupSelect"></select>
-                </div>
-                <div>
-                  <label>Mức nhóm</label>
-                  <select id="groupLevel">
-                    <option value="yeu">Yếu</option>
-                    <option value="trung_binh">Trung bình</option>
-                    <option value="kha">Khá</option>
-                    <option value="gioi">Giỏi</option>
-                  </select>
-                </div>
+            <div id="classArea" style="margin-top:10px">
+              <div class="dcard" style="padding:10px;border-radius:14px">
+                <div class="tiny"></div>
+                <div style="font-weight:1100;margin-top:4px" id="classPreview">—</div>
+                <div class="tiny mt" id="classPreviewSub">—</div>
               </div>
+            </div>
+
+            <div id="groupArea" style="display:none;margin-top:10px">
+              <label>Chọn nhóm</label>
+              <select id="groupSelect"></select>
 
               <div class="actions mt">
-                <button class="btn" id="btnSuggestGroups" type="button">🧠 Gợi ý nhóm cần kèm cặp</button>
+                <button class="btn" id="btnGroupManage" type="button">➕ Tạo nhóm</button>
+                <button class="btn ghost" id="btnGroupEdit" type="button">✏️ Sửa nhóm</button>
               </div>
+
               <div class="tiny mt" id="groupMeta">—</div>
+
+              <div class="dcard" style="padding:10px;border-radius:14px;margin-top:10px">
+                <div class="tiny"></div>
+                <div style="font-weight:1100;margin-top:4px" id="groupPreview">—</div>
+                <div class="tiny mt" id="groupPreviewSub">—</div>
+              </div>
             </div>
 
-            <!-- ONE -->
             <div id="oneArea" style="display:none;margin-top:10px">
-              <label>Chọn học sinh (SSOT – gõ để tìm)</label>
-              <input id="oneName" list="dlStudents" placeholder="Gõ tên…">
-              <datalist id="dlStudents"></datalist>
-              <div class="tiny mt" id="oneMeta">—</div>
+              <div class="grid2">
+                <div>
+                  <label>Tìm học sinh nhanh</label>
+                  <input id="oneSearch" placeholder="Gõ tên hoặc mã số...">
+                </div>
+                <div>
+                  <label>Chọn học sinh</label>
+                  <div class="ms" id="oneMs"></div>
+                </div>
+              </div>
+              <div class="chips" id="oneChips"></div>
+
+              <div class="dcard" style="padding:10px;border-radius:14px;margin-top:10px">
+                <div class="tiny"></div>
+                <div style="font-weight:1100;margin-top:4px" id="onePreview">chưa chọn HS</div>
+                <div class="tiny mt" id="onePreviewSub"></div>
+              </div>
             </div>
 
-            <!-- Preview -->
-            <div class="mt previewBox">
-              <div class="previewTitle">📌 Xem trước người nhận</div>
-              <div class="previewList" id="targetPreview">—</div>
-            </div>
-
-            <!-- hidden target state -->
             <input id="targetType" value="class" hidden>
-            <input id="targetValue" value="" hidden>
-
-            <!-- Assign now -->
-            <div class="actions mt">
-              <button class="btn btnFull" id="btnAssignNow" type="button">📨 Giao bài ngay</button>
-            </div>
-            <div class="tiny mt muted2">*Giao bài sẽ tạo “ASSIGNMENTS” trong Sheet để theo dõi nộp bài/tiến độ.</div>
           </div>
 
-          <!-- Dashboard -->
           <div class="dcard">
-            <div style="font-weight:1000">📊 Theo dõi nhanh lớp – nhóm – cá nhân</div>
-            <div class="tiny mt">Dữ liệu lấy từ SSOT; nếu backend có thống kê nộp bài/điểm, sẽ hiển thị nâng cao.</div>
-
-            <div class="grid2 mt" id="dashGrid">
-              <div class="dcard" style="padding:12px">
-                <div class="tiny">Lớp</div>
-                <div style="font-weight:1000;font-size:18px" id="dashClass">—</div>
-                <div class="tiny" id="dashClassSub">—</div>
-              </div>
-              <div class="dcard" style="padding:12px">
-                <div class="tiny">Đối tượng đang chọn</div>
-                <div style="font-weight:1000;font-size:18px" id="dashTarget">—</div>
-                <div class="tiny" id="dashTargetSub">—</div>
+            <div class="row">
+              <div>
+                <div style="font-weight:1100">📦 Ngân hàng bài</div>
+                <div class="tiny mt"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Library -->
-          <div class="dcard">
-            <div style="font-weight:1000">📦 Ngân hàng bài</div>
-            <div class="tiny mt">Lọc • Chọn bài để sửa • Nhân bản • Lưu trữ</div>
 
             <div class="grid2 mt">
               <div>
@@ -361,6 +543,11 @@
             <div class="divider"></div>
             <div class="list" id="list"></div>
           </div>
+
+          <div class="dcard" id="debugBox" hidden>
+            <div style="font-weight:1100">🧪 Debug</div>
+            <div class="tiny mt" id="dbg">—</div>
+          </div>
         </div>
       </div>
     </section>
@@ -368,66 +555,148 @@
     <div class="toast" id="toast" hidden></div>
   </main>
 
-  <!-- scripts -->
-  <script src="../../assets/config.js"></script>
+  <!-- GROUP MODAL -->
+  <div class="modalBackdrop" id="groupModal">
+    <div class="modal gmModal">
+      <div class="modalHead">
+        <div>
+          <div class="modalTitle">👥 Tạo / Sửa nhóm học sinh</div>
+          <div class="tiny" id="gmClass">Lớp: —</div>
+        </div>
+        <button class="btn ghost" id="btnGmClose" type="button">Đóng</button>
+      </div>
+
+      <div class="modalBody gmBody">
+        <div class="modalScroll gmScroll">
+
+          <div class="tabs gmTabs">
+            <button class="tabBtn active" data-tab="manual" id="tabManual">Tạo thủ công</button>
+            <button class="tabBtn" data-tab="auto" id="tabAuto">Tạo tự động (AI + Rules)</button>
+          </div>
+
+          <!-- Manual meta -->
+          <div class="gmCard" id="gmManualMeta">
+            <input id="gmId" hidden>
+            <div class="gmGrid2">
+              <div>
+                <label>Tên nhóm</label>
+                <input id="gmName" placeholder="VD: Nhóm Cần hỗ trợ">
+              </div>
+              <div>
+                <label>Mức nhóm</label>
+                <select id="gmLevel">
+                  <option value="yeu">Yếu</option>
+                  <option value="trung_binh" selected>Trung bình</option>
+                  <option value="kha">Khá</option>
+                  <option value="gioi">Giỏi</option>
+                  <option value="nang_cao">Nâng cao</option>
+                  <option value="tang_toc">Tăng tốc</option>
+                  <option value="can_ho_tro">Cần hỗ trợ</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual students -->
+          <div class="gmSection" id="gmManualStudents">
+            <div class="gmSectionHead">
+              <div class="gmSectionTitle">Danh sách học sinh</div>
+              <div class="tiny"><span id="gmCount">0</span> HS</div>
+            </div>
+            <div class="gmSectionBody">
+              <div class="ms" id="gmMs"></div>
+              <div class="chips" id="gmChips"></div>
+            </div>
+          </div>
+
+          <!-- Auto area -->
+          <div id="gmAutoArea" class="gmAuto" style="display:none;margin-top:12px">
+            <div class="hr"></div>
+
+            <div class="row mt">
+              <div class="grid2" style="flex:1">
+                <div>
+                  <label>Khoảng thời gian</label>
+                  <select id="gmLookback">
+                    <option value="30" selected>30 ngày</option>
+                    <option value="60">60 ngày</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Môn (tuỳ chọn)</label>
+                  <select id="gmSubject"></select>
+                </div>
+              </div>
+              <button class="btn" id="btnGmRunAuto" type="button">Chạy tự động</button>
+            </div>
+
+            <div class="hintBox">
+              <div class="tiny"><b>Căn cứ/giải trình</b></div>
+              <div class="tiny mt" id="gmExplain">—</div>
+              <div class="btnline">
+                <button class="btn sm ghost" id="btnViewRules" type="button">📜 Xem RULES_GROUPING</button>
+              </div>
+              <div class="tiny mt" id="gmAutoMsg">—</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modalFoot gmFoot">
+        <div class="modalFootRight gmFootRight">
+          <button class="btn ghost" id="btnGmDelete" type="button" style="display:none">🗑️ Xoá nhóm</button>
+          <button class="btn ghost" id="btnGmFooterClear" type="button">Bỏ chọn</button>
+          <button class="btn" id="btnGmFooterSave" type="button">💾 Lưu nhóm</button>
+        </div>
+      </div>
+
+      <button id="btnGmSave" type="button" hidden></button>
+      <button id="btnGmClear" type="button" hidden></button>
+    </div>
+  </div>
+
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
   <script src="../../assets/teacher.js"></script>
 
   <script>
-    // ===== helpers =====
     const $ = (id)=>document.getElementById(id);
-
     function toast(msg){
-      const t=$("toast");
-      if(!t) return;
+      const t=$("toast"); if(!t) return;
       t.hidden=false; t.textContent=msg||"—"; t.classList.add("show");
       clearTimeout(window.__t);
       window.__t=setTimeout(()=>{t.classList.remove("show"); t.hidden=true;},2400);
     }
     function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
-
-    function safeConfig_(){
-      try{ return (typeof getConfig==="function") ? (getConfig()||{}) : {}; }catch(_){ return {}; }
-    }
-
     function isoFromLocal_(v){ return v ? new Date(v).toISOString() : ""; }
     function localFromIso_(iso){
       if(!iso) return "";
-      const d=new Date(iso);
-      if(isNaN(d)) return "";
+      const d=new Date(iso); if(isNaN(d)) return "";
       const pad=n=>String(n).padStart(2,"0");
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
-
-    function domainLabel_(v){
-      const m = { READING:"Đọc hiểu", WRITING:"Viết", MATH:"Toán", SCIENCE:"Khoa học", GENERAL:"Tổng hợp" };
-      return m[String(v||"").toUpperCase()] || String(v||"");
-    }
-    function statusLabel_(v){
-      const m = { DRAFT:"Nháp", PUBLISHED:"Đã xuất bản", ARCHIVED:"Lưu trữ" };
-      return m[String(v||"").toUpperCase()] || String(v||"");
-    }
-    function groupLevelLabel_(v){
-      const m = { yeu:"Yếu", trung_binh:"Trung bình", kha:"Khá", gioi:"Giỏi" };
+    function normalizeClassId_(x){ return String(x||"").trim().toUpperCase(); }
+    function levelLabel_(v){
+      const m = { yeu:"Yếu", trung_binh:"Trung bình", kha:"Khá", gioi:"Giỏi", nang_cao:"Nâng cao", tang_toc:"Tăng tốc", can_ho_tro:"Cần hỗ trợ" };
       return m[String(v||"")] || "—";
     }
-
-    function setSSOTState_(ok, text){
-      const el = $("ssotState");
-      const dotCls = ok ? "dot" : "dot err";
-      el.innerHTML = `<span class="okdot"><span class="${dotCls}"></span><span>${esc(text||"—")}</span></span>`;
+    function ensureTag_(text, key, val){
+      const s=String(text||"");
+      const re=new RegExp(`(^|\\s)${key}=([^\\s]+)`, "g");
+      const cleaned=s.replace(re,"").trim();
+      const add=`${key}=${val}`;
+      return (cleaned ? (cleaned+" "+add) : add).trim();
+    }
+    function removeTag_(text, key){
+      const s=String(text||"");
+      const re=new RegExp(`(^|\\s)${key}=([^\\s]+)`, "g");
+      return s.replace(re," ").replace(/\\s+/g," ").trim();
     }
 
-    // ===== subject options (tiểu học) =====
-    const SUBJECTS = [
-      "Tiếng Việt","Toán","Tự nhiên & Xã hội","Khoa học","Lịch sử & Địa lí",
-      "Tin học","Tiếng Anh","Đạo đức","Âm nhạc","Mĩ thuật","Giáo dục thể chất","Hoạt động trải nghiệm"
-    ];
-
-    // ===== taskId generate by subject =====
+    const SUBJECTS = ["Tiếng Việt","Toán","Tự nhiên & Xã hội","Khoa học","Lịch sử & Địa lí","Tin học","Tiếng Anh","Đạo đức","Âm nhạc","Mĩ thuật","Giáo dục thể chất","Hoạt động trải nghiệm"];
     function subjectCode_(s){
-      const t = String(s||"").toLowerCase();
+      const t=String(s||"").toLowerCase();
       if(t.includes("tiếng việt")) return "TV";
       if(t.includes("toán")) return "TOAN";
       if(t.includes("tự nhiên")) return "TNXH";
@@ -437,275 +706,499 @@
       if(t.includes("tiếng anh")) return "TA";
       if(t.includes("đạo đức")) return "DD";
       if(t.includes("âm nhạc")) return "AN";
-      if(t.includes("mĩ thuật") || t.includes("mỹ thuật")) return "MT";
+      if(t.includes("mĩ thuật")||t.includes("mỹ thuật")) return "MT";
       if(t.includes("thể chất")) return "TC";
       if(t.includes("trải nghiệm")) return "HĐTN";
       return "B";
     }
     function newTaskIdBySubject_(){
-      const sub = $("subject")?.value || "";
-      const code = subjectCode_(sub);
-      const d = new Date();
-      const yy = String(d.getFullYear()).slice(-2);
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      const rand = String(Date.now()).slice(-6);
+      const code = subjectCode_($("subject")?.value||"");
+      const d=new Date();
+      const yy=String(d.getFullYear()).slice(-2);
+      const mm=String(d.getMonth()+1).padStart(2,"0");
+      const dd=String(d.getDate()).padStart(2,"0");
+      const rand=String(Date.now()).slice(-6);
       return `${code}-${yy}${mm}${dd}-${rand}`;
     }
 
-    // ===== target -> constraints tags =====
-    function ensureTag_(text, key, val){
-      const s = String(text||"");
-      const re = new RegExp(`(^|\\s)${key}=([^\\s]+)`, "g");
-      const cleaned = s.replace(re, "").trim();
-      const add = `${key}=${val}`;
-      return (cleaned ? (cleaned + " " + add) : add).trim();
+    let SSOT = { classes:[], students:[], groups:[] };
+    function normalizeTargets_(raw){
+      const out={classes:[],students:[],groups:[]};
+      const r=raw||{};
+      const cls = Array.isArray(r.classes)?r.classes:(Array.isArray(r.classrooms)?r.classrooms:[]);
+      out.classes=(cls||[]).map(c=>({
+        classId: normalizeClassId_(c.classId||c.id||c.class||c.classCode||c.code||c.name),
+        className: String(c.className||c.name||c.title||c.classId||"").trim()
+      })).filter(x=>x.classId);
+
+      let st=[];
+      if(Array.isArray(r.students)) st=r.students;
+      else if(Array.isArray(r.studentList)) st=r.studentList;
+      else if(Array.isArray(r.rows)) st=r.rows;
+      else if(Array.isArray(cls)){
+        cls.forEach(c=>{
+          const ss=c.students||c.studentList||c.members||[];
+          if(Array.isArray(ss)) ss.forEach(s=>st.push(Object.assign({__classId:c.classId||c.id||c.class||c.classCode},s)));
+        });
+      }
+      out.students=(st||[]).map(s=>{
+        const classId=normalizeClassId_(s.classId||s.class||s.classCode||s.__classId);
+        const studentId=String(s.studentId||s.id||s.sid||s.code||"").trim();
+        const name=String(s.name||s.fullName||s.displayName||s.studentName||"").trim();
+        return {studentId,name,classId};
+      }).filter(x=>x.studentId&&x.name&&x.classId);
+
+      const gg=Array.isArray(r.groups)?r.groups:[];
+      out.groups=(gg||[]).map(g=>{
+        const classId=normalizeClassId_(g.classId||g.class||g.classCode);
+        const id=String(g.id||g.groupId||g.gid||g.name||"").trim();
+        const name=String(g.name||g.groupName||id).trim();
+        const level=String(g.level||g.groupLevel||"").trim();
+        const members=Array.isArray(g.members)?g.members.map(x=>String(x).trim()).filter(Boolean):[];
+        const memberCount=Number(g.memberCount||members.length||0);
+        return {id,name,classId,level,members,memberCount};
+      }).filter(x=>x.id&&x.name&&x.classId);
+
+      return out;
     }
-    function removeTag_(text, key){
-      const s = String(text||"");
-      const re = new RegExp(`(^|\\s)${key}=([^\\s]+)`, "g");
-      return s.replace(re, " ").replace(/\s+/g," ").trim();
+    function studentsOfClass_(classId){
+      const cid=normalizeClassId_(classId);
+      return SSOT.students.filter(s=>normalizeClassId_(s.classId)===cid);
+    }
+    function groupsOfClass_(classId){
+      const cid=normalizeClassId_(classId);
+      return SSOT.groups.filter(g=>normalizeClassId_(g.classId)===cid);
+    }
+
+    function createMultiSelect_(mountEl, opts){
+      const st={items:opts.items||[],selected:new Set(),placeholder:opts.placeholder||"(Chọn)",open:false,q:""};
+      mountEl.innerHTML=`
+        <div class="ms">
+          <div class="msBtn" data-role="btn"><span class="ph" data-role="label">${esc(st.placeholder)}</span><span>▾</span></div>
+          <div class="msMenu" data-role="menu">
+            <input class="msSearch" data-role="search" placeholder="">
+            <div data-role="list"></div>
+          </div>
+        </div>`;
+
+      const btn=mountEl.querySelector('[data-role="btn"]');
+      const label=mountEl.querySelector('[data-role="label"]');
+      const menu=mountEl.querySelector('[data-role="menu"]');
+      const search=mountEl.querySelector('[data-role="search"]');
+      const list=mountEl.querySelector('[data-role="list"]');
+
+      function updateLabel(){
+        const n=st.selected.size;
+        if(n===0){label.textContent=st.placeholder; label.classList.add("ph"); return;}
+        label.textContent=`Đã chọn: ${n}`; label.classList.remove("ph");
+      }
+      function render(){
+        const q=String(st.q||"").toLowerCase();
+        const items=(st.items||[]).filter(it=>{
+          if(!q) return true;
+          const s=(it.name+" "+(it.sub||"")+" "+it.id).toLowerCase();
+          return s.includes(q);
+        });
+        list.innerHTML = items.length ? "" : `<div class="msEmpty">Không có dữ liệu.</div>`;
+        items.forEach(it=>{
+          const div=document.createElement("div");
+          div.className="msItem";
+          div.innerHTML=`<input type="checkbox" ${st.selected.has(it.id)?"checked":""}>
+            <div style="min-width:0"><div class="msName">${esc(it.name||"")}</div><div class="msSub">${esc(it.sub||it.id||"")}</div></div>`;
+
+          const cb = div.querySelector("input");
+          cb.onclick = (e)=>e.stopPropagation();
+
+          div.onclick=()=>{
+            if(st.selected.has(it.id)) st.selected.delete(it.id); else st.selected.add(it.id);
+            render(); updateLabel();
+            opts.onChange && opts.onChange([...st.selected]);
+          };
+          list.appendChild(div);
+        });
+      }
+
+      function open(v){
+        st.open=!!v;
+        menu.classList.toggle("show", st.open);
+        if(st.open && search && search.offsetParent !== null) search.focus();
+      }
+
+      btn.onclick=(e)=>{e.stopPropagation(); open(!st.open);};
+      menu.onclick=(e)=>e.stopPropagation();
+
+      // global close (an toàn, không làm sập dropdown)
+      if(!window.__msGlobalBound){
+        window.__msGlobalBound = true;
+        document.addEventListener("click",(e)=>{
+          if(!e.target.closest(".ms")){
+            document.querySelectorAll(".msMenu.show").forEach(m=>m.classList.remove("show"));
+          }
+        }, true);
+      }
+
+      search.oninput=()=>{st.q=search.value||""; render();};
+
+      render(); updateLabel();
+      return {
+        setItems(items){
+          st.items=items||[];
+          const ids=new Set(st.items.map(x=>x.id));
+          st.selected=new Set([...st.selected].filter(id=>ids.has(id)));
+          st.q=""; if(search) search.value="";
+          render(); updateLabel(); opts.onChange && opts.onChange([...st.selected]);
+        },
+        setSelected(ids){
+          const set=new Set((ids||[]).map(String));
+          const ok=new Set((st.items||[]).map(x=>x.id));
+          st.selected=new Set([...set].filter(id=>ok.has(id)));
+          render(); updateLabel(); opts.onChange && opts.onChange([...st.selected]);
+        },
+        getSelected(){return [...st.selected];},
+        clear(){st.selected.clear(); render(); updateLabel(); opts.onChange && opts.onChange([]);}
+      };
+    }
+
+    const session = requireRole("TEACHER");
+    const token = session?.token||session?.sessionId||"";
+
+    let oneMsApi=null, gmMsApi=null;
+    let selectedOneIds=[];
+
+    let GM_MODE="create";
+    let GM_EDIT_GROUP_ID="";
+
+    function mapAutoTypeToLevel_(t){
+      const x=String(t||"").toLowerCase();
+      if(x==="can_ho_tro") return "can_ho_tro";
+      if(x==="tang_toc") return "tang_toc";
+      if(x==="nang_cao") return "nang_cao";
+      return "trung_binh";
     }
 
     function syncTargetToConstraints_(){
-      const t = $("targetType").value;
-      const v = $("targetValue").value;
-
-      let c = $("constraints").value || "";
-      c = removeTag_(c, "@assign_to");
-      c = removeTag_(c, "@group_level");
-
-      if(t === "class"){
-        c = ensureTag_(c, "@assign_to", "CLASS");
-      }else if(t === "group"){
-        const gid = v ? String(v).trim() : "";
-        const lvl = $("groupLevel")?.value || "trung_binh";
-        if(gid) c = ensureTag_(c, "@assign_to", `GROUP:${gid}`);
-        c = ensureTag_(c, "@group_level", lvl);
-      }else if(t === "one"){
-        const sid = v ? String(v).trim() : "";
-        if(sid) c = ensureTag_(c, "@assign_to", `ONE:${sid}`);
+      const t=$("targetType").value;
+      let c=$("constraints").value||"";
+      c=removeTag_(c,"@assign_to");
+      if(t==="class"){
+        c=ensureTag_(c,"@assign_to","CLASS");
+      }else if(t==="group"){
+        const gid=$("groupSelect").value||"";
+        const g=groupsOfClass_($("classId").value).find(x=>x.id===gid);
+        if(g && g.name) c=ensureTag_(c,"@assign_to",`GROUP:${g.name.replace(/\s+/g,"_")}`);
+      }else if(t==="one"){
+        const ids=(selectedOneIds||[]);
+        c=ensureTag_(c,"@assign_to",`STUDENTS:${ids.join(",")}`);
       }
-      $("constraints").value = c.trim();
+      $("constraints").value=c.trim();
     }
 
     function setTarget_(type){
-      $("targetType").value = type;
-
-      [...document.querySelectorAll("#segTarget button")].forEach(b=>{
-        b.classList.toggle("active", b.dataset.t === type);
-      });
-
-      $("groupArea").style.display = (type==="group") ? "block" : "none";
-      $("oneArea").style.display   = (type==="one")   ? "block" : "none";
-
-      if(type==="class"){
-        $("targetHelp").textContent = "Giao cho toàn bộ lớp đang chọn.";
-        $("targetValue").value = "";
-      }
-      if(type==="group"){
-        $("targetHelp").textContent = "Chọn nhóm để kèm cặp / nâng cao theo năng lực (SSOT).";
-        syncGroupUIFromSSOT_();
-        $("targetValue").value = $("groupSelect").value || "";
-      }
-      if(type==="one"){
-        $("targetHelp").textContent = "Gõ tên học sinh để tìm (SSOT).";
-        $("targetValue").value = resolveStudentIdFromInput_() || "";
-      }
-
+      $("targetType").value=type;
+      [...document.querySelectorAll("#segTarget button")].forEach(b=>b.classList.toggle("active", b.dataset.t===type));
+      $("classArea").style.display = (type==="class")?"block":"none";
+      $("groupArea").style.display = (type==="group")?"block":"none";
+      $("oneArea").style.display   = (type==="one")?"block":"none";
+      $("targetHelp").textContent = (type==="class")?"Giao cho toàn bộ lớp đang chọn." : (type==="group"?"": "Chọn 1 hoặc nhiều học sinh trong lớp để giao cá nhân.");
+      refreshPreview_();
       syncTargetToConstraints_();
-      renderPreview_();
-      renderDash_();
     }
 
-    // ===== SSOT teacherTargets =====
-    let TEACHER_TARGETS = null;
+    function refreshPreview_(){
+      const t=$("targetType").value;
+      const classId=$("classId").value;
+      if(t==="class") return;
+      if(t==="group"){
+        const gg=groupsOfClass_(classId);
+        const g=gg.find(x=>x.id===($("groupSelect").value||""));
+        const n=g?(g.memberCount||g.members.length||0):0;
+        $("groupPreview").textContent = g?`Nhóm: ${g.name}`:"Nhóm: —";
+        $("groupPreviewSub").textContent = g?`Sĩ số: ${n} HS • Mức: ${levelLabel_(g.level)}`:"Chưa có nhóm";
+        return;
+      }
+      if(t==="one"){
+        const ids=(selectedOneIds||[]);
+        $("onePreview").textContent = ids.length ? `Cá nhân (${ids.length} HS đã chọn)` : "chưa chọn HS";
+        $("onePreviewSub").textContent = ids.length ? "" : "";
+      }
+    }
 
-    function normTargets_(r){
-      const out = { classes:[], groups:[], students:[] };
-      out.classes = Array.isArray(r?.classes) ? r.classes : (Array.isArray(r?.targets?.classes)?r.targets.classes:[]);
-      out.groups  = Array.isArray(r?.groups)  ? r.groups  : (Array.isArray(r?.targets?.groups)?r.targets.groups:[]);
-      out.students= Array.isArray(r?.students)? r.students: (Array.isArray(r?.targets?.students)?r.targets.students:[]);
+    function renderOneChips_(){
+      const box=$("oneChips");
+      const stMap=new Map(studentsOfClass_($("classId").value).map(s=>[s.studentId,s]));
+      const ids=(selectedOneIds||[]);
+      box.innerHTML="";
+      ids.forEach(id=>{
+        const s=stMap.get(id);
+        const div=document.createElement("div");
+        div.className="chip";
+        div.innerHTML = `${esc(s?.name||id)} <span class="tiny">(${esc(id)})</span> <button title="Bỏ chọn">✕</button>`;
+        div.querySelector("button").onclick=()=>{
+          selectedOneIds = ids.filter(x=>x!==id);
+          oneMsApi && oneMsApi.setSelected(selectedOneIds);
+          renderOneChips_(); refreshPreview_(); syncTargetToConstraints_();
+        };
+        box.appendChild(div);
+      });
+    }
 
-      // normalize
-      out.classes = out.classes.map(c=>({
-        classId: String(c.classId || c.id || c.code || c.name || "").trim(),
-        className: String(c.className || c.title || c.classId || "").trim()
-      })).filter(x=>x.classId);
+    function refreshByClass_(){
+      const classId=$("classId").value;
+      const st=studentsOfClass_(classId);
+      const gg=groupsOfClass_(classId);
 
-      out.groups = out.groups.map(g=>({
-        groupId: String(g.groupId || g.id || g.code || g.groupName || g.name || "").trim(),
-        groupName: String(g.groupName || g.name || g.groupId || "").trim(),
-        classId: String(g.classId || g.scopeClassId || "").trim(),
-        groupLevel: String(g.groupLevel || g.level || "trung_binh"),
-        memberCount: Number(g.memberCount || g.count || 0)
-      })).filter(x=>x.groupId && x.classId);
+      $("gmClass").textContent="Lớp: "+classId;
+      $("classPreview").textContent=`Toàn lớp ${classId} (${st.length} HS)`;
+      $("classPreviewSub").textContent=st.length?"":"Lớp chưa có học sinh.";
 
-      out.students = out.students.map(s=>({
-        studentId: String(s.studentId || s.id || s.code || "").trim(),
-        name: String(s.name || s.fullName || s.displayName || "").trim(),
-        classId: String(s.classId || s.scopeClassId || "").trim()
-      })).filter(x=>x.studentId && x.classId);
+      const gs=$("groupSelect");
+      gs.innerHTML = gg.length ? gg.map(g=>`<option value="${esc(g.id)}">${esc(g.name)}</option>`).join("") : `<option value="">(Chưa có nhóm)</option>`;
+      if(!gs.value && gs.options.length) gs.value=gs.options[0].value;
 
-      return out;
+      const curG = gg.find(g=>g.id===gs.value);
+      $("groupMeta").textContent = curG ? `Sĩ số: ${curG.memberCount||curG.members.length||0} em • Mức: ${levelLabel_(curG.level)}` : "Chưa có nhóm cho lớp này.";
+      refreshPreview_();
+
+      const items = st.map(s=>({id:s.studentId,name:s.name,sub:`Mã: ${s.studentId}`}));
+
+      if(!oneMsApi){
+        oneMsApi = createMultiSelect_($("oneMs"), {
+          placeholder:"Chọn học sinh",
+          items,
+          onChange(ids){
+            selectedOneIds = ids||[];
+            renderOneChips_(); refreshPreview_(); syncTargetToConstraints_();
+          }
+        });
+      }else oneMsApi.setItems(items);
+
+      if(!gmMsApi){
+        gmMsApi = createMultiSelect_($("gmMs"), {
+          placeholder:"Chọn học sinh",
+          items,
+          onChange(){ }
+        });
+      }else gmMsApi.setItems(items);
+
+      $("gmCount").textContent = String(items.length||0);
+
+      $("oneSearch").oninput=()=>{
+        const msSearch = $("oneMs").querySelector(".msSearch");
+        if(msSearch){ msSearch.value=$("oneSearch").value; msSearch.dispatchEvent(new Event("input")); }
+      };
     }
 
     async function loadTeacherTargets_(){
       try{
         const r = await api("teacherTargets", { token });
-        if(r && r.ok === false) throw new Error(r.error || r.message || "teacherTargets failed");
+        if(r && r.ok===false) throw new Error(r.error||"teacherTargets failed");
+        SSOT = normalizeTargets_(r);
 
-        TEACHER_TARGETS = normTargets_(r || {});
-        setSSOTState_(true, "SSOT: OK ✅");
-
-        initClassesFromSSOT_();
-        syncGroupUIFromSSOT_();
-        syncStudentsDatalistFromSSOT_();
-
-        renderPreview_();
-        renderDash_();
-
-      }catch(e){
-        console.error(e);
-        setSSOTState_(false, "SSOT: Lỗi ❌");
-        toast("Không tải được danh sách lớp/HS từ SSOT");
-        TEACHER_TARGETS = { classes:[], groups:[], students:[] };
-      }
-    }
-
-    function initClassesFromSSOT_(){
-      const sel = $("classId");
-      const classes = TEACHER_TARGETS?.classes || [];
-      if(!classes.length){
-        sel.innerHTML = `<option value="">(Không có lớp SSOT)</option>`;
-        return;
-      }
-      const cur = sel.value || "";
-      sel.innerHTML = classes.map(c=>`<option value="${esc(c.classId)}">${esc(c.className || c.classId)}</option>`).join("");
-      // giữ lựa chọn nếu còn
-      if(cur && classes.some(x=>x.classId===cur)) sel.value = cur;
-      else {
-        // ưu tiên lớp trong session nếu có
-        const sClass = String(session?.classId || "").trim();
-        if(sClass && classes.some(x=>x.classId===sClass)) sel.value = sClass;
-        else sel.value = classes[0].classId;
-      }
-    }
-
-    function syncGroupUIFromSSOT_(){
-      const classId = $("classId").value || "";
-      const sel = $("groupSelect");
-      const groups = (TEACHER_TARGETS?.groups || []).filter(g=>g.classId === classId);
-
-      sel.innerHTML = groups.length
-        ? groups.map(g=>`<option value="${esc(g.groupId)}">${esc(g.groupName)} (${g.memberCount})</option>`).join("")
-        : `<option value="">(Chưa có nhóm SSOT)</option>`;
-
-      const gid = sel.value || (groups[0]?.groupId || "");
-      sel.value = gid;
-
-      const g = groups.find(x=>x.groupId===gid);
-      if(g){
-        $("groupLevel").value = ["yeu","trung_binh","kha","gioi"].includes(g.groupLevel) ? g.groupLevel : "trung_binh";
-        $("groupMeta").textContent = `Nhóm: ${g.groupName} • Sĩ số: ${g.memberCount} em • Mức: ${groupLevelLabel_($("groupLevel").value)}`;
-      }else{
-        $("groupMeta").textContent = "—";
-      }
-
-      if($("targetType").value === "group"){
-        $("targetValue").value = sel.value || "";
-        syncTargetToConstraints_();
-      }
-    }
-
-    function syncStudentsDatalistFromSSOT_(){
-      const classId = $("classId").value || "";
-      const dl = $("dlStudents");
-      const list = (TEACHER_TARGETS?.students || []).filter(s=>s.classId===classId);
-
-      dl.innerHTML = list.map(s=>`<option value="${esc(s.name)}" data-id="${esc(s.studentId)}"></option>`).join("");
-      $("oneMeta").textContent = list.length ? `Có ${list.length} học sinh (SSOT) trong lớp.` : "Chưa có học sinh SSOT cho lớp này.";
-    }
-
-    function resolveStudentIdFromInput_(){
-      const classId = $("classId").value || "";
-      const name = String($("oneName").value || "").trim().toLowerCase();
-      if(!name) return "";
-      const list = (TEACHER_TARGETS?.students || []).filter(s=>s.classId===classId);
-      const hit = list.find(s=>String(s.name||"").trim().toLowerCase()===name);
-      return hit ? hit.studentId : "";
-    }
-
-    function renderPreview_(){
-      const box = $("targetPreview");
-      const type = $("targetType").value;
-      const classId = $("classId").value || "—";
-
-      const students = (TEACHER_TARGETS?.students || []).filter(s=>s.classId===classId);
-      const groups = (TEACHER_TARGETS?.groups || []).filter(g=>g.classId===classId);
-
-      if(type === "class"){
-        box.textContent = `✅ Giao cho CẢ LỚP ${classId} (${students.length} học sinh).`;
-        return;
-      }
-
-      if(type === "group"){
-        const gid = $("groupSelect").value || "";
-        const g = groups.find(x=>x.groupId===gid);
-        if(!g){ box.textContent = "⚠️ Chưa chọn nhóm SSOT."; return; }
-        box.textContent = `✅ Giao cho NHÓM: ${g.groupName} (${g.memberCount} học sinh).`;
-        return;
-      }
-
-      if(type === "one"){
-        const sid = resolveStudentIdFromInput_();
-        const nm = $("oneName").value.trim();
-        if(!sid){
-          box.textContent = nm
-            ? `⚠️ "${nm}" chưa khớp danh sách SSOT. Hãy chọn đúng tên trong gợi ý.`
-            : "⚠️ Chưa chọn học sinh.";
-          return;
+        const sel=$("classId");
+        if(SSOT.classes.length){
+          sel.innerHTML = SSOT.classes.map(c=>`<option value="${esc(c.classId)}">${esc(c.className||c.classId)}</option>`).join("");
+        }else{
+          const fb = session.classId ? normalizeClassId_(session.classId) : "";
+          sel.innerHTML = fb ? `<option value="${esc(fb)}">${esc(fb)}</option>` : `<option value="">(Chưa có lớp)</option>`;
         }
-        box.textContent = `✅ Giao cho CÁ NHÂN: ${nm} (ID: ${sid}).`;
-        return;
-      }
-      box.textContent = "—";
-    }
 
-    function renderDash_(){
-      const classId = $("classId").value || "—";
-      const students = (TEACHER_TARGETS?.students || []).filter(s=>s.classId===classId);
+        const prefer = normalizeClassId_(session.classId || sel.value || SSOT.classes[0]?.classId || "");
+        sel.value = [...sel.options].some(o=>o.value===prefer) ? prefer : (sel.options[0]?.value||prefer);
 
-      $("dashClass").textContent = `${classId}`;
-      $("dashClassSub").textContent = `Sĩ số: ${students.length} học sinh (SSOT)`;
-
-      const t = $("targetType").value;
-      if(t==="class"){
-        $("dashTarget").textContent = "Cả lớp";
-        $("dashTargetSub").textContent = `Nhận bài: ${students.length} học sinh`;
-        return;
-      }
-      if(t==="group"){
-        const gid = $("groupSelect").value || "";
-        const g = (TEACHER_TARGETS?.groups||[]).find(x=>x.groupId===gid);
-        $("dashTarget").textContent = g ? g.groupName : "Nhóm";
-        $("dashTargetSub").textContent = g ? `Nhận bài: ${g.memberCount} học sinh` : "Chưa chọn nhóm";
-        return;
-      }
-      if(t==="one"){
-        const sid = resolveStudentIdFromInput_();
-        const nm = $("oneName").value.trim();
-        $("dashTarget").textContent = nm || "Cá nhân";
-        $("dashTargetSub").textContent = sid ? `Nhận bài: 1 học sinh` : "Chưa khớp SSOT";
-        return;
+        $("ssotBadge").textContent="";
+        $("ssotBadge").className="";
+        refreshByClass_();
+      }catch(e){
+        $("ssotBadge").textContent="SSOT: LỖI";
+        $("ssotBadge").className="warn";
+        toast("Không tải được SSOT: " + (e.message||e));
       }
     }
 
-    // ===== form =====
+    /* GROUP MODAL */
+    function selectGroupTab_(tab){
+      const isAuto = (tab === "auto");
+
+      $("tabManual").classList.toggle("active", !isAuto);
+      $("tabAuto").classList.toggle("active", isAuto);
+
+      $("gmAutoArea").style.display = isAuto ? "block" : "none";
+
+      const meta = $("gmManualMeta");
+      const stu  = $("gmManualStudents");
+      if(meta) meta.style.display = isAuto ? "none" : "block";
+      if(stu)  stu.style.display  = isAuto ? "none" : "block";
+    }
+
+    function openGroupModal_(mode){
+      $("groupModal").classList.add("show");
+      refreshByClass_();
+
+      GM_MODE = mode;
+      GM_EDIT_GROUP_ID = "";
+      $("gmId").value = "";
+
+      $("btnGmDelete").style.display = (mode==="edit") ? "inline-flex" : "none";
+
+      const classId=$("classId").value;
+      const gg=groupsOfClass_(classId);
+
+      $("gmExplain").textContent="—";
+      $("gmAutoMsg").textContent="—";
+
+      if(mode==="edit"){
+        const gid=$("groupSelect").value||"";
+        GM_EDIT_GROUP_ID = gid;
+        $("gmId").value = gid;
+
+        const g=gg.find(x=>x.id===gid);
+        $("gmName").value=g?.name||"";
+        const lvl=String(g?.level||"trung_binh").toLowerCase();
+        $("gmLevel").value=["yeu","trung_binh","kha","gioi","nang_cao","tang_toc","can_ho_tro"].includes(lvl)?lvl:"trung_binh";
+        const mem=(g?.members||[]).map(String);
+        gmMsApi && gmMsApi.setSelected(mem);
+      }else{
+        $("gmName").value="";
+        $("gmLevel").value="trung_binh";
+        gmMsApi && gmMsApi.clear();
+      }
+
+      selectGroupTab_("manual");
+    }
+    function closeGroupModal_(){ $("groupModal").classList.remove("show"); }
+
+    $("btnGroupManage").onclick=()=>openGroupModal_("create");
+    $("btnGroupEdit").onclick=()=>openGroupModal_("edit");
+    $("btnGmClose").onclick=closeGroupModal_;
+    $("tabManual").onclick=()=>selectGroupTab_("manual");
+    $("tabAuto").onclick=()=>selectGroupTab_("auto");
+
+    $("btnGmClear").onclick=()=>{
+      gmMsApi && gmMsApi.clear();
+      $("gmExplain").textContent="—";
+      $("gmAutoMsg").textContent="—";
+    };
+
+    $("btnGmFooterSave").onclick = () => $("btnGmSave").click();
+    $("btnGmFooterClear").onclick = () => $("btnGmClear").click();
+
+    $("btnGmDelete").onclick = async ()=>{
+      try{
+        if(GM_MODE!=="edit" || !GM_EDIT_GROUP_ID) return toast("Chưa chọn nhóm để xoá.");
+        if(!confirm("Xoá nhóm này?")) return;
+
+        const classId=$("classId").value;
+        const r = await api("groupsDelete", { token, classId, groupId: GM_EDIT_GROUP_ID });
+        if(r && r.ok===false) throw new Error(r.error||"groupsDelete failed");
+
+        toast("Đã xoá nhóm ✅");
+        closeGroupModal_();
+        await loadTeacherTargets_();
+        setTarget_("group");
+      }catch(e){
+        toast((e && e.message) ? e.message : "Chưa có endpoint groupsDelete ở backend");
+      }
+    };
+
+    $("btnViewRules").onclick=async ()=>{
+      try{
+        const classId=$("classId").value;
+        const r=await api("rulesGroupingGet", { token, classId, subject: $("gmSubject").value||"" });
+        const rows=r.rules||r.rows||[];
+        const text=rows.slice(0,80).map(x=>`${x.priority||""} • ${x.groupName||""} • ${x.metric||""} ${x.op||""} ${x.value||""} • ${x.window||""} • ${x.explain||""}`).join("\\n");
+        alert(text||"Chưa có rule.");
+      }catch(e){ toast(e.message||"Không đọc được rulesGroupingGet"); }
+    };
+
+    $("btnGmRunAuto").onclick=async ()=>{
+      try{
+        const classId=$("classId").value;
+        const subject=$("gmSubject").value||"";
+        const lookbackDays=Number($("gmLookback").value||30);
+        const r=await api("groupsSuggestCare", { token, classId, year:"", subject, lookbackDays });
+
+        if(r && r.ok===false) throw new Error(r.error||"groupsAutoBuild failed");
+
+        const pg=r.proposedGroups||r.groups||[];
+        if(!pg.length){ $("gmAutoMsg").textContent="Không tạo được nhóm (thiếu dữ liệu hoặc rules chưa phù hợp)."; return; }
+
+        const g0=pg[0];
+        $("gmName").value=g0.name||"Nhóm tự động";
+        const lvl=String(g0.level||"trung_binh").toLowerCase();
+        $("gmLevel").value=["yeu","trung_binh","kha","gioi","nang_cao","tang_toc","can_ho_tro"].includes(lvl)?lvl:"trung_binh";
+
+        const mem=(g0.members||g0.studentIds||[]).map(String);
+        gmMsApi && gmMsApi.setSelected(mem);
+
+        $("gmExplain").textContent=String(g0.explain||r.explain||"Tạo theo RULES_GROUPING + submissions.");
+        $("gmAutoMsg").textContent=`Đã đề xuất ${pg.length} nhóm. Đang hiển thị nhóm 1 để lưu/chỉnh.`;
+        toast("AI đã đề xuất nhóm ✅");
+      }catch(e){
+        $("gmAutoMsg").textContent="Lỗi: "+(e.message||e);
+        toast(e.message||"Chạy tự động bị lỗi");
+      }
+    };
+
+    $("btnGmSave").onclick=async ()=>{
+      try{
+        const classId=$("classId").value;
+        const name=$("gmName").value.trim();
+        if(!name) return toast("Vui lòng nhập Tên nhóm.");
+        const level=$("gmLevel").value;
+        const members=gmMsApi ? gmMsApi.getSelected() : [];
+        if(!members.length) return toast("Chưa chọn học sinh cho nhóm.");
+
+        const gid = $("gmId").value || "";
+        const payloadGroup = gid
+          ? { id: gid, groupId: gid, name, level, members }
+          : { name, level, members };
+
+        const r=await api("groupsUpsert", { token, classId, group: payloadGroup });
+        if(r && r.ok===false) throw new Error(r.error||"groupsUpsert failed");
+
+        toast("Đã lưu nhóm ✅");
+        closeGroupModal_();
+        await loadTeacherTargets_();
+        setTarget_("group");
+      }catch(e){ toast(e.message||"Lưu nhóm bị lỗi"); }
+    };
+
+    $("groupSelect").onchange=()=>{ refreshByClass_(); syncTargetToConstraints_(); };
+
+    /* tasks list minimal */
+    function domainLabel_(v){ const m={READING:"Đọc hiểu",WRITING:"Viết",MATH:"Toán",SCIENCE:"Khoa học",GENERAL:"Tổng hợp"}; return m[String(v||"").toUpperCase()]||String(v||""); }
+    function statusLabel_(v){ const m={DRAFT:"Nháp",PUBLISHED:"Đã xuất bản",ARCHIVED:"Lưu trữ"}; return m[String(v||"").toUpperCase()]||String(v||""); }
+
+    async function reloadList(){
+      try{
+        const st=$("fStatus").value||"";
+        const qv=$("q").value||"";
+        const classId=$("classId").value||"";
+        const r=await api("listTasks", { token, classId, status: st, q: qv });
+        $("ctx").textContent = `Lớp ${r.classId||classId||"—"} • Năm ${r.year||"—"}`;
+        const items=r.tasks||[];
+        const box=$("list");
+        box.innerHTML = items.length ? "" : `<div class="muted">Chưa có bài nào.</div>`;
+        items.forEach(t=>{
+          const div=document.createElement("div");
+          div.className="dcard";
+          div.innerHTML=`
+            <div class="row">
+              <div>
+                <div style="font-weight:1100">${esc(t.taskId)} • ${esc(t.topic||"(chưa có chủ đề)")}</div>
+                <div class="tiny">${esc(domainLabel_(t.domain||""))} • ${esc(t.subject||"")} • ${esc(statusLabel_(t.status||""))}</div>
+              </div>
+            </div>`;
+          box.appendChild(div);
+        });
+        $("hint").textContent = `Tổng số: ${items.length} bài.`;
+      }catch(e){ toast(e.message||"Không tải được danh sách bài."); }
+    }
+
     function setForm_(t){
       $("taskId").value = t.taskId || newTaskIdBySubject_();
-      $("subject").value = t.subject || (safeConfig_().DEFAULT_SUBJECT || "Tiếng Việt");
-      $("domain").value = t.domain || "GENERAL";
+      $("subject").value = t.subject || "Tiếng Việt";
+      $("domain").value = t.domain || "READING";
       $("skill").value = t.skill || "";
       $("topic").value = t.topic || "";
       $("level").value = t.level || "easy";
@@ -714,19 +1207,13 @@
       $("status").value = (t.status || "DRAFT").toUpperCase();
       $("body").value = t.body || "";
       $("rubric").value = t.rubric || "";
-      $("constraints").value = t.constraints || "";
-      $("textbook").value = t.textbook || (safeConfig_().DEFAULT_BOOK || "Kết nối tri thức");
-
-      if(!$("constraints").value.trim()){
-        $("constraints").value = "@assign_to=CLASS";
-      }
+      $("constraints").value = t.constraints || "@assign_to=CLASS";
+      $("textbook").value = t.textbook || "Kết nối tri thức";
       syncTargetToConstraints_();
     }
-
     function getForm_(){
       return {
         taskId: $("taskId").value || newTaskIdBySubject_(),
-        grade: "",
         subject: $("subject").value.trim(),
         textbook: $("textbook").value.trim(),
         domain: $("domain").value,
@@ -736,7 +1223,6 @@
         unit: $("unit").value.trim(),
         dueAt: isoFromLocal_($("dueAt").value),
         status: $("status").value,
-        tags: "",
         body: $("body").value.trim(),
         rubric: $("rubric").value.trim(),
         constraints: $("constraints").value.trim(),
@@ -744,101 +1230,36 @@
       };
     }
 
-    // ===== list =====
-    async function reloadList(){
-      try{
-        const st = $("fStatus").value || "";
-        const qv = $("q").value || "";
-        const classId = $("classId").value || "";
-        const r = await api("listTasks", { token, classId, status: st, q: qv });
-
-        $("ctx").textContent = `Lớp ${r.classId||classId||"—"} • Năm ${r.year||"—"}`;
-
-        const items = r.tasks || [];
-        const box = $("list");
-        box.innerHTML = items.length ? "" : `<div class="muted">Chưa có bài nào.</div>`;
-
-        items.forEach(t=>{
-          const div=document.createElement("div");
-          div.className="dcard";
-          div.innerHTML=`
-            <div class="row">
-              <div>
-                <div style="font-weight:1000">${esc(t.taskId)} • ${esc(t.topic||"(chưa có chủ đề)")}</div>
-                <div class="tiny">
-                  ${esc(domainLabel_(t.domain||""))}
-                  • ${esc(t.subject||"")}
-                  • ${esc(statusLabel_(t.status||""))}
-                </div>
-              </div>
-            </div>
-            <div class="actions mt">
-              <button class="btn ghost" data-act="open">Mở bài</button>
-              <button class="btn ghost" data-act="dup">Nhân bản</button>
-              <button class="btn ghost" data-act="arch">Lưu trữ</button>
-            </div>
-          `;
-          div.querySelector('[data-act="open"]').onclick=()=>{
-            setForm_(t);
-            toast("Đã mở bài ✅");
-          };
-
-          div.querySelector('[data-act="dup"]').onclick=async ()=>{
-            try{
-              await api("duplicateTask",{token, classId, taskId:t.taskId});
-              toast("Đã nhân bản ✅");
-              await reloadList();
-            }catch(e){ toast(e.message||"Nhân bản bị lỗi"); }
-          };
-
-          div.querySelector('[data-act="arch"]').onclick=async ()=>{
-            try{
-              await api("archiveTask",{token, classId, taskId:t.taskId});
-              toast("Đã lưu trữ ✅");
-              await reloadList();
-            }catch(e){ toast(e.message||"Lưu trữ bị lỗi"); }
-          };
-
-          box.appendChild(div);
-        });
-
-        $("hint").textContent = `Tổng số: ${items.length} bài.`;
-      }catch(e){
-        toast(e.message||"Không tải được danh sách bài.");
+    function showReceipt_(task){
+      const classId=$("classId").value;
+      const due=task.dueAt ? new Date(task.dueAt).toLocaleString("vi-VN") : "—";
+      const tt=$("targetType").value;
+      let targetLine="—";
+      if(tt==="class") targetLine=`🎯 Đối tượng: Toàn lớp ${classId} (${studentsOfClass_(classId).length} HS)`;
+      if(tt==="group"){
+        const g=groupsOfClass_(classId).find(x=>x.id===($("groupSelect").value||""));
+        const n=g?(g.memberCount||g.members.length||0):0;
+        targetLine=`🎯 Đối tượng: ${g?g.name:"Nhóm"} (${n} HS)`;
       }
+      if(tt==="one") targetLine=`🎯 Đối tượng: Cá nhân (${(selectedOneIds||[]).length} HS)`;
+      $("rc_task").textContent=`✅ Đã giao: ${task.taskId}`;
+      $("rc_target").textContent=targetLine;
+      $("rc_due").textContent=`⏰ Hạn nộp: ${due}`;
+      $("rc_more").textContent="—";
+      $("receipt").hidden=false;
     }
+    $("btnHideReceipt").onclick=()=>$("receipt").hidden=true;
 
-    // ===== session =====
-    const session = requireRole("TEACHER");
-    const token = session?.token||"";
-
-    // ===== init dropdowns =====
-    function initSubjects_(){
-      const sel = $("subject");
-      sel.innerHTML = SUBJECTS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
-      const cfg = safeConfig_();
-      const def = cfg.DEFAULT_SUBJECT || "Tiếng Việt";
-      sel.value = def;
-    }
-
-    // ===== actions: tasks =====
     $("btnNew").onclick=()=>{
-      $("body").value = "";
-      $("rubric").value = "";
-      $("topic").value = "";
-      $("skill").value = "";
-      $("unit").value = "";
-      $("dueAt").value = "";
-      $("status").value = "DRAFT";
-      $("taskId").value = newTaskIdBySubject_();
-
-      setTarget_("class");
+      setForm_({taskId:newTaskIdBySubject_(),subject:$("subject").value,domain:"READING",status:"DRAFT",constraints:"@assign_to=CLASS"});
+      $("body").value=""; $("rubric").value="";
       toast("Đã tạo bài mới ✅");
     };
+    $("subject").onchange=()=>{$("taskId").value=newTaskIdBySubject_();};
 
     $("btnSave").onclick=async ()=>{
       try{
-        const classId = $("classId").value;
+        const classId=$("classId").value;
         const t=getForm_();
         if(!t.topic) return toast("Vui lòng nhập Chủ đề.");
         if(!t.body) return toast("Vui lòng nhập Nội dung bài.");
@@ -849,202 +1270,74 @@
       }catch(e){ toast(e.message||"Lưu nháp bị lỗi"); }
     };
 
-    $("btnPublish").onclick=async ()=>{
+    $("btnAssign").onclick=async ()=>{
       try{
-        const classId = $("classId").value;
+        const classId=$("classId").value;
         const t=getForm_();
         if(!t.topic) return toast("Vui lòng nhập Chủ đề.");
         if(!t.body) return toast("Vui lòng nhập Nội dung bài.");
+        syncTargetToConstraints_();
         t.status="PUBLISHED";
         await api("upsertTask",{token,classId,task:t});
         await api("publishTask",{token,classId,taskId:t.taskId,dueAt:t.dueAt});
-        toast("Đã xuất bản ✅");
-        await reloadList();
-      }catch(e){ toast(e.message||"Xuất bản bị lỗi"); }
+
+        const tt=$("targetType").value;
+        if(tt==="class"){
+          await api("assignmentsCreate",{token,classId,taskId:t.taskId,targetType:"CLASS",targetId:classId,dueAt:t.dueAt});
+        }else if(tt==="group"){
+          const gid=$("groupSelect").value||"";
+          if(!gid) return toast("Chưa chọn nhóm.");
+          await api("assignmentsCreate",{token,classId,taskId:t.taskId,targetType:"GROUP",targetId:gid,dueAt:t.dueAt});
+        }else{
+          if(!selectedOneIds.length) return toast("Chưa chọn học sinh.");
+          await api("assignmentsCreate",{token,classId,taskId:t.taskId,targetType:"STUDENTS",targetId:selectedOneIds.join(","),dueAt:t.dueAt});
+        }
+        showReceipt_(t);
+        toast("Đã giao bài ✅");
+      }catch(e){ toast(e.message||"Giao bài bị lỗi"); }
     };
 
-    $("btnAI").onclick = async ()=>{
+    $("btnAI").onclick=async ()=>{
       try{
         if(!$("topic").value.trim()) return toast("Vui lòng nhập Chủ đề trước 😄");
-
         syncTargetToConstraints_();
-
-        const subject = $("subject").value.trim() || safeConfig_().DEFAULT_SUBJECT || "Tiếng Việt";
-        const textbook = $("textbook").value.trim() || safeConfig_().DEFAULT_BOOK || "Kết nối tri thức";
-
         const r1 = await api("aiGenerateTask",{
-          token,
-          grade: "",
-          subject,
-          textbook,
-          topic: $("topic").value.trim(),
-          level: $("level").value,
-          domain: $("domain").value,
-          skill: $("skill").value.trim(),
-          constraints: $("constraints").value.trim()
+          token, grade:"", subject:$("subject").value.trim(), textbook:$("textbook").value.trim(),
+          topic:$("topic").value.trim(), level:$("level").value, domain:$("domain").value,
+          skill:$("skill").value.trim(), constraints:$("constraints").value.trim()
         });
-        $("body").value = (r1.taskText || "").trim();
-
+        $("body").value = (r1.taskText||"").trim();
         if(!$("rubric").value.trim()){
           const r2 = await api("aiGenerateRubric",{
-            token,
-            grade: "",
-            subject,
-            textbook,
-            topic: $("topic").value.trim(),
-            level: $("level").value,
-            domain: $("domain").value
+            token, grade:"", subject:$("subject").value.trim(), textbook:$("textbook").value.trim(),
+            topic:$("topic").value.trim(), level:$("level").value, domain:$("domain").value
           });
-          $("rubric").value = (r2.rubricText || "").trim();
+          $("rubric").value = (r2.rubricText||"").trim();
         }
-
-        toast("AI đã soạn bài ✅ (nội dung + rubric nếu cần)");
-      }catch(e){
-        toast(e.message||"AI soạn bài bị lỗi");
-      }
+        toast("AI đã soạn bài ✅");
+      }catch(e){ toast(e.message||"AI soạn bài bị lỗi"); }
     };
 
-    $("btnReload").onclick = reloadList;
-
-    // ===== actions: suggest groups =====
-    $("btnSuggestGroups").onclick = async ()=>{
-      if(!confirm("AI sẽ gợi ý nhóm dựa trên: 7 ngày chưa nộp / điểm thấp / tiến bộ nhanh.\nGiáo viên vẫn toàn quyền chỉnh sửa.\n\nTiếp tục?")) return;
-      try{
-        await api("groupsSuggestCare",{ token, classId: $("classId").value });
-        toast("AI đã gợi ý nhóm ✅");
-        await loadTeacherTargets_();
-      }catch(e){
-        toast(e.message || "AI gợi ý nhóm bị lỗi");
-      }
-    };
-
-    // ===== Assign now (NEW) =====
-    $("btnAssignNow").onclick = async ()=>{
-      try{
-        const classId = $("classId").value;
-        const t = getForm_();
-
-        if(!t.taskId) return toast("Chưa có mã bài.");
-        // Khuyến nghị: bài phải có chủ đề + nội dung
-        if(!t.topic || !t.body) return toast("Hãy nhập Chủ đề + Nội dung bài trước khi giao.");
-
-        // Nếu chưa xuất bản: vẫn cho giao (tùy chính sách). Ở đây giữ an toàn: yêu cầu PUBLISHED.
-        // Nếu ông chủ muốn cho giao cả nháp -> bỏ điều kiện dưới.
-        if(String(t.status||"").toUpperCase() !== "PUBLISHED"){
-          return toast("Hãy bấm “🚀 Xuất bản” trước rồi mới “📨 Giao bài ngay”.");
-        }
-
-        const targetTypeUI = $("targetType").value; // class|group|one
-        let targetType = "CLASS";
-        let targetId = "";
-
-        if(targetTypeUI === "class"){
-          targetType = "CLASS";
-          targetId = classId; // scope
-        }else if(targetTypeUI === "group"){
-          targetType = "GROUP";
-          targetId = $("groupSelect").value || "";
-          if(!targetId) return toast("Chưa chọn nhóm.");
-        }else if(targetTypeUI === "one"){
-          targetType = "STUDENT";
-          targetId = resolveStudentIdFromInput_() || "";
-          if(!targetId) return toast("Chưa chọn đúng tên học sinh (SSOT).");
-        }
-
-        // create assignment in sheet
-        const payload = {
-          token,
-          scopeClassId: classId,
-          taskId: t.taskId,
-          targetType,
-          targetId,
-          dueAt: t.dueAt || "",
-          note: "" // để mở rộng sau (nếu cần thêm ô ghi chú)
-        };
-
-        const r = await api("assignmentsCreate", payload);
-        if(r && r.ok === false) throw new Error(r.error || r.message || "assignmentsCreate failed");
-
-        toast("Đã giao bài ✅");
-      }catch(e){
-        toast(e.message || "Giao bài bị lỗi");
-      }
-    };
-
-    // ===== UI bindings =====
-    $("classId").onchange = async ()=>{
-      // khi đổi lớp: refresh SSOT-derived ui
-      syncGroupUIFromSSOT_();
-      syncStudentsDatalistFromSSOT_();
-      renderPreview_();
-      renderDash_();
+    $("classId").onchange=async ()=>{
+      refreshByClass_();
       syncTargetToConstraints_();
       await reloadList();
     };
 
-    $("subject").onchange = ()=>{
-      $("taskId").value = newTaskIdBySubject_();
-    };
+    document.querySelectorAll("#segTarget button").forEach(btn=>btn.onclick=()=>setTarget_(btn.dataset.t));
+    $("btnReload").onclick=reloadList;
 
-    document.querySelectorAll("#segTarget button").forEach(btn=>{
-      btn.onclick = ()=> setTarget_(btn.dataset.t);
-    });
-
-    $("groupSelect").onchange = ()=>{
-      const classId = $("classId").value;
-      const g = (TEACHER_TARGETS?.groups||[]).find(x=>x.classId===classId && x.groupId===$("groupSelect").value);
-      if(g?.groupLevel && ["yeu","trung_binh","kha","gioi"].includes(g.groupLevel)) $("groupLevel").value = g.groupLevel;
-      $("targetValue").value = $("groupSelect").value || "";
-      syncTargetToConstraints_();
-      renderPreview_();
-      renderDash_();
-      syncGroupUIFromSSOT_();
-    };
-
-    $("groupLevel").onchange = ()=>{
-      // groupLevel ở UI: dùng để cá nhân hoá prompt/AI (constraints)
-      syncTargetToConstraints_();
-      renderPreview_();
-      renderDash_();
-      syncGroupUIFromSSOT_();
-    };
-
-    $("oneName").oninput = ()=>{
-      if($("targetType").value === "one"){
-        $("targetValue").value = resolveStudentIdFromInput_() || "";
-        syncTargetToConstraints_();
-        renderPreview_();
-        renderDash_();
-      }
-    };
-
-    // ===== boot =====
     (async ()=>{
       try{ renderTeacherTopbar("tasks"); }catch(_){}
+      $("me").textContent = `${session.displayName||"Giáo viên"} • ${normalizeClassId_(session.classId||"—")}`;
+      $("subject").innerHTML = SUBJECTS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+      $("gmSubject").innerHTML = `<option value="">(Tất cả)</option>` + SUBJECTS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+      $("subject").value = (getConfig()?.DEFAULT_SUBJECT)||"Tiếng Việt";
+      $("textbook").value = (getConfig()?.DEFAULT_BOOK)||"Kết nối tri thức";
+      setForm_({taskId:newTaskIdBySubject_(),subject:$("subject").value,domain:"READING",status:"DRAFT",constraints:"@assign_to=CLASS"});
 
-      initSubjects_();
-
-      // default form
-      setForm_({
-        taskId: newTaskIdBySubject_(),
-        subject: safeConfig_().DEFAULT_SUBJECT || "Tiếng Việt",
-        textbook: safeConfig_().DEFAULT_BOOK || "Kết nối tri thức",
-        status:"DRAFT",
-        domain:"READING",
-        level:"easy",
-        constraints:"@assign_to=CLASS"
-      });
-
-      // load SSOT targets (classes/groups/students) from Code.gs
       await loadTeacherTargets_();
-
-      // me
-      const classId = $("classId").value || (session?.classId||"—");
-      $("me").textContent = `${session.displayName||"Giáo viên"} • ${classId}`;
-
-      // default target
       setTarget_("class");
-
       await reloadList();
     })();
   </script>

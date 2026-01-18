@@ -14,7 +14,7 @@
     LOGO_URL: "assets/img/logo-school.jpg", // ✅ đặt 1 nơi cho toàn hệ thống
 
     // Web App Apps Script (exec)
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyIUf-qVjlXJbhWuhEEWpBIIELXf7MICNVf11SVZTeoKIwd9mGqixfSMkFrl_HusEs2/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycby5deBlp8F15_vb0CWUUNOBThOkZYGFobPoCgHGRC3E1Xsr-s1V1l0INz0Bkza9s4RI/exec",
 
     // ===== SYSTEM MODE =====
     MODE: "production", // development | production

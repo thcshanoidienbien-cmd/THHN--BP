@@ -131,6 +131,7 @@
       box-shadow: 0 0 0 4px rgba(37,99,235,.12);
     }
 
+    /* Toast (dùng hidden + class show, không đánh nhau display:none) */
     .toast{
       position:fixed;
       left:50%; transform:translateX(-50%);
@@ -142,10 +143,15 @@
       font-size:13px;
       box-shadow:0 12px 30px rgba(0,0,0,.25);
       max-width:92vw;
-      display:none;
       z-index:999;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .12s ease;
     }
-    .toast.show{ display:block; }
+    .toast.show{
+      opacity:1;
+      pointer-events:auto;
+    }
 
     /* Modal */
     .modal{
@@ -158,6 +164,32 @@
       padding:18px;
     }
     .modal.show{display:flex}
+
+    /* ===== ADD-ON: Import Pro UI ===== */
+    .impTabs{display:flex;gap:8px;flex-wrap:wrap}
+    .impTabBtn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;font-weight:900;font-size:13px;
+      box-shadow: 0 8px 22px rgba(15,23,42,.04);
+      cursor:pointer;user-select:none;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .impTabBtn:hover{box-shadow: 0 12px 30px rgba(2,6,23,.08);transform:translateY(-1px)}
+    .impTabBtn.active{border-color: rgba(37,99,235,.55); box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .impBox{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+    .impLog{
+      white-space:pre-wrap;margin-top:10px;background:#0b1220;color:#e5e7eb;
+      padding:10px;border-radius:12px;max-height:220px;overflow:auto;font-size:12px;font-weight:700
+    }
+    .impTableWrap{margin-top:10px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+    .impTable{width:100%;border-collapse:collapse}
+    .impTable th{
+      text-align:left;padding:8px;border-bottom:1px solid var(--line);
+      background:#f8fafc;font-weight:1000;font-size:12px;white-space:nowrap
+    }
+    .impTable td{padding:8px;border-bottom:1px solid #f1f5f9;font-weight:800;font-size:13px}
+    .impBad{background: rgba(239,68,68,.08)}
   </style>
 </head>
 
@@ -177,6 +209,7 @@
 
       <div class="nav" style="flex:1;justify-content:center;flex-wrap:nowrap;overflow:hidden">
         <a class="chip" href="./dashboard.html">Bảng điều khiển</a>
+        <a class="chip" href="./top-students.html">TOP Học sinh</a>
         <a class="chip active" href="./setup.html">Thiết lập</a>
         <a class="chip" href="../../index.html">Trang chủ</a>
       </div>
@@ -198,7 +231,7 @@
         </div>
 
         <div class="heroRight">
-          <div class="lastUpdate" id="lastUpdate">Cập nhật lần cuối: —</div>
+          <div class="lastUpdate" id="lastUpdate">Truy cập lúc: —</div>
         </div>
       </div>
 
@@ -233,19 +266,51 @@
 
           <div class="secTitle" style="border-bottom:none;margin-bottom:6px;padding-bottom:0">
             <div>
-              <div class="h">3) Import học sinh</div>
-              <div class="sub">Mỗi dòng: <b>classId,studentId,fullName</b> (VD: <b>5A1,HS001,Nguyễn Văn A</b>)</div>
+              <div class="h">3) Nhập danh sách học sinh</div>
             </div>
           </div>
-
-          <label>Import vào năm</label>
           <select id="selYearImport"></select>
 
-          <label>Dữ liệu</label>
-          <textarea id="txtStudents" placeholder="5A1,HS001,Nguyễn Văn A&#10;5A1,HS002,Trần Thị B"></textarea>
+          <!-- ===== Import Pro (2 cách) ===== -->
+          <div class="mt">
+            <div class="impTabs">
+              <button class="impTabBtn active" id="impTabFileBtn" type="button">📄 Upload CSV/XLSX</button>
+              <button class="impTabBtn" id="impTabPasteBtn" type="button">📋 Dán bảng</button>
+              <button class="impTabBtn" id="impDownloadTpl" type="button">⬇️ Tải file mẫu</button>
+            </div>
 
-          <div class="actions mt">
-            <button class="btn" id="btnImport" type="button">📥 Import</button>
+            <!-- TAB: FILE -->
+            <div class="impBox mt" id="impTabFileBox">
+              <label>Chọn file (.csv / .xlsx)</label>
+              <div class="row">
+                <input id="impFile" type="file" accept=".csv,.xlsx" />
+                <button class="btn" id="btnImpPreviewFile" type="button">Xem trước</button>
+                <button class="btn" id="btnImpImportFile" type="button">🚀 Import</button>
+              </div>
+              
+            </div>
+
+            <!-- TAB: PASTE -->
+            <div class="impBox mt" id="impTabPasteBox" style="display:none">
+              <label>Dán bảng từ Google Sheet/Excel</label>
+              <textarea id="impPaste" placeholder="Ví dụ (copy từ Google Sheet):
+Lớp	Mã HS	Họ và tên	Khối	SĐT	SĐT PH
+5A1	0001	Nguyễn Văn A	5	0987000000	0912000000
+5A1	0002	Trần Thị B	5	0987000001	0912000001"></textarea>
+              <div class="actions mt" style="justify-content:flex-start;gap:10px;flex-wrap:wrap">
+                <button class="btn" id="btnImpPreviewPaste" type="button">Xem trước</button>
+                <button class="btn" id="btnImpImportPaste" type="button">🚀 Import</button>
+                <button class="btn ghost" id="btnImpClearPaste" type="button">Xoá ô dán</button>
+              </div>
+              <div class="muted" style="font-weight:800;font-size:12px;margin-top:6px;line-height:1.45">
+                Hệ thống tự nhận <b>tab</b> (Google Sheet) hoặc <b>dấu phẩy</b> (CSV) và auto-map cột.
+              </div>
+            </div>
+
+            <div class="impLog" id="impLog"></div>
+            <div class="impTableWrap">
+              <table class="impTable" id="impTable"></table>
+            </div>
           </div>
 
           <!-- Cảnh báo cần xử lý -->
@@ -264,7 +329,6 @@
           <div class="secTitle">
             <div>
               <div class="h">2) Lớp học</div>
-              <div class="sub">Tạo lớp thuộc năm Active. Lớp tạo xong sẽ hiển thị ngay trong danh sách.</div>
             </div>
             <div class="chips" style="justify-content:flex-end">
               <span class="chipLite">🏷️ <strong id="yearForClasses">Năm: —</strong></span>
@@ -327,23 +391,33 @@
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js?v=20260101"></script>
 
-<script>
+  <!-- ADD-ON libs for import -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
     const el = (id)=>document.getElementById(id);
+
+    // SSOT: năm Active dùng cho Create Class (đúng mô tả UI)
+    let __activeYear = "";
 
     function toast(msg){
       const t = el("toast");
-      t.hidden=false;
+      t.hidden = false;
       t.textContent = msg || "—";
       t.classList.add("show");
       clearTimeout(window.__t);
-      window.__t = setTimeout(()=>{ t.classList.remove("show"); t.hidden=true; }, 2400);
+      window.__t = setTimeout(()=>{
+        t.classList.remove("show");
+        t.hidden = true;
+      }, 2400);
     }
 
     function fmtTime_(d){
       const pad=n=>String(n).padStart(2,"0");
       return `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
     }
-    function setLastUpdate_(){ el("lastUpdate").textContent = "Cập nhật lần cuối: " + fmtTime_(new Date()); }
+    function setLastUpdate_(){ el("lastUpdate").textContent = "Truy cập lúc: " + fmtTime_(new Date()); }
 
     // Logo + Brand từ config (KHÔNG sửa config.js)
     function resolveFromPage_(path){
@@ -353,7 +427,6 @@
     function initBrand_(){
       let cfg = {};
       try{ cfg = (typeof getConfig === "function") ? (getConfig()||{}) : {}; }catch(e){}
-      const school = cfg.SCHOOL_NAME || "Trường Tiểu học Hà Nội - Điện Biên Phủ";
       const logo = cfg.LOGO_URL ? resolveFromPage_(cfg.LOGO_URL) : "";
 
       // ✅ yêu cầu ông chủ: dòng 1 + dòng 2 cố định như mẫu
@@ -376,18 +449,18 @@
     function closeModal(){ el("modal").classList.remove("show"); }
 
     function getAdminSession_(){
-  try{
-    const s = JSON.parse(localStorage.getItem("hedu_session") || "null");
-    if(!s) return null;
-    const role = String(s.role || "").toUpperCase();
-    if(role !== "ADMIN") return null;
-    // chuẩn hoá token
-    if(!s.token && s.sessionId) s.token = s.sessionId;
-    return s;
-  }catch(e){
-    return null;
-  }
-}
+      try{
+        const s = JSON.parse(localStorage.getItem("hedu_session") || "null");
+        if(!s) return null;
+        const role = String(s.role || "").toUpperCase();
+        if(role !== "ADMIN") return null;
+        // chuẩn hoá token
+        if(!s.token && s.sessionId) s.token = s.sessionId;
+        return s;
+      }catch(e){
+        return null;
+      }
+    }
 
     async function doAdminLogin(){
       const code = String(el("adminCode").value||"").trim();
@@ -424,20 +497,6 @@
       setTimeout(()=>{ window.location.href = "../../index.html"; }, 250);
     }
 
-    function parseStudents(text){
-      const lines = String(text||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-      const out = [];
-      for(const ln of lines){
-        const parts = ln.split(",").map(s=>s.trim());
-        if(parts.length < 2) continue;
-        const classId = parts[0] || "";
-        const studentId = parts[1] || "";
-        const fullName = (parts.slice(2).join(",") || studentId).trim();
-        if(classId && studentId) out.push({ classId, studentId, fullName });
-      }
-      return out;
-    }
-
     function setWarnings_(warnings){
       const box = el("warnBox");
       const ul  = el("warnList");
@@ -469,26 +528,27 @@
       }).join("");
       return { classes: list };
     }
+
     function fillYearsUI_(years, active){
-  const selYears = el("selYears");
-  const selImp   = el("selYearImport");
+      const selYears = el("selYears");
+      const selImp   = el("selYearImport");
 
-  const arr = Array.isArray(years) ? years.filter(Boolean) : [];
-  const act = String(active || arr[0] || "").trim();
+      const arr = Array.isArray(years) ? years.filter(Boolean) : [];
+      const act = String(active || arr[0] || "").trim();
 
-  // luôn có option (tránh select trống nhìn như “không có dữ liệu”)
-  const opt = arr.length
-    ? arr.map(v => `<option value="${String(v)}">${String(v)}</option>`).join("")
-    : `<option value="">— Chưa có năm học —</option>`;
+      // luôn có option (tránh select trống)
+      const opt = arr.length
+        ? arr.map(v => `<option value="${String(v)}">${String(v)}</option>`).join("")
+        : `<option value="">— Chưa có năm học —</option>`;
 
-  selYears.innerHTML = opt;
-  selImp.innerHTML   = opt;
+      selYears.innerHTML = opt;
+      selImp.innerHTML   = opt;
 
-  if(act){
-    selYears.value = act;
-    selImp.value   = act;
-  }
-}
+      if(act){
+        selYears.value = act;
+        selImp.value   = act;
+      }
+    }
 
     async function loadAll(){
       // ✅ guard
@@ -500,41 +560,26 @@
 
       // Years + active
       const y = await apiPost("adminListYears", { token });
-        if (y && y.ok === false) throw new Error(y.error || "Lỗi tải năm học");
-      
+      if (y && y.ok === false) throw new Error(y.error || "Lỗi tải năm học");
+
       const years  = y.years || [];
       const active = y.activeYear || years[0] || "";
 
+      __activeYear = String(active || "").trim(); // ✅ SSOT Active year
+
       el("badgeActive").textContent = "Active: " + (active || "—");
 
-      // ✅ đây là dòng quan trọng: đổ dropdown
+      // ✅ đổ dropdown 1 lần
       fillYearsUI_(years, active);
-
-      
-      // fill dropdowns
-      const opt = years.map(v=>`<option value="${v}">${v}</option>`).join("");
-      el("selYears").innerHTML = opt || `<option value="">—</option>`;
-      el("selYearImport").innerHTML = opt || `<option value="">—</option>`;
-      if(active){
-        el("selYears").value = active;
-        el("selYearImport").value = active;
-      }
 
       // classes of active year
       const info = active ? await loadClasses(active, token) : { classes: [] };
 
-      // warnings (không cần endpoint mới)
+      // warnings
       const warnings = [];
       if(!years.length) warnings.push("Chưa có năm học. Hãy tạo năm học và đặt Active.");
       if(years.length && !active) warnings.push("Chưa có năm học Active. Hãy chọn và bấm “Đặt active”.");
       if(active && (!info.classes || !info.classes.length)) warnings.push("Năm học Active chưa có lớp. Hãy tạo lớp trước khi import học sinh.");
-
-      // import text quick validate
-      const sample = String(el("txtStudents").value||"").trim();
-      if(sample){
-        const parsed = parseStudents(sample);
-        if(!parsed.length) warnings.push("Dữ liệu import đang sai định dạng. Mỗi dòng phải là: classId,studentId,fullName.");
-      }
 
       setWarnings_(warnings);
       setLastUpdate_();
@@ -542,45 +587,42 @@
 
     // actions
     el("btnSetActive").addEventListener("click", async ()=>{
-    try{
-      const session = getAdminSession_();
-      if(!session) return;
-      const token = session.token || session.sessionId || "";
+      try{
+        const session = getAdminSession_();
+        if(!session) return;
+        const token = session.token || session.sessionId || "";
 
-      const year = (el("selYears").value || "").trim();
-      if(!year) return toast("Chọn năm học trước đã.");
+        const year = (el("selYears").value || "").trim();
+        if(!year) return toast("Chọn năm học trước đã.");
 
-      const r = await apiPost("adminSetActiveYear", { token, year }); // ✅ đúng
-      if (r && r.ok === false) throw new Error(r.error || "Không đặt được active");
+        const r = await apiPost("adminSetActiveYear", { token, year });
+        if (r && r.ok === false) throw new Error(r.error || "Không đặt được active");
 
-      toast("Đã đặt năm học active: " + (r.activeYear || year));
-      await loadAll();
-    }catch(err){ toast(String(err.message||err)); }
-  });
-
+        toast("Đã đặt năm học active: " + (r.activeYear || year));
+        await loadAll();
+      }catch(err){ toast(String(err.message||err)); }
+    });
 
     el("btnAddYear").addEventListener("click", async ()=>{
-    try{
-      const session = getAdminSession_();
-      if(!session) return;
-      const token = session.token || session.sessionId || "";
+      try{
+        const session = getAdminSession_();
+        if(!session) return;
+        const token = session.token || session.sessionId || "";
 
-      const year = (el("txtNewYear").value || "").trim();
-      if(!year) return toast("Vui lòng nhập năm học (VD: 2025-2026)");
+        const year = (el("txtNewYear").value || "").trim();
+        if(!year) return toast("Vui lòng nhập năm học (VD: 2025-2026)");
 
-      // ✅ 2 bước cho chắc
-      const a = await apiPost("adminAddYear", { token, year });
-      if (a && a.ok === false) throw new Error(a.error || "Không tạo được năm học");
+        const a = await apiPost("adminAddYear", { token, year });
+        if (a && a.ok === false) throw new Error(a.error || "Không tạo được năm học");
 
-      const r = await apiPost("adminSetActiveYear", { token, year });
-      if (r && r.ok === false) throw new Error(r.error || "Không đặt được active");
+        const r = await apiPost("adminSetActiveYear", { token, year });
+        if (r && r.ok === false) throw new Error(r.error || "Không đặt được active");
 
-      toast("Đã tạo & đặt active: " + (r.activeYear || year));
-      el("txtNewYear").value = "";
-      await loadAll();
-    }catch(err){ toast(String(err.message||err)); }
-  });
-
+        toast("Đã tạo & đặt active: " + (r.activeYear || year));
+        el("txtNewYear").value = "";
+        await loadAll();
+      }catch(err){ toast(String(err.message||err)); }
+    });
 
     el("btnCreateClass").addEventListener("click", async ()=>{
       try{
@@ -588,37 +630,355 @@
         if(!session) return;
         const token = session.token || session.sessionId || "";
 
-        const year = el("selYears").value;
+        const year = (__activeYear || el("selYears").value || "").trim();
         const grade = el("selGrade").value;
         const classId = el("txtClassId").value.trim();
+
         if(!year) return toast("Chưa có năm học active.");
         if(!classId) return toast("Vui lòng nhập mã lớp.");
 
         const r = await apiPost("adminCreateClass", { token, year, grade, classId });
         if (r && r.ok === false) throw new Error(r.error || "Không tạo được lớp");
-        toast("Đã tạo/cập nhật lớp: " + r.classId);
+
+        toast("Đã tạo/cập nhật lớp: " + (r.classId || classId));
         await loadAll();
       }catch(err){ toast(String(err.message||err)); }
     });
 
-    el("btnImport").addEventListener("click", async ()=>{
+    /* =========================
+       Import Pro (2 cách) + Auto-map header thông minh
+    ========================= */
+    let __impStudents = []; // normalized list
+
+    function impSetTab(tab){
+      const b1 = el("impTabFileBtn");
+      const b2 = el("impTabPasteBtn");
+      const box1 = el("impTabFileBox");
+      const box2 = el("impTabPasteBox");
+      if(!b1||!b2||!box1||!box2) return;
+
+      const isFile = (tab==="file");
+      b1.classList.toggle("active", isFile);
+      b2.classList.toggle("active", !isFile);
+      box1.style.display = isFile ? "" : "none";
+      box2.style.display = isFile ? "none" : "";
+    }
+
+    function impLog(msg){
+      const box = el("impLog");
+      if(!box) return;
+      box.textContent = (box.textContent ? box.textContent + "\n" : "") + String(msg||"");
+      box.scrollTop = box.scrollHeight;
+    }
+    function impClearLog(){ const box=el("impLog"); if(box) box.textContent=""; }
+
+    function normStr(v){ return (v==null ? "" : String(v)).trim(); }
+
+    // ✅ normalize header key: lower + bỏ dấu + bỏ khoảng trắng/ký tự đặc biệt
+    function normKey(k){
+      k = String(k||"").trim().toLowerCase();
       try{
-        const session = getAdminSession_();
-        if(!session) return;
-        const token = session.token || session.sessionId || "";
+        k = k.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      }catch(e){}
+      k = k.replace(/[^a-z0-9]+/g, ""); // giữ chữ + số
+      return k;
+    }
 
-        const year = el("selYearImport").value;
-        if(!year) return toast("Vui lòng chọn năm học để import.");
-        const students = parseStudents(el("txtStudents").value);
-        if(!students.length) return toast("Dữ liệu import chưa đúng định dạng.");
+    // lấy value theo nhiều alias key (đã được normKey)
+    function pick(map, aliases){
+      for(const a of aliases){
+        const key = normKey(a);
+        if(Object.prototype.hasOwnProperty.call(map, key)){
+          const v = map[key];
+          if(v !== undefined && v !== null && String(v).trim() !== "") return v;
+        }
+      }
+      return "";
+    }
 
-        const r = await apiPost("adminImportStudents", { token, year, students });
+    // build map normalized keys => value
+    function rowToNormMap(r){
+      const m = {};
+      for(const k in r){
+        if(!Object.prototype.hasOwnProperty.call(r,k)) continue;
+        m[normKey(k)] = r[k];
+      }
+      return m;
+    }
+
+    // ✅ Auto-map: nhận "Họ và tên", "Mã HS", "Lớp" ... + biến thể không dấu
+    function normalizeRowToStudent(r){
+      const m = rowToNormMap(r);
+
+      const classId = normStr(pick(m, [
+        "classId","class","lop","lophoc","malop","tenlop","lớp","mã lớp","ma lop"
+      ]));
+
+      const studentId = normStr(pick(m, [
+        "studentId","studentid","id","mahs","mahocsinh","mahoc sinh","mã hs","mã học sinh","ma hs","sohieu","số hiệu"
+      ]));
+
+      const fullName = normStr(pick(m, [
+        "fullName","fullname","name","hoten","hovaten","họ và tên","ho va ten","ten","tên"
+      ]));
+
+      const grade = normStr(pick(m, [
+        "grade","khoi","khối","block","lopkhoi"
+      ]));
+
+      const phone = normStr(pick(m, [
+        "phone","sdt","số điện thoại","so dien thoai","dienthoai","điện thoại"
+      ]));
+
+      const parentPhone = normStr(pick(m, [
+        "parentPhone","parentphone","sdtph","sđt ph","sdt ph","sdtphuhuynh","sđt phụ huynh","phuhuynh","phụ huynh","dienthoaiphuhuynh"
+      ]));
+
+      if(!classId || !studentId) return null;
+
+      return {
+        classId,
+        studentId,
+        fullName: fullName || studentId,
+        grade,
+        phone,
+        parentPhone
+      };
+    }
+
+    function impValidate(students){
+      const issues = [];
+      const seen = new Map(); // key = classId|studentId
+      students.forEach((s, idx)=>{
+        const key = `${s.classId}|${s.studentId}`;
+        if(seen.has(key)){
+          issues.push({ idx, type:"dup", msg:`Trùng mã HS trong lớp: ${key}` });
+        }else{
+          seen.set(key, idx);
+        }
+      });
+      return issues;
+    }
+
+    function impRenderTable(students, issues){
+      const tbl = el("impTable");
+      if(!tbl) return;
+      tbl.innerHTML = "";
+
+      const headers = ["classId","studentId","fullName","grade","phone","parentPhone"];
+
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+      headers.forEach(h=>{
+        const th = document.createElement("th");
+        th.textContent = h;
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh);
+      tbl.appendChild(thead);
+
+      const badIdx = new Set((issues||[]).map(x=>x.idx));
+
+      const tbody = document.createElement("tbody");
+      students.slice(0,200).forEach((s, i)=>{
+        const tr = document.createElement("tr");
+        if(badIdx.has(i)) tr.classList.add("impBad");
+        headers.forEach(h=>{
+          const td = document.createElement("td");
+          td.textContent = normStr(s[h]);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+    }
+
+    async function impParseFileToRows(file){
+      const name = String(file.name||"").toLowerCase();
+      if(name.endsWith(".csv")){
+        const text = await file.text();
+        return new Promise((resolve,reject)=>{
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (res)=> resolve(res.data || []),
+            error: reject
+          });
+        });
+      }
+      if(name.endsWith(".xlsx")){
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, {type:"array"});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        return XLSX.utils.sheet_to_json(ws, {defval:""});
+      }
+      throw new Error("Chỉ hỗ trợ .csv hoặc .xlsx");
+    }
+
+    function impParsePasteToRows(text){
+      text = String(text||"").trim();
+      if(!text) return [];
+
+      const first = (text.split(/\r?\n/)[0] || "");
+      const delim = first.includes("\t") ? "\t" : (first.includes(",") ? "," : "\t");
+
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if(lines.length < 2) return [];
+
+      const headers = lines[0].split(delim).map(h=>String(h||"").trim());
+      const rows = [];
+      for(let i=1;i<lines.length;i++){
+        const cols = lines[i].split(delim);
+        const obj = {};
+        headers.forEach((h, idx)=> obj[h] = cols[idx] ?? "");
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    function impDownloadTemplate(){
+    // ✅ Tạo file XLSX mẫu – mở Excel là cột chuẩn luôn
+    const rows = [
+      ["Lớp","Mã HS","Họ và tên","Khối","SĐT","SĐT PH"],
+      ["5A1","0001","Nguyễn Văn A","5","0987000000","0912000000"],
+      ["5A1","0002","Trần Thị B","5","0987000001","0912000001"],
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // đặt độ rộng cột cho dễ nhìn
+    ws["!cols"] = [
+      {wch:10}, // Lớp
+      {wch:10}, // Mã HS
+      {wch:22}, // Họ và tên
+      {wch:6},  // Khối
+      {wch:14}, // SĐT
+      {wch:14}, // SĐT PH
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "IMPORT");
+    XLSX.writeFile(wb, "HEDU_IMPORT_STUDENTS_TEMPLATE.xlsx");
+  }
+
+    async function impPreviewFromFile(){
+      impClearLog();
+      __impStudents = [];
+      const f = el("impFile")?.files?.[0];
+      if(!f){ impLog("❌ Chưa chọn file"); return; }
+
+      impLog("⏳ Đang đọc file: " + f.name);
+      const rows = await impParseFileToRows(f);
+
+      const students = [];
+      let bad = 0;
+      rows.forEach(r=>{
+        const st = normalizeRowToStudent(r);
+        if(st) students.push(st); else bad++;
+      });
+
+      const issues = impValidate(students);
+
+      __impStudents = students;
+      impLog(`✅ Đọc ${rows.length} dòng | Map OK ${students.length} | Bỏ qua ${bad}`);
+      if(issues.length){
+        impLog(`⚠️ Có ${issues.length} vấn đề (tô đỏ dòng lỗi). Ví dụ: ${issues[0].msg}`);
+      }else{
+        impLog("✅ Không phát hiện trùng mã trong cùng lớp.");
+      }
+
+      // nhắc auto-map nếu thấy rỗng bất thường
+      if(rows.length && !students.length){
+        impLog("💡 Gợi ý: kiểm tra file có cột Lớp + Mã HS (hoặc studentId) không.");
+      }
+
+      impRenderTable(students, issues);
+    }
+
+    async function impPreviewFromPaste(){
+      impClearLog();
+      __impStudents = [];
+
+      const txt = el("impPaste")?.value || "";
+      if(!String(txt).trim()){ impLog("❌ Ô dán đang trống"); return; }
+
+      const rows = impParsePasteToRows(txt);
+      if(!rows.length){ impLog("❌ Không parse được dữ liệu (cần header + ít nhất 1 dòng)."); return; }
+
+      const students = [];
+      let bad = 0;
+      rows.forEach(r=>{
+        const st = normalizeRowToStudent(r);
+        if(st) students.push(st); else bad++;
+      });
+
+      const issues = impValidate(students);
+
+      __impStudents = students;
+      impLog(`✅ Parse ${rows.length} dòng | Map OK ${students.length} | Bỏ qua ${bad}`);
+      if(issues.length){
+        impLog(`⚠️ Có ${issues.length} vấn đề (tô đỏ dòng lỗi). Ví dụ: ${issues[0].msg}`);
+      }else{
+        impLog("✅ Không phát hiện trùng mã trong cùng lớp.");
+      }
+
+      impRenderTable(students, issues);
+    }
+
+    async function impDoImport(){
+      const session = getAdminSession_();
+      if(!session) return toast("Chưa đăng nhập Admin.");
+      const token = session.token || session.sessionId || "";
+
+      const year = (el("selYearImport").value || "").trim();
+      if(!year) return toast("Vui lòng chọn năm học để import.");
+      if(!__impStudents.length) return toast("Chưa có dữ liệu. Bấm 'Xem trước' trước.");
+
+      // chặn import nếu có trùng mã trong cùng lớp
+      const issues = impValidate(__impStudents);
+      if(issues.length){
+        toast("Có dòng lỗi (trùng mã HS). Sửa rồi import lại.");
+        impLog("❌ Dừng import vì có trùng mã HS trong cùng lớp.");
+        return;
+      }
+
+      try{
+        toast("Đang import…");
+        const r = await apiPost("adminImportStudents", { token, year, students: __impStudents });
         if (r && r.ok === false) throw new Error(r.error || "Import thất bại");
-
         toast(`Import xong: thêm ${r.added||0}, cập nhật ${r.updated||0}`);
+        impLog(`✅ Import OK. Added=${r.added||0} Updated=${r.updated||0}`);
         await loadAll();
-      }catch(err){ toast(String(err.message||err)); }
-    });
+      }catch(err){
+        toast(String(err.message||err));
+        impLog("❌ " + String(err.message||err));
+      }
+    }
+
+    function impClearPaste(){
+      if(el("impPaste")) el("impPaste").value = "";
+      __impStudents = [];
+      impClearLog();
+      const tbl = el("impTable"); if(tbl) tbl.innerHTML = "";
+      impLog("✅ Đã xoá ô dán.");
+    }
+
+    function bindImportPro(){
+      if(el("impTabFileBtn")) el("impTabFileBtn").addEventListener("click", ()=> impSetTab("file"));
+      if(el("impTabPasteBtn")) el("impTabPasteBtn").addEventListener("click", ()=> impSetTab("paste"));
+      if(el("impDownloadTpl")) el("impDownloadTpl").addEventListener("click", impDownloadTemplate);
+
+      if(el("btnImpPreviewFile")) el("btnImpPreviewFile").addEventListener("click", ()=> impPreviewFromFile().catch(e=>{toast(String(e.message||e));impLog("❌ "+String(e.message||e));}));
+      if(el("btnImpImportFile")) el("btnImpImportFile").addEventListener("click", impDoImport);
+
+      if(el("btnImpPreviewPaste")) el("btnImpPreviewPaste").addEventListener("click", ()=> impPreviewFromPaste().catch(e=>{toast(String(e.message||e));impLog("❌ "+String(e.message||e));}));
+      if(el("btnImpImportPaste")) el("btnImpImportPaste").addEventListener("click", impDoImport);
+      if(el("btnImpClearPaste")) el("btnImpClearPaste").addEventListener("click", impClearPaste);
+
+      // default tab
+      impSetTab("file");
+      impLog("💡 Import Pro sẵn sàng. Chọn Upload hoặc Dán bảng → Xem trước → Import.");
+    }
 
     // modal events
     el("btnLogin").addEventListener("click", doAdminLogin);
@@ -632,6 +992,8 @@
     (async function(){
       try{
         initBrand_();
+        bindImportPro();
+
         const s = getAdminSession_();
         if(s && (s.token || s.sessionId)){
           await loadAll();

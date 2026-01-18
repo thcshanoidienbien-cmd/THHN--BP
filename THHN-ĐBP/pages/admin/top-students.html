@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Đề xuất học sinh tiềm năng HSG (v2.3)</title>
+
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <meta name="theme-color" content="#2563eb"/>
+
+  <style>
+
+    /* ===== Menu: ép 1 dòng ngang + hiệu ứng bấm (đồng bộ dashboard) ===== */
+    .topbar{ z-index:50; }
+    .topbar .inner{ gap:14px; }
+    .nav{ flex:1; justify-content:center; flex-wrap:nowrap; overflow:auto hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none;}
+    .nav::-webkit-scrollbar{ height:0; }
+
+    .chip{
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
+  cursor:pointer; user-select:none; -webkit-tap-highlight-color: transparent;}
+    .chip:hover{ filter: brightness(0.98); box-shadow: 0 10px 22px rgba(15,23,42,.06);}
+    .chip:active{ transform: translateY(1px) scale(0.99); box-shadow:none;}
+    button.chip{ appearance:none; background:#fff;}
+
+    .card{padding:18px}
+    .hero{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px dashed rgba(148,163,184,.6);padding-bottom:12px}
+    .hero h1{margin:0;font-size:32px;letter-spacing:-.02em}
+    .hero .sub{color:var(--muted);font-weight:800;margin-top:6px}
+    .metaRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chipLite{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:1000;font-size:13px;white-space:nowrap;box-shadow:0 8px 18px rgba(15,23,42,.05)}
+    .muted{color:var(--muted);font-weight:800}
+    .tiny{font-size:12px;color:var(--muted);font-weight:800}
+    label{font-size:12px;color:var(--muted);font-weight:900}
+    select,input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px;background:#fff}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);font-weight:900;background:#fff;cursor:pointer}
+    .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+    .btn.ghost{background:#fff}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .divider{height:1px;background:var(--line);margin:12px 0}
+
+    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .tabBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:1000;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .tabBtn:hover{box-shadow:0 10px 22px rgba(15,23,42,.06)}
+    .tabBtn:active{transform:scale(.99)}
+    .tabBtn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+
+    .filters{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:14px}
+    @media(max-width:1100px){.filters{grid-template-columns:1fr 1fr}}
+    @media(max-width:620px){.filters{grid-template-columns:1fr}}
+
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{background:#f8fafc;font-size:12px;font-weight:1000}
+    td{font-weight:800;font-size:14px}
+    .right{text-align:right}
+
+    .trend.up{color:#16a34a}
+    .trend.down{color:#dc2626}
+    .trend.flat{color:#64748b}
+
+    .tag{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+      background:#fff;font-weight:1000;font-size:12px;white-space:nowrap
+    }
+    .tag.good{border-color:rgba(22,163,74,.35);background:rgba(22,163,74,.08);color:#166534}
+    .tag.warn{border-color:rgba(220,38,38,.35);background:rgba(220,38,38,.08);color:#991b1b}
+    .tag.mint{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.08);color:#1d4ed8}
+    .tag.gray{border-color:rgba(100,116,139,.35);background:rgba(100,116,139,.08);color:#334155}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+      font-weight:1000;font-size:12px;background:#fff
+    }
+    .badge.gold{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10);color:#92400e}
+    .badge.green{border-color:rgba(22,163,74,.35);background:rgba(22,163,74,.10);color:#166534}
+    .badge.blue{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);color:#1d4ed8}
+    .badge.gray{border-color:rgba(100,116,139,.35);background:rgba(100,116,139,.08);color:#334155}
+
+    .hint{
+      margin-top:10px;
+      padding:10px 12px;border:1px dashed rgba(148,163,184,.8);
+      border-radius:14px;background:#fff
+    }
+
+    .panel{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.05);margin-top:12px}
+    .panelTitle{font-weight:1100}
+
+    /* ===== Charts responsive container ===== */
+    .chartBox{width:100%;border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff;margin-top:12px}
+    .chartRow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:980px){.chartRow{grid-template-columns:1fr}}
+    canvas{max-width:100%}
+
+    /* ===== Modal ===== */
+    .modalBackdrop{
+      position:fixed;inset:0;background:rgba(2,6,23,.55);
+      display:none;align-items:center;justify-content:center;z-index:90;padding:16px;
+    }
+    .modalBackdrop.show{display:flex}
+    .modal{
+      width:min(1100px,98vw);
+      background:#fff;border:1px solid var(--line);border-radius:20px;
+      box-shadow:0 30px 80px rgba(15,23,42,.25);
+      max-height:92vh;display:flex;flex-direction:column;overflow:hidden;
+    }
+    .modalHead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .modalTitle{font-weight:1100}
+    .modalBody{padding:14px 16px;overflow:auto}
+    .modalFoot{padding:12px 16px;border-top:1px solid rgba(15,23,42,.10);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;background:#fff}
+    .btn.sm{padding:8px 10px;border-radius:12px;font-weight:1000;font-size:13px}
+
+    /* ===== Print/PDF ===== */
+    @media print{
+      body{background:#fff}
+      .topbar,.actions,.tabs,.filters,.hint,#btnExportXlsx,#btnExportPdf,#btnCompare,#btnReload,#chartPanel{display:none !important}
+      .card{border:none;box-shadow:none;padding:0}
+      table{font-size:12px}
+    }
+    /* FIX: đảm bảo chữ trên nút luôn hiện */
+    .btn{
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+    color: #0f172a !important;
+    font-size:14px !important;
+    line-height:1 !important;
+    }
+    .btn.primary{ color:#fff !important; }
+
+  </style>
+</head>
+
+<body data-active="admin-top">
+
+  <div class="topbar">
+  <div class="inner">
+    <div class="brand">
+      <img id="brandLogo" alt="Logo"
+           style="width:34px;height:34px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:#fff" />
+      <div class="meta">
+        <div class="title" id="brandTitle">Trường Tiểu học Hà Nội – Điện Biên Phủ</div>
+        <div class="sub" id="brandSub">Quản trị nhà trường</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a class="chip" href="./dashboard.html">Bảng điều khiển</a>
+      <a class="chip active" href="./top-students.html">TOP Học sinh</a>
+      <a class="chip" href="./setup.html">Thiết lập</a>
+      <a class="chip" href="../../index.html">Trang chủ</a>
+    </div>
+
+    <div class="top-actions" style="pointer-events:auto">
+      <button class="chip" id="btnLogout" type="button" style="position:relative;z-index:2">Đăng xuất</button>
+    </div>
+  </div>
+</div>
+
+
+  <main class="container">
+    <section class="card">
+      <div class="hero">
+        <div>
+          <h1>Đề xuất học sinh tiềm năng HSG</h1>
+          <div class="sub" id="subTitle">
+            v2.3 • Chuẩn hoá theo mức độ bài + chuẩn hoá theo từng bài • Có theo dõi tiến bộ và độ ổn định
+          </div>
+        </div>
+        <div class="metaRight">
+          <div class="chips">
+            <span class="chipLite">🏫 <b id="chipYear">Năm học: —</b></span>
+            <span class="chipLite">🧠 <b id="chipMode">Chuẩn hoá: Bật</b></span>
+          </div>
+          <div class="tiny" id="lastGen">—</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tabBtn active" data-tab="TOAN">Toán</button>
+        <button class="tabBtn" data-tab="TV">Tiếng Việt</button>
+        <button class="tabBtn" data-tab="ANH">Tiếng Anh</button>
+        <button class="tabBtn" data-tab="ALL">Tổng hợp</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div>
+          <label>Năm học</label>
+          <select id="fYear"></select>
+        </div>
+        <div>
+          <label>Khối</label>
+          <select id="fGrade">
+            <option value="">Tất cả</option>
+            <option value="1">Khối 1</option>
+            <option value="2">Khối 2</option>
+            <option value="3">Khối 3</option>
+            <option value="4">Khối 4</option>
+            <option value="5">Khối 5</option>
+          </select>
+        </div>
+        <div>
+          <label>Khoảng thời gian</label>
+          <select id="fDays">
+            <option value="7">7 ngày</option>
+            <option value="14">14 ngày</option>
+            <option value="30" selected>30 ngày</option>
+            <option value="60">60 ngày</option>
+          </select>
+        </div>
+        <div>
+          <label>Số lượng hiển thị</label>
+          <select id="fTop">
+            <option value="10">Top 10</option>
+            <option value="20" selected>Top 20</option>
+            <option value="30">Top 30</option>
+            <option value="50">Top 50</option>
+          </select>
+        </div>
+        <div>
+          <label>Tối thiểu số bài</label>
+          <select id="fMinN">
+            <option value="2">Từ 2 bài</option>
+            <option value="3" selected>Từ 3 bài</option>
+            <option value="5">Từ 5 bài</option>
+          </select>
+        </div>
+        <div>
+          <label>Chuẩn hoá</label>
+          <select id="fNorm">
+            <option value="1" selected>Bật (tính công bằng theo mức độ)</option>
+            <option value="0">Tắt (tham khảo)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnReload">Tính danh sách</button>
+        <button class="btn" id="btnCompare">So sánh (2–4 học sinh)</button>
+        <button class="btn" id="btnExportXlsx">Xuất Excel</button>
+        <button class="btn" id="btnExportPdf">In / Xuất PDF</button>
+      </div>
+
+      <div class="hint muted" id="hintBox">
+        <b>Hướng dẫn đọc kết quả (BGH)</b>
+        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">
+          <li><b>Nhóm đầu</b> nhưng <b>Xu hướng giảm</b> → <b>⚠️ Cần theo dõi</b></li>
+          <li><b>Nhóm 11–20</b> mà <b>Xu hướng tăng</b> + <b>Ổn định tốt</b> + <b>Tỷ lệ bài nâng cao tốt</b> → <b>🌱 Mầm đội tuyển</b></li>
+        </ul>
+        <div class="tiny" style="margin-top:6px">
+          Gợi ý: nếu <b>Tỷ lệ bài nâng cao</b> còn thấp, nên giao thêm bài nâng cao để đánh giá đúng năng lực.
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="panel" id="chartPanel">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div class="panelTitle">📊 Biểu đồ tổng quan</div>
+            <div class="tiny">Top 10 theo “Chỉ số bền vững HSG” và “Xu hướng tiến bộ”</div>
+          </div>
+          <div class="tiny" id="chartMeta">—</div>
+        </div>
+        <div class="chartRow">
+          <div class="chartBox">
+            <div class="tiny"><b>Chỉ số bền vững HSG (Top 10)</b></div>
+            <canvas id="chartDurability"></canvas>
+          </div>
+          <div class="chartBox">
+            <div class="tiny"><b>Xu hướng tiến bộ (Top 10)</b></div>
+            <canvas id="chartTrend"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:34px">✓</th>
+            <th>Họ và tên</th>
+            <th>Lớp</th>
+            <th class="right">Số bài</th>
+            <th class="right">Điểm TB</th>
+            <th class="right">Điểm chuẩn hoá</th>
+            <th class="right">Xu hướng</th>
+            <th class="right">Độ ổn định</th>
+            <th class="right">Bài nâng cao</th>
+            <th class="right">Chỉ số bền vững</th>
+            <th>Xếp loại</th>
+            <th>Gợi ý</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+    </section>
+  </main>
+
+  <!-- Modal: Student Profile -->
+  <div class="modalBackdrop" id="mProfile">
+    <div class="modal">
+      <div class="modalHead">
+        <div>
+          <div class="modalTitle" id="mTitle">Hồ sơ học sinh</div>
+          <div class="tiny" id="mSub">—</div>
+        </div>
+        <button class="btn ghost sm" id="btnCloseProfile" type="button">Đóng</button>
+      </div>
+      <div class="modalBody">
+        <div class="grid2">
+          <div class="panel">
+            <div class="panelTitle">📈 Diễn biến điểm chuẩn hoá</div>
+            <div class="tiny" id="mTimelineMeta">—</div>
+            <div class="chartBox" style="margin-top:10px">
+              <canvas id="chartStudentLine"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panelTitle">🧭 Tổng quan năng lực</div>
+            <div class="tiny">Kết quả • Tiến bộ • Ổn định • Nâng cao • Mức độ tham gia</div>
+            <div class="chartBox" style="margin-top:10px">
+              <canvas id="chartStudentRadar"></canvas>
+            </div>
+
+            <div class="divider"></div>
+            <div class="panelTitle">🧠 Nhận định gợi ý</div>
+            <div class="tiny" id="mAiNote">—</div>
+
+            <div class="divider"></div>
+            <div class="row">
+              <span class="badge gray" id="mBadge">—</span>
+              <span class="tag gray" id="mTag">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modalFoot">
+        <button class="btn sm" id="btnPrintProfile" type="button">In / PDF hồ sơ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Compare -->
+  <div class="modalBackdrop" id="mCompare">
+    <div class="modal">
+      <div class="modalHead">
+        <div>
+          <div class="modalTitle">So sánh học sinh</div>
+          <div class="tiny" id="cSub">Chọn 2–4 học sinh trong bảng để so sánh</div>
+        </div>
+        <button class="btn ghost sm" id="btnCloseCompare" type="button">Đóng</button>
+      </div>
+      <div class="modalBody">
+        <div class="panel">
+          <div class="panelTitle">🧭 Biểu đồ so sánh</div>
+          <div class="chartBox" style="margin-top:10px">
+            <canvas id="chartCompareRadar"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelTitle">📌 Bảng chỉ số</div>
+          <div class="tiny">Các chỉ số đã được chuẩn hoá để so sánh công bằng.</div>
+          <table style="width:100%;border-collapse:collapse;margin-top:10px" id="tblCompare">
+            <thead>
+              <tr>
+                <th>Họ và tên</th>
+                <th>Lớp</th>
+                <th class="right">Số bài</th>
+                <th class="right">Điểm chuẩn hoá</th>
+                <th class="right">Xu hướng</th>
+                <th class="right">Độ ổn định</th>
+                <th class="right">Bài nâng cao</th>
+                <th class="right">Chỉ số bền vững</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="divider"></div>
+          <div class="panelTitle">🧠 Nhận định so sánh</div>
+          <div class="tiny" id="cAi">—</div>
+        </div>
+      </div>
+      <div class="modalFoot">
+        <button class="btn sm" id="btnPrintCompare" type="button">In / PDF so sánh</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/config.js"></script>
+  <script src="../../assets/api.js?v=20260101"></script>
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    function resolveFromPage_(path){
+    try { return new URL("../../" + String(path||"").replace(/^\/+/,""), window.location.href).href; }
+    catch(e){ return ""; }
+    }
+    function getCfg_(){
+    try{ if (window.HEDU_CONFIG) return window.HEDU_CONFIG; }catch(e){}
+    try{ return (typeof getConfig === "function") ? (getConfig()||{}) : {}; }catch(e){}
+    return {};
+    }
+    function initBrand_(){
+    const cfg = getCfg_();
+    const school = cfg.SCHOOL_NAME || "Trường Tiểu học Hà Nội – Điện Biên Phủ";
+    const logoPath = cfg.LOGO_URL || "assets/img/logo.png";
+    const logo = resolveFromPage_(logoPath);
+
+    // dùng đúng text thương hiệu
+    document.getElementById("brandTitle").textContent = school;
+    document.getElementById("brandSub").textContent = "Quản trị nhà trường";
+
+    const img = document.getElementById("brandLogo");
+    img.src = logo;
+    img.onerror = () => {
+        img.src =
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'>
+            <rect width='64' height='64' rx='14' fill='#2563eb'/>
+            <text x='50%' y='56%' text-anchor='middle' font-size='34' font-family='Arial' fill='white' font-weight='700'>H</text>
+        </svg>`);
+    };
+    }
+
+    async function logout_(){
+    try{ await apiPost("authLogout", {}); }catch(e){}
+    try{ localStorage.removeItem("hedu_session"); }catch(e){}
+    alert("Đã đăng xuất");
+    window.location.href = "../../index.html";
+    }
+
+    const el=id=>document.getElementById(id);
+
+    let __tab = "TOAN";  // TOAN / TV / ANH / ALL
+    let __rows = [];
+    let __yearsLoaded = false;
+
+    let chDur=null, chTrend=null;
+    let chLine=null, chRadar=null, chCompare=null;
+
+    function safeSession(){
+      try{ return JSON.parse(localStorage.getItem("hedu_session")||"null"); }catch(e){ return null; }
+    }
+    function ensureAdmin_(){
+      const s=safeSession();
+      if(!s) throw new Error("Chưa đăng nhập Quản trị");
+      const role=String(s.role||"").toUpperCase();
+      if(role!=="ADMIN") throw new Error("Phiên đăng nhập không phải Quản trị");
+      return s;
+    }
+
+    function trendClass(v){
+      if(v>0.05) return "up";
+      if(v<-0.05) return "down";
+      return "flat";
+    }
+
+    // Việt hoá nhãn tag/badge: giữ dữ liệu backend nếu đã sinh, nhưng UI ưu tiên từ dễ hiểu
+    function tagHtml(tag){
+      if(!tag) return `<span class="tag gray">—</span>`;
+      const t=String(tag||"");
+      if(t.includes("⚠️")) return `<span class="tag warn">${t.replace("Theo dõi","Cần theo dõi")}</span>`;
+      if(t.includes("🌱")) return `<span class="tag mint">${t.replace("Mầm đội tuyển","Mầm đội tuyển")}</span>`;
+      if(t.includes("⭐")) return `<span class="tag good">${t.replace("Top ổn định","Ổn định tốt")}</span>`;
+      return `<span class="tag gray">${t}</span>`;
+    }
+
+    function badgeHtml(b){
+      const t=String(b||"—");
+      // Quy ước Việt hoá gợi ý:
+      // - Nếu backend trả "HSG ..." -> hiển thị "Định hướng HSG"
+      // - "Đội tuyển" giữ nguyên
+      // - "Tiềm năng" giữ nguyên
+      if(t.includes("HSG")) return `<span class="badge gold">🏅 Định hướng HSG</span>`;
+      if(t.includes("Đội tuyển")) return `<span class="badge green">✅ Mầm đội tuyển</span>`;
+      if(t.includes("Tiềm năng")) return `<span class="badge blue">🌱 Tiềm năng</span>`;
+      if(t==="—" || !t.trim()) return `<span class="badge gray">—</span>`;
+      return `<span class="badge gray">${t}</span>`;
+    }
+
+    function fmtPct(x){ return (Number(x||0)*100).toFixed(0)+"%"; }
+
+    function destroyChart(ch){ try{ ch && ch.destroy(); }catch(_){ } }
+
+    async function loadYears(){
+      const s=ensureAdmin_();
+      const token=s.token||s.sessionId||"";
+      const r=await apiPost("adminListYears",{token});
+      if(r && r.ok===false) throw new Error(r.error||"Lỗi tải năm học");
+      const years=r.years||[];
+      el("fYear").innerHTML = years.length
+        ? years.map(y=>`<option value="${y}">${y}</option>`).join("")
+        : `<option value="">—</option>`;
+      if(r.activeYear) el("fYear").value=r.activeYear;
+      el("chipYear").textContent = "Năm học: " + (el("fYear").value||"—");
+      __yearsLoaded = true;
+    }
+
+    function tabToSubject(tab){
+      if(tab==="TOAN") return "TOAN";
+      if(tab==="TV") return "TV";
+      if(tab==="ANH") return "ANH";
+      return "ALL";
+    }
+    function tabLabel(tab){
+      if(tab==="TOAN") return "Toán";
+      if(tab==="TV") return "Tiếng Việt";
+      if(tab==="ANH") return "Tiếng Anh";
+      return "Tổng hợp";
+    }
+
+    async function loadTop(){
+      const s=ensureAdmin_();
+      const token=s.token||s.sessionId||"";
+
+      const payload={
+        token,
+        year: el("fYear").value,
+        grade: el("fGrade").value,
+        subject: tabToSubject(__tab),
+        days: Number(el("fDays").value||30),
+        topN: Number(el("fTop").value||20),
+        minN: Number(el("fMinN").value||3),
+        normalize: Number(el("fNorm").value||1)
+      };
+
+      const r=await apiPost("adminGetTopStudents",payload);
+      if(r && r.ok===false) throw new Error(r.error||"Lỗi lấy danh sách");
+
+      __rows = r.items || [];
+      el("lastGen").textContent = "Cập nhật: " + (r.generatedAt || "—");
+      el("chipMode").textContent = "Chuẩn hoá: " + (payload.normalize? "Bật":"Tắt");
+      el("chipYear").textContent = "Năm học: " + (payload.year || "—");
+
+      renderTable();
+      renderCharts();
+    }
+
+    function renderTable(){
+      const tb=el("tbl").querySelector("tbody");
+      tb.innerHTML = "";
+
+      if(!__rows.length){
+        tb.innerHTML = `<tr><td colspan="13" class="muted">Không có dữ liệu phù hợp trong khoảng thời gian đã chọn.</td></tr>`;
+        return;
+      }
+
+      __rows.forEach((r,i)=>{
+        const trend = Number(r.trend||0);
+        const adv = Number(r.advancedRatio||r.advRatio||0);
+
+        // Nếu backend đã có aiNote thì giữ, nhưng nếu rỗng thì gợi ý đơn giản theo BGH
+        const n = Number(r.n||0);
+        let note = (r.aiNote||"").toString().trim();
+        if(!note){
+          const trendTxt = trend>0.05 ? "tiến bộ" : (trend<-0.05 ? "giảm" : "ổn định");
+          const advTxt = adv>=0.35 ? "có nền nâng cao tốt" : "cần tăng bài nâng cao";
+          note = `Kết quả ${trendTxt}, ${advTxt}.`;
+        }
+
+        const trHtml = `
+          <tr>
+            <td>${r.rank || (i+1)}</td>
+            <td><input type="checkbox" class="ckCompare" data-sid="${String(r.studentId||"")}"></td>
+            <td>
+              <a href="javascript:void(0)" class="linkProfile" data-sid="${String(r.studentId||"")}">
+                <b>${r.fullName||""}</b>
+              </a>
+              <div class="tiny">${note}</div>
+            </td>
+            <td>${r.classId||""}</td>
+            <td class="right">${n||0}</td>
+            <td class="right">${Number(r.avgScore||0).toFixed(1)}</td>
+            <td class="right"><b>${Number(r.avgZ||0).toFixed(2)}</b></td>
+            <td class="right trend ${trendClass(trend)}">${fmtPct(trend)}</td>
+            <td class="right">${Number(r.stability||0).toFixed(2)}</td>
+            <td class="right">${fmtPct(adv)}</td>
+            <td class="right"><b>${Number(r.durability||0).toFixed(0)}</b></td>
+            <td>${badgeHtml(r.badge||"—")}</td>
+            <td>${tagHtml(r.tag||r.note)}</td>
+          </tr>
+        `;
+        tb.insertAdjacentHTML("beforeend", trHtml);
+      });
+
+      document.querySelectorAll(".linkProfile").forEach(a=>{
+        a.addEventListener("click", ()=> openProfile(a.dataset.sid));
+      });
+    }
+
+    function renderCharts(){
+      const top10 = (__rows||[]).slice(0,10);
+      const labels = top10.map(x => (x.fullName||"").split(" ").slice(-2).join(" ") || x.studentId || "");
+      const dur = top10.map(x => Number(x.durability||0));
+      const trd = top10.map(x => Number(x.trend||0)*100);
+
+      el("chartMeta").textContent = `${tabLabel(__tab)} • Top ${top10.length} • ${el("fDays").value} ngày`;
+
+      destroyChart(chDur);
+      destroyChart(chTrend);
+
+      const ctx1 = el("chartDurability").getContext("2d");
+      chDur = new Chart(ctx1, {
+        type: "bar",
+        data: { labels, datasets: [{ label: "Chỉ số bền vững HSG", data: dur }] },
+        options: { responsive:true, maintainAspectRatio:false }
+      });
+
+      const ctx2 = el("chartTrend").getContext("2d");
+      chTrend = new Chart(ctx2, {
+        type: "bar",
+        data: { labels, datasets: [{ label: "Xu hướng tiến bộ (%)", data: trd }] },
+        options: { responsive:true, maintainAspectRatio:false }
+      });
+
+      el("chartDurability").parentElement.style.height = "320px";
+      el("chartTrend").parentElement.style.height = "320px";
+    }
+
+    // ===== PROFILE MODAL =====
+    function showModal(id, v){
+      const m = el(id);
+      if(!m) return;
+      m.classList.toggle("show", !!v);
+    }
+
+    async function openProfile(studentId){
+      try{
+        if(!studentId) throw new Error("Thiếu mã học sinh");
+        const s=ensureAdmin_();
+        const token=s.token||s.sessionId||"";
+
+        const days = Number(el("fDays").value||30);
+        const subject = tabToSubject(__tab);
+
+        const r = await apiPost("adminGetStudentHsgProfile", { token, studentId, days, subject, normalize:Number(el("fNorm").value||1) });
+        if(r && r.ok===false) throw new Error(r.error||"Lỗi hồ sơ");
+
+        const p = r.profile || r;
+
+        el("mTitle").textContent = `Hồ sơ: ${p.fullName||studentId}`;
+        el("mSub").textContent = `Lớp: ${p.classId||"—"} • Môn: ${tabLabel(__tab)} • ${days} ngày • Số bài: ${p.n||0}`;
+
+        el("mTimelineMeta").textContent =
+          `Điểm chuẩn hoá: ${Number(p.avgZ||0).toFixed(2)} • Xu hướng: ${fmtPct(p.trend||0)} • Độ ổn định: ${Number(p.stability||0).toFixed(2)} • Bài nâng cao: ${fmtPct(p.advancedRatio||0)}`;
+
+        el("mAiNote").textContent = p.aiNote || "—";
+
+        // replace badge/tag nodes (outerHTML)
+        el("mBadge").outerHTML = badgeHtml(p.badge||"—");
+        el("mTag").outerHTML = tagHtml(p.tag||p.note);
+
+        renderStudentLine(p.timeline||[]);
+        renderStudentRadar(p);
+
+        showModal("mProfile", true);
+      }catch(e){
+        alert(String(e.message||e));
+      }
+    }
+
+    function renderStudentLine(timeline){
+      destroyChart(chLine);
+      const pts = (timeline||[]).map(x=>({ t: x.t || x.ts || "", s: Number(x.z ?? x.s ?? 0) }));
+      const labels = pts.map(x=>{
+        const d=new Date(x.t);
+        if(isNaN(d)) return "";
+        return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
+      });
+      const data = pts.map(x=>Number(x.s||0));
+
+      const ctx = el("chartStudentLine").getContext("2d");
+      el("chartStudentLine").parentElement.style.height = "320px";
+      chLine = new Chart(ctx, {
+        type:"line",
+        data:{ labels, datasets:[{ label:"Điểm chuẩn hoá theo thời gian", data }] },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+    }
+
+    function clamp01(x){ x=Number(x||0); if(x<0) return 0; if(x>1) return 1; return x; }
+
+    function renderStudentRadar(p){
+      destroyChart(chRadar);
+
+      // radar dùng thang [0..1], nhưng hiển thị tiếng Việt
+      const ketqua = clamp01((Number(p.avgZ||0) + 2) / 4);
+      const tienbo = clamp01((Number(p.trend||0) + 0.15) / 0.30);
+      const onding = clamp01(Number(p.stability||0));
+      const nangcao = clamp01(Number(p.advancedRatio||0));
+      const thamgia = clamp01(Math.min(1, Number(p.n||0) / 10));
+
+      const ctx = el("chartStudentRadar").getContext("2d");
+      el("chartStudentRadar").parentElement.style.height = "320px";
+      chRadar = new Chart(ctx, {
+        type:"radar",
+        data:{
+          labels:["Kết quả","Tiến bộ","Ổn định","Nâng cao","Tham gia"],
+          datasets:[{
+            label:"Tổng quan",
+            data:[ketqua,tienbo,onding,nangcao,thamgia]
+          }]
+        },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+    }
+
+    // ===== COMPARE =====
+    function getSelectedCompareIds(){
+      const ids = [];
+      document.querySelectorAll(".ckCompare:checked").forEach(x=>{
+        const sid = String(x.dataset.sid||"").trim();
+        if(sid) ids.push(sid);
+      });
+      return ids;
+    }
+
+    async function openCompare(){
+      try{
+        const ids = getSelectedCompareIds();
+        if(ids.length < 2 || ids.length > 4) return alert("Vui lòng chọn từ 2 đến 4 học sinh để so sánh.");
+
+        const s=ensureAdmin_();
+        const token=s.token||s.sessionId||"";
+        const days = Number(el("fDays").value||30);
+        const subject = tabToSubject(__tab);
+        const normalize = Number(el("fNorm").value||1);
+
+        const r = await apiPost("adminCompareStudents", { token, studentIds: ids, days, subject, normalize });
+        if(r && r.ok===false) throw new Error(r.error||"Lỗi so sánh");
+
+        const items = r.items || [];
+        el("cAi").textContent = r.aiNote || "—";
+
+        const tb = el("tblCompare").querySelector("tbody");
+        tb.innerHTML = "";
+        items.forEach(it=>{
+          tb.insertAdjacentHTML("beforeend", `
+            <tr>
+              <td><b>${it.fullName||it.studentId}</b><div class="tiny">${(it.badge||"").toString().replace("HSG","Định hướng HSG")}</div></td>
+              <td>${it.classId||""}</td>
+              <td class="right">${it.n||0}</td>
+              <td class="right">${Number(it.avgZ||0).toFixed(2)}</td>
+              <td class="right">${fmtPct(it.trend||0)}</td>
+              <td class="right">${Number(it.stability||0).toFixed(2)}</td>
+              <td class="right">${fmtPct(it.advancedRatio||0)}</td>
+              <td class="right"><b>${Number(it.durability||0).toFixed(0)}</b></td>
+            </tr>
+          `);
+        });
+
+        renderCompareRadar(items);
+        showModal("mCompare", true);
+      }catch(e){
+        alert(String(e.message||e));
+      }
+    }
+
+    function renderCompareRadar(items){
+      destroyChart(chCompare);
+
+      const labels=["Kết quả","Tiến bộ","Ổn định","Nâng cao","Tham gia"];
+
+      const datasets = (items||[]).map(it=>{
+        const ketqua = clamp01((Number(it.avgZ||0) + 2) / 4);
+        const tienbo = clamp01((Number(it.trend||0) + 0.15) / 0.30);
+        const onding = clamp01(Number(it.stability||0));
+        const nangcao = clamp01(Number(it.advancedRatio||0));
+        const thamgia = clamp01(Math.min(1, Number(it.n||0) / 10));
+        return {
+          label: (it.fullName||it.studentId||"").split(" ").slice(-2).join(" "),
+          data:[ketqua,tienbo,onding,nangcao,thamgia]
+        };
+      });
+
+      const ctx = el("chartCompareRadar").getContext("2d");
+      el("chartCompareRadar").parentElement.style.height = "360px";
+      chCompare = new Chart(ctx, {
+        type:"radar",
+        data:{ labels, datasets },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+    }
+
+    // ===== EXPORT =====
+    function exportExcel(){
+      const rows=[
+        ["Hạng","Mã HS","Họ và tên","Lớp","Số bài","Điểm TB","Điểm chuẩn hoá","Xu hướng","Độ ổn định","Tỷ lệ nâng cao","Chỉ số bền vững","Xếp loại","Gợi ý","Nhận định"],
+        ...__rows.map(r=>[
+          r.rank, r.studentId, r.fullName, r.classId, r.n,
+          r.avgScore, r.avgZ, r.trend, r.stability, r.advancedRatio,
+          r.durability, r.badge, (r.tag||r.note), (r.aiNote||"")
+        ])
+      ];
+      const wb=XLSX.utils.book_new();
+      const ws=XLSX.utils.aoa_to_sheet(rows);
+      ws["!cols"] = [
+        {wch:6},{wch:12},{wch:24},{wch:8},{wch:7},
+        {wch:10},{wch:12},{wch:10},{wch:10},{wch:12},
+        {wch:14},{wch:16},{wch:22},{wch:46}
+      ];
+      XLSX.utils.book_append_sheet(wb,ws,`TOP_${tabLabel(__tab)}`.replace(/\s+/g,"_"));
+      XLSX.writeFile(wb,`TOP_HSG_v2.3_${tabLabel(__tab).replace(/\s+/g,"_")}.xlsx`);
+    }
+
+    function exportPdfBGH(){
+      document.title = `BAO_CAO_HOC_SINH_TIEN_NANG_HSG_v2.3_${tabLabel(__tab)}_${el("fYear").value||""}`;
+      window.print();
+    }
+
+    // ===== EVENTS =====
+    el("btnReload").addEventListener("click", ()=> loadTop().catch(e=>alert(String(e.message||e))));
+    el("btnExportXlsx").addEventListener("click", exportExcel);
+    el("btnExportPdf").addEventListener("click", exportPdfBGH);
+    el("btnCompare").addEventListener("click", openCompare);
+
+    el("btnCloseProfile").addEventListener("click", ()=> showModal("mProfile", false));
+    el("btnCloseCompare").addEventListener("click", ()=> showModal("mCompare", false));
+    el("btnPrintProfile").addEventListener("click", ()=> window.print());
+    el("btnPrintCompare").addEventListener("click", ()=> window.print());
+    // đảm bảo nút Đăng xuất click được
+    document.getElementById("btnLogout").addEventListener("click", (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    logout_();
+    });
+
+    document.querySelectorAll(".tabBtn").forEach(b=>{
+      b.addEventListener("click", async ()=>{
+        document.querySelectorAll(".tabBtn").forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        __tab = b.dataset.tab;
+        await loadTop();
+      });
+    });
+
+    // boot
+    (async function(){
+      try{
+        initBrand_();
+        if(!__yearsLoaded) await loadYears();
+        await loadTop();
+      }catch(e){
+        alert(String(e.message||e));
+      }
+    })();
+  </script>
+</body>
+</html>
