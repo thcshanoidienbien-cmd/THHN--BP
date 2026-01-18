@@ -4,23 +4,32 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Thống kê & Phân tích</title>
+
   <link rel="stylesheet" href="../../assets/styles.css">
-  <meta name="theme-color" content="#1a73e8"/>
+  <meta name="theme-color" content="#2563eb"/>
+
+  <!-- ✅ Đồng bộ như grading: config load sớm -->
+  <script src="../../assets/config.js"></script>
 
   <style>
     .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:900;font-size:12px;white-space:nowrap}
+
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+
     .dcard{
       padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff;
       box-shadow: 0 10px 26px rgba(2,6,23,.04);
     }
+
     .split{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:start}
     @media(max-width:980px){.split{grid-template-columns:1fr}}
+
     .quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
     @media(max-width:980px){.quick{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:520px){.quick{grid-template-columns:1fr}}
+
     .qcard{
       padding:14px;border:1px solid var(--line);border-radius:16px;
       background: linear-gradient(180deg,#fff,rgba(248,250,252,.92));
@@ -30,33 +39,6 @@
     textarea{min-height:140px}
     .list{display:grid;gap:10px}
 
-    /* ===== Page head (đúng 1 dòng) ===== */
-    .pageHead{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
-      margin-top:6px;padding-bottom:12px;border-bottom:1px dashed rgba(148,163,184,.55);
-    }
-    .pageTitle{display:flex; align-items:flex-start; gap:12px; min-width:0;}
-    .picon{
-      width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
-      background: linear-gradient(135deg, rgba(37,99,235,.14), rgba(96,165,250,.25));
-      border:1px solid rgba(37,99,235,.18);
-      font-size:22px; flex:0 0 auto;
-    }
-    .pageTitle h1{margin:0;font-size:30px;letter-spacing:.2px;white-space:nowrap}
-    .pageTitle .sub{margin-top:6px;color:var(--muted);font-size:13px}
-
-    /* ===== Actions bar (chỉ còn Tải lại) ===== */
-    .actionsBar{
-      margin-top:12px;
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .btnOneLine{white-space:nowrap}
-
-    /* ===== Section labels ===== */
     .secLabel{
       color:var(--muted);
       font-size:12px;
@@ -68,8 +50,8 @@
       white-space:nowrap;
     }
 
-    /* Table tighten */
-    .table th{ white-space:nowrap; }
+    .btnOneLine{white-space:nowrap}
+    .table th{white-space:nowrap;}
   </style>
 </head>
 
@@ -78,25 +60,23 @@
 
   <main class="container">
     <section class="card" style="padding:16px">
-      <!-- HEAD -->
-      <div class="pageHead">
-        <div class="pageTitle">
-          <div class="picon">📈</div>
-          <div style="min-width:0">
-            <h1>Thống kê & Phân tích</h1>
-            <div class="sub" id="sub">—</div>
-          </div>
+
+      <!-- ✅ Header giống grading -->
+      <div class="row">
+        <div>
+          <h1 style="margin:0">Thống kê & Phân tích 📈</h1>
+          <div class="muted" id="sub">—</div>
         </div>
         <div class="pill" id="me">—</div>
       </div>
 
-      <!-- ONLY ACTION: Reload -->
-      <div class="actionsBar">
+      <!-- ✅ Actions giống grading (không đụng topbar/menu) -->
+      <div class="actions mt" style="justify-content:flex-end">
         <button class="btn btnOneLine" id="btnReload" type="button">Tải lại dữ liệu</button>
       </div>
 
       <div class="split mt">
-        <!-- LEFT: tổng quan + báo cáo + tiến độ -->
+        <!-- LEFT -->
         <div class="dcard">
           <div style="font-weight:900">📒 Tổng quan lớp</div>
           <div class="muted mt">Chỉ số nhanh • Báo cáo theo thời gian • Tiến độ theo học sinh</div>
@@ -131,7 +111,7 @@
           <div class="mt" id="tableBox"></div>
         </div>
 
-        <!-- RIGHT: lộ trình + tin nhắn -->
+        <!-- RIGHT -->
         <div class="dcard">
           <div style="font-weight:900">👨‍🎓 Lộ trình học & Tin nhắn</div>
           <div class="muted mt">Gợi ý lộ trình 2 tuần (AI) và nhắn tin tới HS/PH</div>
@@ -181,11 +161,9 @@
     <div class="toast" id="toast" hidden></div>
   </main>
 
-  <!-- ✅ SSOT: đúng thứ tự -->
-  <script src="../../assets/config.js"></script>
+  <!-- ✅ SSOT giống grading: core -> api -> teacher -->
   <script src="../../assets/core.js"></script>
   <script src="../../assets/api.js"></script>
-  <!-- ✅ Dùng teacher.js để topbar đồng bộ -->
   <script src="../../assets/teacher.js"></script>
 
   <script>
@@ -197,53 +175,61 @@
     }
     function esc(s){return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));}
 
+    // ✅ Guard
     const session=requireRole("TEACHER");
     if(!session){ throw new Error("Đang chuyển về đăng nhập..."); }
-    const token=session.token;
+    const token=(session?.token || session?.sessionId || "");
 
-    // ✅ luôn lấy lớp qua core.js
+    // ✅ Đồng bộ cách lấy classId như grading (không fallback cứng 5A1)
     function currentClassId(){
-      return getTeacherClassId(session.classId || "5A1");
+      const cid = (session?.classId)
+        || (window.getSession?.()?.classId)
+        || localStorage.getItem("hedu_class")
+        || localStorage.getItem("hedu_teacher_classId")
+        || "";
+      return (typeof getTeacherClassId==="function")
+        ? getTeacherClassId(cid)
+        : String(cid||"").trim().toUpperCase();
     }
 
-    // pill hiển thị: Tên GV • Lớp hiện tại
-    const meEl = document.getElementById("me");
-    function syncMe_(){
-      if(meEl) meEl.textContent = `${session.displayName||"Giáo viên"} • ${currentClassId()}`;
-      // badge góc phải trên topbar (nếu teacher.js có)
-      try{ if(typeof setTeacherHeaderBadge==="function") setTeacherHeaderBadge(currentClassId()); }catch(_){}
+    // ✅ Tuyệt đối KHÔNG đẩy lớp lên menu/topbar
+    // (Không gọi setTeacherHeaderBadge)
+
+    const meEl=document.getElementById("me");
+    const sub=document.getElementById("sub");
+    function renderMe_(){
+      const cid=currentClassId()||"—";
+      const name=session.displayName||session.fullName||"Giáo viên";
+      if(meEl) meEl.textContent=`${name} • ${cid}`;
     }
-    syncMe_();
 
-    const sub = document.getElementById("sub");
-    const kpi = document.getElementById("kpi");
-    const rangeDays = document.getElementById("rangeDays");
-    const btnReport = document.getElementById("btnReport");
-    const btnWeeklyAI = document.getElementById("btnWeeklyAI");
-    const reportBox = document.getElementById("reportBox");
-    const tableBox = document.getElementById("tableBox");
+    const kpi=document.getElementById("kpi");
+    const rangeDays=document.getElementById("rangeDays");
+    const btnReport=document.getElementById("btnReport");
+    const btnWeeklyAI=document.getElementById("btnWeeklyAI");
+    const reportBox=document.getElementById("reportBox");
+    const tableBox=document.getElementById("tableBox");
 
-    const studentId = document.getElementById("studentId");
-    const btnPath = document.getElementById("btnPath");
-    const pathBox = document.getElementById("pathBox");
+    const studentId=document.getElementById("studentId");
+    const btnPath=document.getElementById("btnPath");
+    const pathBox=document.getElementById("pathBox");
 
-    const toRole = document.getElementById("toRole");
-    const msgSubject = document.getElementById("msgSubject");
-    const msgContent = document.getElementById("msgContent");
-    const btnSend = document.getElementById("btnSend");
-    const btnLoadMsgs = document.getElementById("btnLoadMsgs");
-    const msgList = document.getElementById("msgList");
+    const toRole=document.getElementById("toRole");
+    const msgSubject=document.getElementById("msgSubject");
+    const msgContent=document.getElementById("msgContent");
+    const btnSend=document.getElementById("btnSend");
+    const btnLoadMsgs=document.getElementById("btnLoadMsgs");
+    const msgList=document.getElementById("msgList");
 
-    const btnReload = document.getElementById("btnReload");
+    const btnReload=document.getElementById("btnReload");
 
     let _students=[];
 
-    // ✅ KPI đổi sang ngôn ngữ nhà trường
     function renderKpi_(gb){
-      const rows = gb.rows||[];
-      const taskCount = Number(gb.taskCount||0);
-      const totalSubmitted = rows.reduce((a,x)=>a+(Number(x.submitted)||0),0);
-      const totalGraded = rows.reduce((a,x)=>a+(Number(x.graded)||0),0);
+      const rows=gb.rows||[];
+      const taskCount=Number(gb.taskCount||0);
+      const totalSubmitted=rows.reduce((a,x)=>a+(Number(x.submitted)||0),0);
+      const totalGraded=rows.reduce((a,x)=>a+(Number(x.graded)||0),0);
 
       kpi.innerHTML=`
         <div class="qcard">
@@ -266,13 +252,13 @@
     }
 
     function renderTable_(gb){
-      const rows = gb.rows||[];
+      const rows=gb.rows||[];
       if(!rows.length){
-        tableBox.innerHTML = `<div class="muted">Chưa có danh sách học sinh.</div>`;
+        tableBox.innerHTML=`<div class="muted">Chưa có danh sách học sinh.</div>`;
         return;
       }
 
-      tableBox.innerHTML = `
+      tableBox.innerHTML=`
         <table class="table">
           <thead>
             <tr>
@@ -285,8 +271,8 @@
           </thead>
           <tbody>
             ${rows.map(r=>{
-              const p = Number(String(r.progress||"0%").replace("%",""))||0;
-              const pct = Math.max(0,Math.min(100,p));
+              const p=Number(String(r.progress||"0%").replace("%",""))||0;
+              const pct=Math.max(0,Math.min(100,p));
               return `
                 <tr>
                   <td>
@@ -309,33 +295,35 @@
 
       tableBox.querySelectorAll("button[data-st]").forEach(b=>{
         b.onclick=()=>{
-          studentId.value = b.getAttribute("data-st");
+          studentId.value=b.getAttribute("data-st");
           toast("Đã chọn học sinh ✅");
         };
       });
     }
 
     async function loadStudentsSelect_(){
-      const r = await api("listStudents",{token, classId: currentClassId()});
-      _students = r.students || [];
-      studentId.innerHTML = _students.map(s=>`<option value="${esc(s.studentId)}">${esc(s.studentId)} • ${esc(s.name||"")}</option>`).join("")
+      const cid=currentClassId();
+      const r=await api("listStudents",{token, classId: cid});
+      _students=r.students||[];
+
+      studentId.innerHTML=_students.map(s=>`<option value="${esc(s.studentId)}">${esc(s.studentId)} • ${esc(s.name||"")}</option>`).join("")
         || `<option value="">(chưa có học sinh)</option>`;
 
-      sub.textContent = `Lớp ${r.classId||currentClassId()||"—"} • Năm ${r.year||"—"}`;
-      syncMe_();
+      sub.textContent=`Lớp ${r.classId||cid||"—"} • Năm ${r.year||"—"}`;
+      renderMe_();
     }
 
     async function loadGradebook_(){
-      const gb = await api("getGradebook",{token, classId: currentClassId()});
+      const gb=await api("getGradebook",{token, classId: currentClassId()});
       renderKpi_(gb);
       renderTable_(gb);
     }
 
-    btnReport.onclick = async ()=>{
+    btnReport.onclick=async ()=>{
       try{
-        const r = await api("getClassReport",{token, classId: currentClassId(), rangeDays:Number(rangeDays.value||7)});
-        const rep = r.report||{};
-        reportBox.value = [
+        const r=await api("getClassReport",{token, classId: currentClassId(), rangeDays:Number(rangeDays.value||7)});
+        const rep=r.report||{};
+        reportBox.value=[
           `BÁO CÁO NHANH (${rep.rangeDays||7} ngày)`,
           `- Lượt nộp bài: ${rep.submissions||0}`,
           `- Nộp muộn: ${rep.lateSubmissions||0}`,
@@ -348,29 +336,29 @@
       }catch(e){ toast(e.message||"Tạo báo cáo lỗi"); }
     };
 
-    btnWeeklyAI.onclick = async ()=>{
+    btnWeeklyAI.onclick=async ()=>{
       try{
-        reportBox.value = "⏳ Đang tạo báo cáo tuần bằng AI...";
-        const r = await api("aiClassWeeklyReport",{token, classId: currentClassId(), rangeDays:Number(rangeDays.value||7)});
-        reportBox.value = (r.reportText||"").trim() || "AI không trả nội dung.";
+        reportBox.value="⏳ Đang tạo báo cáo tuần bằng AI...";
+        const r=await api("aiClassWeeklyReport",{token, classId: currentClassId(), rangeDays:Number(rangeDays.value||7)});
+        reportBox.value=(r.reportText||"").trim()||"AI không trả nội dung.";
         toast("AI đã tạo báo cáo ✅");
       }catch(e){ toast(e.message||"Báo cáo AI lỗi"); }
     };
 
-    btnPath.onclick = async ()=>{
+    btnPath.onclick=async ()=>{
       try{
-        const sid = studentId.value || "";
+        const sid=studentId.value||"";
         if(!sid) return toast("Chưa có học sinh.");
-        pathBox.value = "⏳ Đang lấy lộ trình học...";
-        const r = await api("getLearningPath",{token, classId: currentClassId(), studentId:sid});
-        pathBox.value = (r.planText||"").trim();
+        pathBox.value="⏳ Đang lấy lộ trình học...";
+        const r=await api("getLearningPath",{token, classId: currentClassId(), studentId:sid});
+        pathBox.value=(r.planText||"").trim();
         toast("Đã tải lộ trình học ✅");
       }catch(e){ toast(e.message||"Lộ trình học lỗi"); }
     };
 
-    btnSend.onclick = async ()=>{
+    btnSend.onclick=async ()=>{
       try{
-        const sid = studentId.value || "";
+        const sid=studentId.value||"";
         if(!sid) return toast("Chọn học sinh trước.");
         if(!msgContent.value.trim()) return toast("Nội dung tin nhắn đang trống.");
 
@@ -382,39 +370,37 @@
           content: msgContent.value.trim()
         });
 
-        msgContent.value = "";
+        msgContent.value="";
         toast("Đã gửi tin ✅");
       }catch(e){ toast(e.message||"Gửi tin lỗi"); }
     };
 
     async function loadMsgs(){
       try{
-        const sid = studentId.value || "";
+        const sid=studentId.value||"";
         if(!sid) return toast("Chọn học sinh trước.");
-        const r = await api("listMessages",{
-          token, classId: currentClassId(),
-          toStudentId: sid,
-          limit: 30
-        });
 
-        const items = r.messages || [];
-        msgList.innerHTML = items.length ? "" : `<div class="muted">Chưa có tin nhắn.</div>`;
+        const r=await api("listMessages",{ token, classId: currentClassId(), toStudentId: sid, limit: 30 });
+        const items=r.messages||[];
+
+        msgList.innerHTML=items.length ? "" : `<div class="muted">Chưa có tin nhắn.</div>`;
         items.forEach(m=>{
           const div=document.createElement("div");
           div.className="dcard";
-          div.innerHTML = `
+          div.innerHTML=`
             <div style="font-weight:900">${esc(m.subject||"(Không tiêu đề)")}</div>
             <div class="muted" style="font-size:12px;margin-top:4px">${esc(m.createdAt||"")} • Từ: ${esc(m.fromRole||"")} (${esc(m.fromName||"")})</div>
             <div style="margin-top:8px;white-space:pre-wrap">${esc(m.content||"")}</div>
           `;
           msgList.appendChild(div);
         });
+
         toast("Đã tải tin nhắn ✅");
       }catch(e){ toast(e.message||"Tải tin nhắn lỗi"); }
     }
-    btnLoadMsgs.onclick = loadMsgs;
+    btnLoadMsgs.onclick=loadMsgs;
 
-    btnReload.onclick = async ()=>{
+    btnReload.onclick=async ()=>{
       try{
         await loadStudentsSelect_();
         await loadGradebook_();
@@ -424,8 +410,9 @@
     };
 
     (async ()=>{
-      // ✅ MENU: đúng key theo teacher.js
-      renderTeacherTopbar("insights");
+      // ✅ Topbar chuẩn như grading
+      if(typeof renderTeacherTopbar==="function") renderTeacherTopbar("insights");
+      renderMe_();
       await loadStudentsSelect_();
       await loadGradebook_();
       await loadMsgs();

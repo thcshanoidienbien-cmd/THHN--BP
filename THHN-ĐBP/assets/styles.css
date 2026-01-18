@@ -290,3 +290,37 @@ textarea[readonly]{
   display:none;
 }
 .toast.show{ display:block; }
+/* ===========================
+   TEACHER TOPBAR: NO SCROLLBAR + NO HORIZONTAL SCROLL
+   =========================== */
+
+/* Vùng chứa menu/tabs trong topbar: không cho sinh overflow ngang */
+#topbar nav,
+#topbar .tabs,
+#topbar .menu,
+#topbar .navLinks,
+#topbar .nav {
+  overflow-x: hidden !important;
+}
+
+/* Menu hiển thị flex và cho phép xuống dòng để không cần cuộn ngang */
+#topbar nav,
+#topbar .tabs,
+#topbar .menu,
+#topbar .navLinks,
+#topbar .nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Chặn mọi scrollbar (phòng khi có element con tự tạo scroll) */
+#topbar * {
+  scrollbar-width: none;           /* Firefox */
+}
+#topbar *::-webkit-scrollbar {
+  height: 0 !important;            /* Chrome/Safari */
+  width: 0 !important;
+  display: none !important;
+}

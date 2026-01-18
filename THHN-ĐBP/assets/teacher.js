@@ -31,7 +31,7 @@
   }
 
   // ✅ PUBLIC: setTeacherHeaderBadge(classId) — dashboard gọi khi đổi lớp
-  window.setTeacherHeaderBadge = function(classId){
+  window.setTeacherHeaderBadge = function(_){
     const el = document.getElementById("teacherBadge");
     if(!el) return;
     const cid = String(classId||"").trim();
